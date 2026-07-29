@@ -69,6 +69,7 @@ MODES = {
 CARTES_PAR_MODE = 3          # le pool classé en compte 3 par mode, soit 18
 SEUIL_USERATE = 0.3          # en dessous, c'est du bruit statistique
 COUVERTURE_MIN = 100         # sur 105 brawlers, critère du brief
+ABANDON_APRES = 10           # images ratées d'affilée avant de conclure au réseau coupé
 
 ERREURS = []
 
@@ -554,49 +555,70 @@ def scraper_synergie(net, brawlers):
 # Tâche 1 — images en local
 # ---------------------------------------------------------------------------
 
+class ReseauMort(Exception):
+    """Trop d'échecs d'affilée : inutile d'attendre 250 fois le délai."""
+
+
+def _recuperer_image(net, urls, cible, compteur):
+    """Télécharge la première URL qui répond. True si le fichier est en place.
+
+    `compteur` est une liste d'un élément : le nombre d'échecs consécutifs,
+    partagé entre les deux boucles d'appel."""
+    if os.path.exists(cible) and os.path.getsize(cible) > 500:
+        return True
+
+    for url in urls:
+        try:
+            data = net.get(url, binaire=True)
+        except Exception:
+            continue
+        if len(data) > 500:
+            with open(cible, "wb") as f:
+                f.write(data)
+            compteur[0] = 0
+            return True
+
+    compteur[0] += 1
+    if compteur[0] >= ABANDON_APRES:
+        raise ReseauMort(compteur[0])
+    return False
+
+
 def telecharger_assets(net, noms, ids_cartes):
     print("\n[1] Images en local")
     ok_b = ok_c = 0
-    d = os.path.join(ASSETS, "brawlers")
-    os.makedirs(d, exist_ok=True)
-    for n in noms:
-        s = slug_cdn(n)
-        cible = os.path.join(d, s + ".png")
-        if os.path.exists(cible) and os.path.getsize(cible) > 500:
-            ok_b += 1
-            continue
-        for url in (IMG_BRAWLER.format(slug=s), IMG_BRAWLER_ALT.format(slug=s)):
-            try:
-                data = net.get(url, binaire=True)
-                if len(data) > 500:
-                    open(cible, "wb").write(data)
-                    ok_b += 1
-                    break
-            except Exception:
-                continue
-        else:
-            souci("portrait introuvable pour %s" % n)
+    echecs = [0]
+    interrompu = False
 
-    d = os.path.join(ASSETS, "maps")
-    os.makedirs(d, exist_ok=True)
-    for i in ids_cartes:
-        cible = os.path.join(d, "%s.png" % i)
-        if os.path.exists(cible) and os.path.getsize(cible) > 500:
-            ok_c += 1
-            continue
-        for url in (IMG_CARTE.format(id=i), IMG_CARTE_ALT.format(id=i)):
-            try:
-                data = net.get(url, binaire=True)
-                if len(data) > 500:
-                    open(cible, "wb").write(data)
-                    ok_c += 1
-                    break
-            except Exception:
-                continue
-        else:
-            souci("vignette introuvable pour la carte %s" % i)
+    dossier = os.path.join(ASSETS, "brawlers")
+    os.makedirs(dossier, exist_ok=True)
+    try:
+        for n in noms:
+            s = slug_cdn(n)
+            urls = (IMG_BRAWLER.format(slug=s), IMG_BRAWLER_ALT.format(slug=s))
+            if _recuperer_image(net, urls, os.path.join(dossier, s + ".png"), echecs):
+                ok_b += 1
+            else:
+                souci("portrait introuvable pour %s" % n)
 
-    note("%d/%d portraits, %d/%d vignettes" % (ok_b, len(noms), ok_c, len(ids_cartes)))
+        dossier = os.path.join(ASSETS, "maps")
+        os.makedirs(dossier, exist_ok=True)
+        for i in ids_cartes:
+            urls = (IMG_CARTE.format(id=i), IMG_CARTE_ALT.format(id=i))
+            if _recuperer_image(net, urls, os.path.join(dossier, "%s.png" % i), echecs):
+                ok_c += 1
+            else:
+                souci("vignette introuvable pour la carte %s" % i)
+    except ReseauMort as e:
+        interrompu = True
+        souci("%d images de suite ont échoué : on arrête là plutôt que de "
+              "poursuivre %d téléchargements voués à l'échec. Vérifie ta "
+              "connexion, puis relance — les images déjà récupérées sont "
+              "conservées." % (e.args[0], len(noms) + len(ids_cartes)))
+
+    note("%d/%d portraits, %d/%d vignettes%s"
+         % (ok_b, len(noms), ok_c, len(ids_cartes),
+            " (interrompu)" if interrompu else ""))
     if ok_b < len(noms) or ok_c < len(ids_cartes):
         note("les manquants continueront d'être chargés depuis les CDN : la "
              "chaîne de repli se fait image par image")
