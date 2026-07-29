@@ -176,11 +176,25 @@ const check = (nom, cond, detail = '') => {
     fbImg(el); const apres1 = el.getAttribute('src');
     return { chaine, apres1, ini: el.getAttribute('data-ini') };
   });
-  check('1re source = brawltime (assets off)',
+  check('1re source = brawltime quand l’API n’a rien donné',
     /media\.brawltime\.ninja/.test(img.chaine[0]), img.chaine);
   check('repli suivant = brawlify', /cdn\.brawlify\.com/.test(img.apres1), img);
   check('slug correct', /larry___lawrie/.test(img.chaine[0]), img.chaine[0]);
   check('initiales en dernier recours', img.ini === 'LL', img.ini);
+
+  // L'URL fournie par l'API est la seule certaine : elle doit primer sur
+  // les URL reconstruites à partir du nom.
+  const ordre = await page.evaluate(() => {
+    const b = { nom: 'Larry & Lawrie', k: 'larrylawrie',
+                img: 'https://cdn.brawlify.com/brawler/borderless/16000042.png' };
+    const d = document.createElement('div');
+    d.innerHTML = portrait(b, 40, false);
+    const el = d.querySelector('img');
+    return [el.getAttribute('src')].concat(el.getAttribute('data-fb').split('|'));
+  });
+  check('URL de l’API en tête', ordre[0].includes('16000042'), ordre);
+  check('CDN devinés conservés en repli',
+    /brawltime/.test(ordre[1]) && /brawlify/.test(ordre[2]), ordre);
 
   const finale = await page.evaluate(() => {
     const d = document.createElement('div');

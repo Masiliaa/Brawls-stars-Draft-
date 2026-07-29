@@ -236,10 +236,15 @@ function fbImg(el){
 function balise(l){var v=l.filter(Boolean);
   return '<img src="'+v[0]+'" data-fb="'+v.slice(1).join("|")+'"';}
 
+/* b.img vient de l'API : c'est la seule URL certaine, les autres sont
+   reconstruites à partir du nom. Un slug deviné se trompe justement sur les
+   noms difficiles (Larry & Lawrie, Mr. P, 8-Bit), donc l'URL de l'API passe
+   avant les deux CDN. */
 function srcBrawler(b){var s=slugCdn(b.nom);
   return [ASSETS_LOCAUX?"assets/brawlers/"+s+".png":null,
+    b.img,
     "https://media.brawltime.ninja/brawlers/"+s+"/avatar.png?size=160",
-    b.img,"https://cdn.brawlify.com/brawlers/borderless/"+s+".png"];}
+    "https://cdn.brawlify.com/brawlers/borderless/"+s+".png"];}
 
 function srcCarte(m){
   return [ASSETS_LOCAUX?"assets/maps/"+m.img+".png":null,

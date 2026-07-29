@@ -596,7 +596,12 @@ def telecharger_assets(net, noms, ids_cartes):
             souci("vignette introuvable pour la carte %s" % i)
 
     note("%d/%d portraits, %d/%d vignettes" % (ok_b, len(noms), ok_c, len(ids_cartes)))
-    return ok_b == len(noms) and ok_c == len(ids_cartes)
+    if ok_b < len(noms) or ok_c < len(ids_cartes):
+        note("les manquants continueront d'être chargés depuis les CDN : la "
+             "chaîne de repli se fait image par image")
+    # Il suffit d'un fichier local pour que la bascule vaille le coup : une
+    # image absente de assets/ retombe sur le CDN toute seule.
+    return ok_b + ok_c > 0
 
 
 # ---------------------------------------------------------------------------
@@ -807,7 +812,7 @@ def main():
         html = ecrire_bloc(html, "ASSETS",
                            "var ASSETS_LOCAUX=%s;" % ("true" if complet else "false"))
         if not complet:
-            souci("assets incomplets : ASSETS_LOCAUX reste à false, l'app "
+            souci("aucune image récupérée : ASSETS_LOCAUX reste à false, l'app "
                   "continue de charger les images depuis les CDN")
         touche = True
 
