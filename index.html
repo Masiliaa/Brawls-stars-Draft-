@@ -91,10 +91,33 @@ body{min-height:100vh;font-family:'Nunito',system-ui,sans-serif;color:var(--pape
 <body>
 <div id="app"></div>
 <script>
-/* ================= DONNÉES — relevées le 29/07/2026 sur Brawl Time Ninja, saison 52 ================= */
+/* =========================================================================
+   BLOCS DE DONNÉES
+   Chaque bloc est encadré par deux marqueurs de la forme @DATA:NOM et
+   @END:NOM. refresh.py réécrit uniquement ce qu'il y a entre les deux.
+   Ne pas déplacer ni reformater les lignes de marqueurs.
+   ========================================================================= */
+
+/* @DATA:MAJ */
+/* Une date et une source par bloc de données, pour que le pied de page
+   n'annonce jamais comme fraîche une donnée qui n'a pas été relevée.
+   null = bloc absent. */
+var MAJ={tiers:["29/07/2026","Brawl Time Ninja"],
+         cartes:["29/07/2026","Brawl Time Ninja"],
+         matchups:null,
+         synergie:null},SAISON=52;
+/* @END:MAJ */
+
+/* @DATA:ASSETS */
+var ASSETS_LOCAUX=false;
+/* @END:ASSETS */
+
+/* @DATA:MODES */
 var MODES={brawlBall:{nom:"Brawl Ball",c:"#5EC8F5"},bounty:{nom:"Prime",c:"#FFB020"},knockout:{nom:"Hors-jeu",c:"#FF7A5C"},
 gemGrab:{nom:"Razzia de gemmes",c:"#B98BFF"},heist:{nom:"Braquage",c:"#57D9A3"},hotZone:{nom:"Zone réservée",c:"#FF5D8F"}};
+/* @END:MODES */
 
+/* @DATA:MAPS */
 var MAPS=[
 {id:"center-stage",img:15000132,nom:"Center Stage",mode:"brawlBall",top:[["Bolt",73.1],["Sam",72.5],["Eve",71.9]]},
 {id:"pinball-dreams",img:15000118,nom:"Pinball Dreams",mode:"brawlBall",top:[["Bolt",81.2],["Chuck",76.0],["Juju",75.4]]},
@@ -112,7 +135,9 @@ var MAPS=[
 {id:"safe-zone",img:15000019,nom:"Safe Zone",mode:"heist",top:[["Sam",80.1],["Finx",76.9],["Glowy",76.3]]},
 {id:"dueling-beetles",img:15000306,nom:"Dueling Beetles",mode:"hotZone",top:[["Sam",76.6],["Nori",74.0],["Ollie",72.7]]},
 {id:"parallel-plays",img:15000293,nom:"Parallel Plays",mode:"hotZone",top:[["Sam",76.5],["Nori",74.6],["Bolt",74.3]]}];
+/* @END:MAPS */
 
+/* @DATA:TIERS */
 var TIERS={
 brawlBall:{S:"Surge,Bibi",A:"Damian,Mortis,Chester,Bull,Starr Nova,Edgar,Mina,Griff,Nori,Rico",B:"Colette,Bolt,Sirius,Stu,Kenji,Cordelius,Crow,Fang,Meg,Shade,Emz,Max,Buzz,Colt,Otis,Spike,Frank,Clancy,Melodie,Leon,Lumi,Tara,Pierce,Gale",C:"Kaze,Darryl,Brock,Dynamike,Shelly,8-Bit,Nita,Najia,Bo,Lou,Sandy,Meeple,Carl,Doug,Draco,Jacky,El Primo,Maisie,Trunk,Kit,Buster,Lily,Willow,Alli,Moe,Poco,Ollie,Finx,Amber,Ash",D:"Charlie,Bea,Gigi,Squeak,Pearl,Ruffs,Byron,R-T,Jae-yong,Hank,Tick,Glowy,Gus,Larry & Lawrie,Sam,Gray,Jessie,Mico,Berry,Barley,Ziggy,Rosa,Penny,Nani,Mandy,Gene,Juju,Janet,Sprout,Lola,Bonnie,Mr. P,Belle,Grom,Pam,Piper,Chuck,Eve,Angelo"},
 bounty:{S:"Pierce,Brock",A:"Najia,Byron,Piper,Nori,Bolt,Belle,Angelo,Crow,Mandy,Meeple",B:"Leon,Gus,8-Bit,Starr Nova,Colette,Bea,Edgar,Nani,Kit,Colt,Mina,Max,Otis,Fang,Chester,Sirius,Mortis,Gray,Surge,Spike,Lumi,Ruffs,Griff,Meg,Gene,Lily,Carl",C:"Damian,Squeak,Stu,Kaze,Alli,Rico,Ziggy,Bonnie,Jae-yong,Penny,Shade,R-T,Charlie,Tick,Finx,Glowy,Cordelius,Grom,Kenji,Bo,Maisie,Lou,Janet,Mico,Pearl,Emz,Dynamike,Mr. P,Juju,Melodie,Tara,Eve",D:"Amber,Willow,Gale,Buzz,Larry & Lawrie,Lola,Buster,Gigi,Doug,Sprout,Bibi,Moe,Darryl,Barley,Ollie,Clancy,Sandy,Jessie,Berry,Frank,Bull,Pam,Nita,Hank,El Primo,Trunk,Draco,Shelly,Poco,Chuck,Ash,Rosa,Jacky,Sam"},
@@ -120,8 +145,40 @@ knockout:{S:"Pierce,Najia",A:"Brock,Piper,Byron,Mandy,Leon,Nani,Edgar,Belle,Star
 gemGrab:{S:"Surge,8-Bit",A:"Crow,Starr Nova,Chester,Bo,Pierce,Damian,Colette,Griff,Bolt,Meg,Lumi,Edgar,Mina",B:"Meeple,Mortis,Otis,Emz,Max,Sirius,Rico,Tara,Lily,Nori,Leon,Brock,Cordelius,Najia,Ruffs,Shade,Kenji,Charlie,Alli,Sandy,Spike,Amber,Squeak,Byron",C:"Gene,Fang,Lou,Bibi,Stu,Finx,Colt,Gale,Kaze,Gus,Janet,Carl,Gray,Poco,Bull,Penny,Jessie,Moe,Nita,Buster,Frank,Mr. P,Pearl,Clancy,Kit,Melodie",D:"Belle,Tick,Ash,Buzz,Larry & Lawrie,Doug,Glowy,Draco,Trunk,Mico,Ollie,Bea,Darryl,Gigi,Rosa,Berry,Jae-yong,Pam,Lola,Dynamike,Grom,Ziggy,Nani,Barley,R-T,Juju,Bonnie,Eve,Jacky,Sprout,Shelly,Willow,El Primo,Maisie,Chuck,Mandy,Piper,Hank,Sam,Angelo"},
 heist:{S:"8-Bit,Chuck",A:"Colt,Melodie,Crow,Edgar,Brock,Colette,Mico,Griff,Nita,Rico,Bull",B:"Penny,Pierce,Jessie,Kaze,Lumi,Berry,Mandy,Spike,Amber,Sirius,Emz,Starr Nova,Otis,Nani,Chester,Bo,Nori,Clancy,Carl,Meg",C:"Najia,Surge,Darryl,Lola,Cordelius,Dynamike,Barley,Tick,Bibi,Squeak,Piper,Leon,Grom,Bolt,Angelo,Byron,Belle,Eve,Larry & Lawrie,R-T,Damian,Moe,Shade,Pearl,Max,Buzz,Lily,Ruffs,Meeple,Tara,Juju,Bea,Draco",D:"Stu,Gigi,Kenji,Ziggy,Kit,Mina,Alli,Charlie,Finx,Lou,Fang,Maisie,Trunk,Sandy,Shelly,Willow,Janet,Glowy,Hank,Bonnie,Mr. P,Gale,El Primo,Doug,Sprout,Ash,Frank,Jae-yong,Sam,Gus,Gene,Buster,Mortis,Pam,Jacky,Poco,Gray,Rosa,Ollie"},
 hotZone:{S:"Emz,Bo",A:"Lou,8-Bit,Griff,Damian,Crow,Mina,Pierce,Surge,Tick,Sirius",B:"Nori,Chester,Meg,Spike,Squeak,Jessie,Starr Nova,Sandy,Bibi,Edgar,Kenji,Colette,Tara,Otis,Lumi,Gale,Barley,Penny,Finx,Berry,Najia,Amber,Brock,Bolt",C:"Poco,Buster,Frank,Shade,Chuck,Nita,Hank,Meeple,Ziggy,Kaze,Fang,Clancy,Pearl,Rico,Cordelius,Byron,Stu,Trunk,Grom,Ruffs,R-T,Bea,Glowy,Larry & Lawrie,Draco,Gray,Pam,Doug,Max,Carl,Bull,Ollie,Dynamike,Gus",D:"Jae-yong,Juju,Jacky,Mortis,Colt,Leon,Eve,Charlie,Kit,Moe,Willow,Gigi,Janet,Buzz,Darryl,Alli,Mr. P,Lily,Sprout,Mico,Mandy,Melodie,Maisie,Ash,Gene,Lola,Rosa,El Primo,Belle,Shelly,Bonnie,Piper,Angelo,Nani,Sam"}};
+/* @END:TIERS */
 
+/* @DATA:COUNTERS */
+var COUNTERS={};
+/* @END:COUNTERS */
+
+/* @DATA:SYNERGIE */
+var SYNERGIE={};
+/* @END:SYNERGIE */
+
+/* -------------------------------------------------------------------------
+   Formats attendus par les deux blocs ci-dessus, une fois refresh.py passé.
+
+   MAPS[].top : [nom, winrate] ou [nom, winrate, taux de sélection].
+     La 3e valeur apparaît dès que les taux d'utilisation ont pu être relevés.
+
+   COUNTERS : clés normalisées par clef().
+     { "mortis": { perd:[[cle, phrase FR], ...],    <- ceux qui le battent
+                   bat: [[cle, phrase FR], ...] } } <- ceux qu'il bat
+     Tant que l'objet est vide, le moteur retombe sur le cycle de familles
+     et le pied de page le dit.
+
+   SYNERGIE : { "cleA|cleB": écart de winrate en équipe, en points }, clés
+     triées alphabétiquement. Tant que l'objet est vide, les alliés ne
+     servent qu'à l'équilibre des rôles, et le pied de page le dit.
+   ------------------------------------------------------------------------- */
+
+/* ================= BARÈME ================= */
 var PTS={S:100,A:82,B:62,C:40,D:20};
+var BONUS_CARTE=[20,15,11,9,7,5,4,3];
+/* PT_SYN convertit un écart de winrate en équipe (en points de pourcentage,
+   typiquement 0 à 5) vers l'échelle de score. Sans ce facteur, un duo mesuré
+   à +5 marquerait moins qu'une paire inconnue créditée de PT_ROLE. */
+var PT_COUNTER=12,PT_CYCLE=9,PT_ROLE=6,PT_SYN=2,SYN_MAX=10;
 var FAMILLE={Assassin:"agression",Tank:"agression",Controller:"controle",Artillery:"controle",Support:"controle","Damage Dealer":"portee",Marksman:"portee"};
 var BAT={agression:"controle",controle:"portee",portee:"agression"};
 var LFAM={agression:"agression",controle:"contrôle",portee:"portée"};
@@ -129,6 +186,7 @@ var LFAM={agression:"agression",controle:"contrôle",portee:"portée"};
 function clef(n){return String(n||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
 function slugCdn(n){return String(n).toLowerCase().replace(/[^a-z0-9-]/g,"_");}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function nb(x){return String(x).replace(".",",");}
 
 var INDEX={};
 Object.keys(TIERS).forEach(function(m){INDEX[m]={};Object.keys(TIERS[m]).forEach(function(t){
@@ -165,64 +223,123 @@ fetch("https://api.brawlapi.com/v1/brawlers").then(function(r){return r.ok?r.jso
   indexer();meta="ok";render();
 }).catch(function(){meta="hors";render();});
 
-/* ================= IMAGES ================= */
+/* ================= IMAGES =================
+   Chaîne de repli : fichier local dans assets/ (si ASSETS_LOCAUX) →
+   brawltime → brawlify → initiales. data-fb porte les URL restantes,
+   séparées par des barres verticales. */
 function fbImg(el){
-  var n=el.getAttribute("data-next");
-  if(n){el.removeAttribute("data-next");el.src=n;return;}
+  var s=el.getAttribute("data-fb"),l=s?s.split("|"):[];
+  if(l.length){el.setAttribute("data-fb",l.slice(1).join("|"));el.src=l[0];return;}
   var ini=el.getAttribute("data-ini");
   if(ini){el.parentNode.innerHTML="<em>"+esc(ini)+"</em>";}else{el.remove();}
 }
+function balise(l){var v=l.filter(Boolean);
+  return '<img src="'+v[0]+'" data-fb="'+v.slice(1).join("|")+'"';}
+
+function srcBrawler(b){var s=slugCdn(b.nom);
+  return [ASSETS_LOCAUX?"assets/brawlers/"+s+".png":null,
+    "https://media.brawltime.ninja/brawlers/"+s+"/avatar.png?size=160",
+    b.img,"https://cdn.brawlify.com/brawlers/borderless/"+s+".png"];}
+
+function srcCarte(m){
+  return [ASSETS_LOCAUX?"assets/maps/"+m.img+".png":null,
+    "https://media.brawltime.ninja/maps/"+m.img+".png?size=200",
+    "https://cdn.brawlify.com/maps/regular/"+m.img+".png"];}
+
 function portrait(b,t,tilt){
-  var s1="https://media.brawltime.ninja/brawlers/"+slugCdn(b.nom)+"/avatar.png?size=160";
-  var s2=b.img||("https://cdn.brawlify.com/brawlers/borderless/"+slugCdn(b.nom)+".png");
   var col=b.couleur||teinte(b.k||"x");
   return '<span class="port'+(tilt?" tilt":"")+'" style="width:'+t+'px;height:'+t+'px;--r:'+col+
     ';--fs:'+Math.round(t*0.4)+'px;border-radius:'+Math.round(t*0.26)+'px">'+
-    '<img src="'+s1+'" data-next="'+s2+'" data-ini="'+esc(initiales(b.nom))+'" alt="" onerror="fbImg(this)"></span>';
+    balise(srcBrawler(b))+' data-ini="'+esc(initiales(b.nom))+'" alt="" onerror="fbImg(this)"></span>';
 }
 function vignette(m,l){
-  var s1="https://media.brawltime.ninja/maps/"+m.img+".png?size=200";
-  var s2="https://cdn.brawlify.com/maps/regular/"+m.img+".png";
   return '<span class="vig" style="width:'+l+'px;height:'+Math.round(l*1.5)+'px">'+
-    '<img src="'+s1+'" data-next="'+s2+'" alt="" onerror="fbImg(this)"></span>';
+    balise(srcCarte(m))+' alt="" onerror="fbImg(this)"></span>';
 }
 
 /* ================= MOTEUR ================= */
 function bDe(k){return parClef[k]||{nom:k,k:k,img:null,couleur:null,classe:null};}
+function nomDe(k){return bDe(k).nom;}
 function familleDe(k){var b=parClef[k];return b&&b.classe?(FAMILLE[b.classe]||null):null;}
 function carteActive(){for(var i=0;i<MAPS.length;i++)if(MAPS[i].id===carteId)return MAPS[i];return null;}
+function cleSyn(a,b){return [a,b].sort().join("|");}
+
+/* Matchup entre un candidat et un ennemi, d'après COUNTERS. La table est
+   lue dans les deux sens : une paire peut n'être renseignée que d'un côté.
+   Renvoie null si la paire est absente — l'appelant retombe alors sur le
+   cycle de familles pour cet ennemi précis, et pour lui seul. */
+function duel(cand,enn){
+  var i,e=COUNTERS[enn],c=COUNTERS[cand];
+  if(e){
+    for(i=0;i<(e.perd||[]).length;i++)if(e.perd[i][0]===cand)return {d:PT_COUNTER,p:0,t:"bat "+nomDe(enn)+" : "+e.perd[i][1]};
+    for(i=0;i<(e.bat||[]).length;i++) if(e.bat[i][0]===cand) return {d:-PT_COUNTER,p:7,t:"perd contre "+nomDe(enn)+" : "+e.bat[i][1]};
+  }
+  if(c){
+    for(i=0;i<(c.bat||[]).length;i++) if(c.bat[i][0]===enn) return {d:PT_COUNTER,p:0,t:"bat "+nomDe(enn)+" : "+c.bat[i][1]};
+    for(i=0;i<(c.perd||[]).length;i++)if(c.perd[i][0]===enn)return {d:-PT_COUNTER,p:7,t:"perd contre "+nomDe(enn)+" : "+c.perd[i][1]};
+  }
+  return null;
+}
 
 function conseils(){
   var c=carteActive();if(!c)return [];
   var exclus={};ennemis.concat(bans).concat(allies).forEach(function(k){exclus[k]=1;});
-  var famE=ennemis.map(familleDe).filter(Boolean);
-  var famA=allies.map(familleDe).filter(Boolean),cntA={};
-  famA.forEach(function(x){cntA[x]=(cntA[x]||0)+1;});
-  var rang={};c.top.forEach(function(p,i){rang[clef(p[0])]={rang:i,wr:p[1]};});
+  var rang={};c.top.forEach(function(p,i){rang[clef(p[0])]={rang:i,wr:p[1],ur:p[2]};});
   var out=[];
+
   roster.forEach(function(k){
     if(exclus[k])return;
-    var tier=INDEX[c.mode][k]||"D",score=PTS[tier],rs=[];
+    var tier=INDEX[c.mode][k]||"D",score=PTS[tier],rs=[],f=familleDe(k);
+
     var s=rang[k];
-    if(s){score+=[20,15,11][s.rang];rs.push({p:1,t:"n°"+(s.rang+1)+" sur la carte · "+s.wr+"% de victoires"});}
+    if(s){
+      score+=(BONUS_CARTE[s.rang]||2);
+      rs.push({p:1,t:"n°"+(s.rang+1)+" sur la carte · "+nb(s.wr)+" % de victoires"});
+    }
     if(tier==="S"||tier==="A")rs.push({p:2,t:"tier "+tier+" en "+MODES[c.mode].nom});
-    var f=familleDe(k);
-    if(f&&famE.length){
+
+    /* Ennemis : vrais matchups d'abord, cycle de familles en repli. */
+    var resteE=[];
+    ennemis.forEach(function(e){
+      var d=duel(k,e);
+      if(d){score+=d.d;rs.push({p:d.p,t:d.t});}
+      else resteE.push(e);
+    });
+    if(f&&resteE.length){
       var g=0,pd=0;
-      famE.forEach(function(fe){if(BAT[f]===fe)g++;if(BAT[fe]===f)pd++;});
-      score+=g*9-pd*9;
-      if(g>pd)rs.push({p:0,t:LFAM[f]+" contre leur "+LFAM[BAT[f]]});
-      else if(pd>g)rs.push({p:3,t:"mauvais face à leur composition"});
+      resteE.forEach(function(e){var fe=familleDe(e);if(!fe)return;if(BAT[f]===fe)g++;if(BAT[fe]===f)pd++;});
+      score+=(g-pd)*PT_CYCLE;
+      if(g>pd)rs.push({p:5,t:LFAM[f]+" contre leur "+LFAM[BAT[f]]});
+      else if(pd>g)rs.push({p:8,t:"mauvais face à leur composition"});
     }
-    if(f&&famA.length){
-      if(cntA[f]){score-=6*cntA[f];rs.push({p:6,t:"double un rôle déjà pris par ton équipe"});}
-      else{score+=6;rs.push({p:2,t:"complète les rôles de ton équipe"});}
+
+    /* Alliés : deux termes indépendants. L'équilibre des rôles vaut pour
+       tous les alliés ; la synergie mesurée s'y ajoute quand la paire est
+       dans la table. Les cumuler ainsi évite de pénaliser un candidat
+       simplement parce que son duo, lui, est documenté. */
+    if(f&&allies.length){
+      var dbl=0;
+      allies.forEach(function(a){if(familleDe(a)===f)dbl++;});
+      if(dbl){score-=PT_ROLE*dbl;rs.push({p:6,t:"double un rôle déjà pris par ton équipe"});}
+      else{score+=PT_ROLE;rs.push({p:3,t:"complète les rôles de ton équipe"});}
     }
+    var syn=0,fort=null;
+    allies.forEach(function(a){
+      var v=SYNERGIE[cleSyn(k,a)];
+      if(typeof v==="number"){syn+=v;if(!fort||Math.abs(v)>Math.abs(fort.v))fort={v:v,a:a};}
+    });
+    if(fort){
+      score+=Math.max(-SYN_MAX,Math.min(SYN_MAX,syn*PT_SYN));
+      if(fort.v>0)rs.push({p:2,t:"marche avec "+nomDe(fort.a)+" · +"+nb(fort.v)+" pts de victoires en équipe"});
+      else if(fort.v<0)rs.push({p:7,t:"synergie faible avec "+nomDe(fort.a)});
+    }
+
     if(!rs.length)rs.push({p:4,t:"tier "+tier+" en "+MODES[c.mode].nom});
     rs.sort(function(a,b){return a.p-b.p;});
     var b=bDe(k);
     out.push({k:k,b:b,nom:b.nom,tier:tier,score:score,raison:rs[0].t});
   });
+
   out.sort(function(a,b){return b.score-a.score;});
   return out.slice(0,4);
 }
@@ -321,11 +438,28 @@ function vueHTML(){
   return h+noteHTML();
 }
 
+/* Le pied de page dit d'où vient chaque chiffre et ce qui manque.
+   Une heuristique ne doit jamais passer pour une mesure. */
 function noteHTML(){
-  return '<div class="note">Winrates et tiers relevés le 29/07/2026 sur Brawl Time Ninja, saison 52. '+
-   "Les picks alliés servent à l'équilibre des rôles, pas à une synergie mesurée. L'ajustement contre les picks adverses suit le cycle agression → contrôle → portée : approximation, en attendant de vraies données de matchups."+
-   (meta==="hors"?" Couleurs de rareté et classes indisponibles : l'+"'"+'API n\'a pas répondu.":"")+
-   " Contenu non affilié à Supercell.</div>";
+  /* p = marque du pluriel, pour accorder « relevé » avec ce qui précède. */
+  function src(x,p){return x?(" relevé"+(p||"")+" le "+x[0]+" sur "+x[1]):"";}
+  var n="Tiers par mode"+src(MAJ.tiers,"s")+", saison "+SAISON+". ";
+  n+="Classements par carte"+src(MAJ.cartes,"s")+". ";
+
+  var nc=Object.keys(COUNTERS).length;
+  n+=nc?("Matchups : "+nc+" brawler"+(nc>1?"s":"")+src(MAJ.matchups,nc>1?"s":"")+
+         ", un jugement d'experts adossé aux classements SpenLC — pas une mesure statistique. ")
+      :("Table de matchups absente : l'app retombe sur le cycle agression → contrôle → portée, "+
+        "une approximation, pas une mesure. ");
+
+  n+=Object.keys(SYNERGIE).length
+      ?("Synergie alliée : écarts de taux de victoire en équipe"+src(MAJ.synergie,"s")+
+        ", ajoutés à l'équilibre des rôles. ")
+      :"Les picks alliés servent à l'équilibre des rôles, pas à une synergie mesurée. ";
+
+  if(meta==="hors")n+="Couleurs de rareté et classes indisponibles : l'API n'a pas répondu. ";
+  n+="Contenu non affilié à Supercell.";
+  return '<div class="note">'+esc(n)+"</div>";
 }
 
 var app=document.getElementById("app");
