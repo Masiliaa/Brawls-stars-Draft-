@@ -61,8 +61,10 @@ const check = (nom, cond, detail = '') => {
   // Certains textes sont légitimement identiques au français : noms propres
   // de modes, « Tier {tier} », « Fan Content Policy », « brawler(s) ».
   // « tier {tier} en {mode} » s'écrit à l'identique en français et en espagnol.
+  // « tier » et « score » sont des emprunts, identiques dans les trois langues.
   const NORMAL = ['modeBrawlBall', 'tier', 'lienPolicy', 'motBrawler', 'motBrawlers',
-                  'famControle', 'noteCartesSansDate', 'raisonTier'];
+                  'famControle', 'noteCartesSansDate', 'raisonTier',
+                  'libTier', 'libScore'];
   ['en', 'es'].forEach(l => {
     const douteux = suspects[l].identiquesAuFr.filter(k => !NORMAL.includes(k));
     check(l + ' : rien laissé en français par oubli', douteux.length === 0, douteux);
@@ -206,6 +208,23 @@ const check = (nom, cond, detail = '') => {
     matchups.fr.chaineSimple === 'texte brut', matchups.fr);
   check('phrase absente → chaîne vide, pas « undefined »',
     matchups.fr.vide === '', matchups.fr);
+
+  console.log('\n== mode Analyse, dans les trois langues ==');
+  const TEMOINS_ANALYSE = { fr: 'score', en: 'score', es: 'puntuación' };
+  for (const l of ['fr', 'en', 'es']) {
+    const vu = await page.evaluate(lg => {
+      definirLangue(lg); definirMode('analyse');
+      carteId = 'safe-zone';
+      roster = new Set(['bull', 'colt', 'bo', 'emz', 'mortis', 'shelly']);
+      ennemis = []; allies = ['poco']; bans = [];
+      ecran = 'draft'; render();
+      const t2 = document.body.innerText.toLowerCase();
+      definirMode('rapide');
+      return { texte: t2, cartes: document.querySelectorAll('.analyse').length };
+    }, l);
+    check(l + ' : le mode Analyse est traduit',
+      vu.texte.includes(TEMOINS_ANALYSE[l].toLowerCase()), TEMOINS_ANALYSE[l]);
+  }
 
   console.log('\n== la barre du haut tient dans tous les écrans ==');
   // « Mes persos » / « My brawlers » / « Mis brawlers » n'ont pas la même

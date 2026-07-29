@@ -37,6 +37,9 @@ var ACTIONS = {
   /* Fait défiler les langues : français → anglais → espagnol → français. */
   langue: function () { definirLangue(langueSuivante()); },
 
+  /* Bascule entre lecture rapide et analyse détaillée. */
+  mode: function () { definirMode(modeSuivant()); },
+
   /* — Navigation — */
   roster: function () { ecran = "roster"; recherche = ""; },
   draft: function () { ecran = "draft"; recherche = ""; cibleAjout = null; },

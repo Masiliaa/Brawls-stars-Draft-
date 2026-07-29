@@ -13,6 +13,29 @@
 /* ============ 1. L'état du draft en cours ============ */
 
 var ecran = "draft";       /* "draft" | "roster" | "cartes" */
+
+/* Deux façons de lire le même calcul :
+   "rapide"  — un nom en gros, on décide en une seconde
+   "analyse" — le classement complet, chaque point justifié
+   Le choix est retenu, sous sa propre clé. */
+var MODES_AFFICHAGE = ["rapide", "analyse"];
+var CLE_MODE_AFFICHAGE = "manager:mode";
+var modeAffichage = "rapide";
+try {
+  var m = localStorage.getItem(CLE_MODE_AFFICHAGE);
+  if (MODES_AFFICHAGE.indexOf(m) > -1) modeAffichage = m;
+} catch (e) { /* ignoré */ }
+
+function definirMode(m) {
+  if (MODES_AFFICHAGE.indexOf(m) < 0) return;
+  modeAffichage = m;
+  try { localStorage.setItem(CLE_MODE_AFFICHAGE, m); } catch (e) { /* ignoré */ }
+}
+
+function modeSuivant() {
+  var i = MODES_AFFICHAGE.indexOf(modeAffichage);
+  return MODES_AFFICHAGE[(i + 1) % MODES_AFFICHAGE.length];
+}
 var cibleAjout = null;     /* null | "ennemi" | "allie" | "ban" — quand on choisit un brawler */
 var carteId = null;        /* identifiant de la carte sélectionnée */
 var recherche = "";        /* texte tapé dans le champ de recherche */

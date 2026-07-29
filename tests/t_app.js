@@ -131,6 +131,35 @@ const check = (nom, cond, detail = '') => {
   check('pas de motif négatif sous un pick recommandé',
     !/faible|mauvais|perd contre|double un rôle/.test(syn.raisonNeg), syn.raisonNeg);
 
+  console.log('\n== mode Analyse : le détail est cohérent avec le score ==');
+  const an = await page.evaluate(p => {
+    eval(p);
+    COUNTERS = { barley: { perd: [['mortis', 'Se faufile']], bat: [['piper', 'Le noie']] } };
+    carteId = 'safe-zone'; ennemis = ['barley']; allies = ['poco'];
+    roster = new Set(['mortis', 'piper', 'jacky', 'poco', 'bull', 'colt', 'bo', 'emz']);
+    const liste = conseils(NB_ANALYSE);
+    COUNTERS = {}; ennemis = []; allies = [];
+    return liste.map(x => ({
+      k: x.k, score: x.score, detail: x.detail,
+      raisons: x.raisons, premiere: x.raison
+    }));
+  }, petit);
+  check('le mode Analyse rend plus de brawlers que le rapide',
+    an.length > 4, an.length);
+  check('somme du détail = score, pour chacun',
+    an.every(x => Math.abs(Object.keys(x.detail)
+      .reduce((s, k) => s + x.detail[k], 0) - x.score) < 0.001),
+    an.map(x => [x.k, x.score, x.detail]));
+  check('les quatre règles sont toujours détaillées',
+    an.every(x => ['tier', 'carte', 'ennemis', 'allies']
+      .every(k => typeof x.detail[k] === 'number')), an[0]);
+  check('toutes les raisons sont exposées, pas juste la première',
+    an.some(x => x.raisons.length > 1), an.map(x => x.raisons.length));
+  check('la première raison reste celle du mode rapide',
+    an.every(x => x.raisons[0] === x.premiere), an[0]);
+  check('classement décroissant conservé',
+    an.every((x, i) => i === 0 || an[i - 1].score >= x.score), an.map(x => x.score));
+
   console.log('\n== pied de page honnête ==');
   const note1 = await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; return noteHTML(); });
   check('dit que la table de matchups manque', /Table de matchups absente/.test(note1), note1);

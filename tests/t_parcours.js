@@ -143,6 +143,40 @@ const check = (nom, cond, detail = '') => {
   check('l\'app explique quoi faire',
     (await page.locator('.box p').textContent()).includes('Coche d\'abord'));
 
+  console.log('\n== bascule Rapide / Analyse ==');
+  // Le roster a été vidé juste avant : deux boutons portent data-act="roster"
+  // (la barre du haut et l'encadré d'invite). On prend le premier.
+  await page.locator('[data-act="cartes"]').first().click();
+  await page.getByText('Safe Zone').first().click();
+  await page.locator('[data-act="roster"]').first().click();
+  await page.locator('[data-act="tout"]').click();
+  await page.locator('[data-act="draft"]').click();
+
+  check('démarre en mode Rapide',
+    (await page.locator('[data-act="mode"]').textContent()) === 'Rapide');
+  check('le mode Rapide montre un seul grand nom',
+    (await page.locator('.hero').count()) === 1 &&
+    (await page.locator('.analyse').count()) === 0);
+
+  await page.locator('[data-act="mode"]').click();
+  check('un clic → Analyse',
+    (await page.locator('[data-act="mode"]').textContent()) === 'Analyse');
+  const fiches = await page.locator('.analyse').count();
+  check('le mode Analyse détaille plusieurs brawlers', fiches > 4, fiches);
+  check('plus de hero en mode Analyse', (await page.locator('.hero').count()) === 0);
+  check('chaque fiche montre un score',
+    (await page.locator('.analyse .score b').count()) === fiches);
+  check('chaque fiche montre le détail des points',
+    (await page.locator('.analyse .calcul').count()) === fiches);
+
+  await page.reload({ waitUntil: 'networkidle' });
+  check('le mode survit au rechargement',
+    (await page.locator('[data-act="mode"]').textContent()) === 'Analyse');
+
+  await page.locator('[data-act="mode"]').click();
+  check('retour au mode Rapide',
+    (await page.locator('[data-act="mode"]').textContent()) === 'Rapide');
+
   console.log('\n== changement de langue ==');
   await page.locator('[data-act="draft"], [data-act="roster"]').first().waitFor();
   const codeDepart = await page.locator('[data-act="langue"]').textContent();

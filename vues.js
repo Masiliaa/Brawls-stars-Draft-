@@ -95,6 +95,10 @@ function barreHaut() {
   var versRoster = ecran !== "roster";
   return '<div class="bar"><div class="tt logo">Le Manager</div>'
        + '<div class="actions">'
+       + '<button class="b alt sm mode" data-act="mode"'
+       + ' title="' + echapper(t("changerMode")) + '">'
+       + echapper(t(modeAffichage === "rapide" ? "modeRapide" : "modeAnalyse"))
+       + "</button>"
        + '<button class="b alt sm lang" data-act="langue"'
        + ' title="' + echapper(t("changerLangue")) + '"'
        + ' aria-label="' + echapper(t("changerLangue")) + '">'
@@ -152,7 +156,7 @@ function ecranRoster() {
   return barreHaut()
        + '<p class="intro">'
        + echapper(t(pluriel(nb) ? "rosterIntroN" : "rosterIntro1", { n: nb })) + "</p>"
-       + '<div class="wrap" style="margin-bottom:12px">'
+       + '<div class="wrap barre-outils">'
        + '<button class="b sm" data-act="tout">' + echapper(t("toutCocher")) + "</button>"
        + '<button class="b alt sm" data-act="rien">' + echapper(t("toutDecocher")) + "</button></div>"
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercherBrawler"))
@@ -168,22 +172,17 @@ function ecranCartes() {
 
   Object.keys(MODES).forEach(function (mode) {
     var info = MODES[mode];
-    html += '<div style="margin-bottom:16px">'
-          + '<div class="lab" style="color:' + info.c + ';margin-top:0">'
-          + echapper(nomMode(mode)) + "</div>";
+    html += '<section class="groupe-mode" style="--m:' + info.c + '">'
+          + '<div class="lab titre-mode">' + echapper(nomMode(mode)) + "</div>";
 
     MAPS.filter(function (c) { return c.mode === mode; }).forEach(function (carte) {
-      html += '<div style="margin-bottom:8px">'
-            + '<button class="b full" data-act="carte" data-v="' + carte.id + '"'
-            + ' style="background:' + info.c + ";color:#191036;text-shadow:none;"
-            + "box-shadow:0 5px 0 color-mix(in srgb," + info.c + ' 55%,#191036)">'
-            + '<span style="display:flex;align-items:center;gap:11px">'
-            + vignette(carte, 34)
-            + '<span style="font-size:18px">' + echapper(carte.nom) + "</span></span>"
-            + '<span style="font-size:13px">›</span></button></div>';
+      html += '<button class="b full carte-choix" data-act="carte" data-v="' + carte.id + '">'
+            + '<span class="gauche">' + vignette(carte, 34)
+            + '<span class="nom">' + echapper(carte.nom) + "</span></span>"
+            + '<span class="fleche">›</span></button>';
     });
 
-    html += "</div>";
+    html += "</section>";
   });
 
   return html;
@@ -201,7 +200,7 @@ function ecranChoix() {
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercher"))
        + '" value="' + echapper(recherche) + '">'
        + '<div class="grid" id="grid">' + grilleBrawlers("choix") + "</div>"
-       + '<button class="b alt sm" style="margin-top:12px" data-act="annuler">'
+       + '<button class="b alt sm reset" data-act="annuler">'
        + echapper(t("annuler")) + "</button>";
 }
 
@@ -210,15 +209,13 @@ function ecranChoix() {
 
 /* Le grand bouton du haut : la carte en cours, ou l'invitation à en choisir une. */
 function boutonCarte(carte, couleur) {
-  return '<button class="b full" data-act="cartes" style="background:' + couleur
-       + ";box-shadow:0 5px 0 color-mix(in srgb," + couleur + ' 55%,#191036);margin-bottom:14px">'
-       + '<span style="display:flex;align-items:center;gap:11px">'
-       + (carte ? vignette(carte, 32) : "")
-       + '<span><span style="display:block;font-size:11px;opacity:.75">'
-       + echapper(carte ? nomMode(carte.mode) : t("etape1")) + "</span>"
-       + '<span style="font-size:20px">'
-       + echapper(carte ? carte.nom : t("choisirCarte")) + "</span></span></span>"
-       + '<span style="font-size:13px">' + echapper(t("changer")) + "</span></button>";
+  return '<button class="b full carte-active" data-act="cartes" style="--m:' + couleur + '">'
+       + '<span class="gauche">' + (carte ? vignette(carte, 32) : "")
+       + '<span class="deux-lignes">'
+       + '<span class="sur">' + echapper(carte ? nomMode(carte.mode) : t("etape1")) + "</span>"
+       + '<span class="nom">' + echapper(carte ? carte.nom : t("choisirCarte")) + "</span>"
+       + "</span></span>"
+       + '<span class="action">' + echapper(t("changer")) + "</span></button>";
 }
 
 function encadre(message, action, libelle) {
@@ -249,6 +246,59 @@ function blocConseils(liste, couleurMode) {
   return html;
 }
 
+/* ============ Écran 4 bis — analyse détaillée ============
+   Même calcul que le mode rapide, mais on montre tout : le classement
+   complet, chaque raison retenue, et d'où viennent les points. */
+
+function ligneAnalyse(x, rang) {
+  var parts = [
+    [t("libTier"), x.detail.tier],
+    [t("libCarte"), x.detail.carte],
+    [t("libEnnemis"), x.detail.ennemis],
+    [t("libAllies"), x.detail.allies]
+  ].filter(function (p) { return p[1]; });
+
+  var html = '<article class="analyse">'
+           + '<header>'
+           + '<span class="rang">' + rang + "</span>"
+           + portrait(x.b, 38, false)
+           + '<span class="qui"><span class="nom">' + echapper(x.nom) + "</span>"
+           + '<span class="tier">' + echapper(t("tier", { tier: x.tier })) + "</span></span>"
+           + '<span class="score"><b>' + Math.round(x.score) + "</b>"
+           + "<i>" + echapper(t("libScore")) + "</i></span>"
+           + "</header>";
+
+  html += '<ul class="raisons">';
+  x.raisons.forEach(function (r) {
+    html += "<li>" + echapper(r) + "</li>";
+  });
+  html += "</ul>";
+
+  if (parts.length) {
+    html += '<footer class="calcul">';
+    parts.forEach(function (p) {
+      var signe = p[1] > 0 ? "+" : "";
+      html += '<span class="' + (p[1] > 0 ? "plus" : "moins") + '">'
+            + echapper(p[0]) + " " + signe + Math.round(p[1]) + "</span>";
+    });
+    html += "</footer>";
+  }
+
+  return html + "</article>";
+}
+
+function blocAnalyse(carte) {
+  var liste = conseils(NB_ANALYSE);
+  if (!liste.length) {
+    return '<div class="box"><p>' + echapper(t("analyseVide")) + "</p></div>";
+  }
+  var html = '<p class="intro">'
+           + echapper(t("analyseIntro", { n: liste.length })) + "</p>";
+  liste.forEach(function (x, i) { html += ligneAnalyse(x, i + 1); });
+  return html;
+}
+
+
 function ecranDraft() {
   var carte = carteActive();
   var couleur = carte ? MODES[carte.mode].c : "#FFC93C";
@@ -262,11 +312,13 @@ function ecranDraft() {
     return html + encadre(t("inviteRoster"), "roster", t("cocherMesPersos")) + noteHTML();
   }
 
-  html += blocConseils(conseils(), couleur);
+  html += (modeAffichage === "analyse")
+        ? blocAnalyse(carte)
+        : blocConseils(conseils(), couleur);
   html += sectionPastilles(t("monEquipe"), allies, "allie", "rma", "addA", MAX_ALLIES);
   html += sectionPastilles(t("prisEnFace"), ennemis, "", "rme", "addE", MAX_ENNEMIS);
   html += sectionPastilles(t("bannis"), bans, "ban", "rmb", "addB", MAX_BANS);
-  html += '<button class="b alt sm" style="margin-top:18px" data-act="reset">'
+  html += '<button class="b alt sm reset" data-act="reset">'
         + echapper(t("nouveauDraft")) + "</button>";
 
   return html + noteHTML();

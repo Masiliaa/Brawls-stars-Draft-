@@ -167,17 +167,49 @@ Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**211 contrôles au total, tous verts.**
+**229 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
 | `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort), traduction des phrases de matchup | 60 |
-| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 47 |
-| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, changement de langue | 50 |
-| `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit, aucun débordement de la barre de 320 à 430 px | 54 |
+| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images, cohérence du détail en mode Analyse | 53 |
+| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, bascule Rapide/Analyse, changement de langue | 59 |
+| `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit y compris le mode Analyse, aucun débordement de la barre de 320 à 430 px | 57 |
 
 Ils ont servi de filet lors du découpage en fichiers : le comportement est
 resté identique d'un bout à l'autre de la réorganisation.
+
+## Deux modes d'affichage
+
+Le même calcul, lu de deux façons. Le bouton **Rapide / Analyse** en haut à
+droite bascule ; le choix est retenu sous `manager:mode`.
+
+- **Rapide** — un nom en très gros, sa meilleure raison, trois suivants.
+  Fait pour décider en une seconde, une main sur l'écran.
+- **Analyse** — les 10 meilleurs du roster, avec pour chacun le score,
+  **toutes** les raisons retenues, et le détail des points par règle
+  (`tier +82 · face −9 · équipe +6`).
+
+Le moteur calcule tout dans les deux cas : `evaluer()` renvoie le score, la
+liste complète des raisons et le détail par règle. C'est l'affichage qui
+choisit ce qu'il en montre. Faire autrement ferait diverger les deux modes.
+
+Un contrôle vérifie en permanence que **la somme du détail égale le score**,
+pour chaque brawler : le mode Analyse ne peut donc pas mentir sur le calcul.
+
+## Style
+
+Noir profond, typographie système, aucun effet. Pas de police display, pas
+de capitales forcées, pas d'ombre portée, filets de 1 px.
+
+C'est un choix assumé : l'ancienne version employait le vocabulaire d'une
+interface de jeu mobile (gros contours noirs, ombres décalées, coins très
+arrondis) là où il fallait celui d'un outil.
+
+Les seuls styles posés en ligne par le JavaScript sont ceux qui dépendent de
+la donnée : `--r` (couleur de rareté d'un brawler), `--m` (couleur du mode
+de jeu), et les dimensions d'un portrait. Tout le reste est dans
+`style.css` — c'est ce qui permet de changer d'apparence sans toucher au JS.
 
 ## Langues
 
@@ -210,7 +242,7 @@ déclaré en bas de `index.html`.
 | Fichier | À quoi il sert | Lignes |
 |---|---|---|
 | `index.html` | la page, presque vide : elle ne fait que charger le reste | 47 |
-| `style.css` | toute l'apparence | 77 |
+| `style.css` | toute l'apparence | 154 |
 | `outils.js` | petites fonctions de base (nettoyer un nom, échapper du texte) | 51 |
 | `donnees.js` | **d'où viennent les chiffres** — seul fichier réécrit par `refresh.py` | 84 |
 | `etat.js` | ce que l'app retient : carte choisie, picks, brawlers cochés | 112 |

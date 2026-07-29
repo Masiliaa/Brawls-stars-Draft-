@@ -42,7 +42,8 @@ var PT_ROLE = 6;       /* rôle complété (+) ou doublé (−) dans l'équipe *
    PT_ROLE. Le total est ensuite plafonné pour ne pas écraser le tier. */
 var PT_SYN = 2, SYN_MAX = 10;
 
-var NB_CONSEILS = 4;   /* nombre de brawlers proposés à l'écran */
+var NB_CONSEILS = 4;    /* brawlers proposés en mode Rapide */
+var NB_ANALYSE = 10;    /* brawlers détaillés en mode Analyse */
 
 
 /* ============ Le cycle de familles ============
@@ -278,20 +279,26 @@ function pointsAvecAllies(cle) {
 
 /* ============ Assemblage ============ */
 
-/* Note un seul brawler en appliquant toutes les règles. */
+/* Note un seul brawler en appliquant toutes les règles.
+
+   Renvoie le score, mais aussi TOUTES les raisons et le détail par règle.
+   Le mode Rapide n'affiche que la première raison ; le mode Analyse montre
+   le reste. Calculer une fois et laisser l'affichage choisir évite de faire
+   diverger les deux modes. */
 function evaluer(cle, carte) {
   var base = pointsDeTier(cle, carte.mode);
-  var apports = [
-    base,
-    pointsDeCarte(cle, carte),
-    pointsContreEnnemis(cle),
-    pointsAvecAllies(cle)
-  ];
+  var apports = {
+    tier: base,
+    carte: pointsDeCarte(cle, carte),
+    ennemis: pointsContreEnnemis(cle),
+    allies: pointsAvecAllies(cle)
+  };
 
-  var score = 0, raisons = [];
-  apports.forEach(function (a) {
-    score += a.points;
-    raisons = raisons.concat(a.raisons);
+  var score = 0, raisons = [], detail = {};
+  Object.keys(apports).forEach(function (regle) {
+    score += apports[regle].points;
+    detail[regle] = apports[regle].points;
+    raisons = raisons.concat(apports[regle].raisons);
   });
 
   /* Aucune règle n'a rien eu à dire : on affiche au moins le tier. */
@@ -306,13 +313,16 @@ function evaluer(cle, carte) {
   return {
     k: cle, b: b, nom: b.nom,
     tier: base.tier, score: score,
-    raison: raisons[0].texte
+    raison: raisons[0].texte,
+    raisons: raisons.map(function (r) { return r.texte; }),
+    detail: detail
   };
 }
 
 /* Les meilleurs brawlers à prendre, dans l'ordre.
-   Les brawlers déjà pris, bannis ou joués par l'équipe sont écartés. */
-function conseils() {
+   Les brawlers déjà pris, bannis ou joués par l'équipe sont écartés.
+   `combien` permet au mode Analyse d'en demander davantage. */
+function conseils(combien) {
   var carte = carteActive();
   if (!carte) return [];
 
@@ -327,5 +337,5 @@ function conseils() {
   });
 
   classement.sort(function (a, b) { return b.score - a.score; });
-  return classement.slice(0, NB_CONSEILS);
+  return classement.slice(0, combien || NB_CONSEILS);
 }
