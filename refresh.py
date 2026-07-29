@@ -51,6 +51,10 @@ UA = ("LeManager/1.0 (outil personnel de draft Brawl Stars ; "
 
 BASE_CALC = "https://brawlcalculator.com"
 BASE_STATS = "https://brawlstats.net"
+# L'API donne les vraies adresses d'image. Les deux motifs ci-dessous sont
+# reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
+# et ils échouent sur les brawlers récents ou aux noms inhabituels.
+API_BRAWLERS = "https://api.brawlapi.com/v1/brawlers"
 IMG_BRAWLER = "https://media.brawltime.ninja/brawlers/{slug}/avatar.png?size=160"
 IMG_BRAWLER_ALT = "https://cdn.brawlify.com/brawlers/borderless/{slug}.png"
 IMG_CARTE = "https://media.brawltime.ninja/maps/{id}.png?size=200"
@@ -584,8 +588,33 @@ def _recuperer_image(net, urls, cible, compteur):
     return False
 
 
+def urls_depuis_api(net):
+    """Adresses d'image officielles, par clé de brawler.
+
+    C'est la seule source fiable : reconstruire l'adresse à partir du nom
+    échoue sur les brawlers récents (Damian, Nori…) et sur les noms
+    inhabituels. L'app fait déjà comme ça, le script doit en faire autant."""
+    try:
+        donnees = json.loads(net.get(API_BRAWLERS))
+    except Exception as e:
+        souci("api.brawlapi.com injoignable (%s) : on se rabat sur des "
+              "adresses reconstruites à partir des noms, ce qui rate les "
+              "brawlers récents" % e)
+        return {}
+
+    table = {}
+    for b in donnees.get("list", []):
+        cle = clef(b.get("name"))
+        liens = [u for u in (b.get("imageUrl2"), b.get("imageUrl"), b.get("imageUrl3")) if u]
+        if cle and liens:
+            table[cle] = {"urls": liens, "nom": b["name"]}
+    note("%d adresses d'image fournies par l'API" % len(table))
+    return table
+
+
 def telecharger_assets(net, noms, ids_cartes):
     print("\n[1] Images en local")
+    api = urls_depuis_api(net)
     ok_b = ok_c = 0
     echecs = [0]
     interrompu = False
@@ -594,12 +623,27 @@ def telecharger_assets(net, noms, ids_cartes):
     os.makedirs(dossier, exist_ok=True)
     try:
         for n in noms:
+            fiche = api.get(clef(n))
             s = slug_cdn(n)
-            urls = (IMG_BRAWLER.format(slug=s), IMG_BRAWLER_ALT.format(slug=s))
-            if _recuperer_image(net, urls, os.path.join(dossier, s + ".png"), echecs):
-                ok_b += 1
-            else:
+
+            # L'API d'abord, puis les adresses devinées en dernier recours.
+            urls = tuple(fiche["urls"]) if fiche else ()
+            urls += (IMG_BRAWLER.format(slug=s), IMG_BRAWLER_ALT.format(slug=s))
+
+            cible = os.path.join(dossier, s + ".png")
+            if not _recuperer_image(net, urls, cible, echecs):
                 souci("portrait introuvable pour %s" % n)
+                continue
+            ok_b += 1
+
+            # L'app nomme le fichier d'après le nom que lui donne l'API. Si
+            # ce nom s'écrit autrement que dans nos tier lists, on dépose une
+            # copie sous les deux orthographes plutôt que d'afficher un trou.
+            if fiche and slug_cdn(fiche["nom"]) != s:
+                jumeau = os.path.join(dossier, slug_cdn(fiche["nom"]) + ".png")
+                if not os.path.exists(jumeau):
+                    with open(cible, "rb") as src, open(jumeau, "wb") as dst:
+                        dst.write(src.read())
 
         dossier = os.path.join(ASSETS, "maps")
         os.makedirs(dossier, exist_ok=True)

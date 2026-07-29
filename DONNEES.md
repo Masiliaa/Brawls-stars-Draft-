@@ -123,11 +123,11 @@ Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**121 contrôles au total, tous verts.**
+**133 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
-| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source | 36 |
+| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort) | 48 |
 | `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 43 |
 | `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte | 42 |
 

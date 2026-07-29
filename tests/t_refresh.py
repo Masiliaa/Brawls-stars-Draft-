@@ -120,5 +120,78 @@ check("idempotent", R.ecrire_bloc(h6, "ASSETS", "var ASSETS_LOCAUX=true;") == h6
 open(cible, "w", encoding="utf-8").write(h6)
 print("\n  fichier de controle : %s" % cible)
 
+print("\n== telechargement des portraits ==")
+
+class FauxReseau:
+    """Réseau simulé : on note ce qui est demandé, on sert ce qu'on veut."""
+    def __init__(self, servies, api=None):
+        self.servies = set(servies)
+        self.api = api
+        self.demandes = []
+
+    def get(self, url, binaire=False):
+        self.demandes.append(url)
+        if url == R.API_BRAWLERS:
+            if self.api is None:
+                raise OSError("API injoignable")
+            return json.dumps({"list": self.api})
+        if url in self.servies:
+            return b"P" * 800          # au-dessus du seuil des 500 octets
+        raise OSError("404")
+
+def sous_dossier():
+    d = tempfile.mkdtemp()
+    R.ASSETS = d
+    R.ERREURS.clear()
+    return d
+
+# 1. L'adresse fournie par l'API doit primer sur celle devinee du nom.
+VRAIE = "https://cdn.brawlify.com/brawler/borderless/16000091.png"
+d = sous_dossier()
+net = FauxReseau([VRAIE], api=[{"name": "Damian", "imageUrl2": VRAIE}])
+R.telecharger_assets(net, ["Damian"], [])
+check("l'API est interrogee en premier", net.demandes[0] == R.API_BRAWLERS, net.demandes[:1])
+check("l'adresse de l'API est essayee avant les devinees",
+      net.demandes[1] == VRAIE, net.demandes[1:2])
+check("le portrait de Damian est enregistre",
+      os.path.exists(os.path.join(d, "brawlers", "damian.png")))
+check("aucun avertissement", R.ERREURS == [], R.ERREURS)
+
+# 2. Le bug rencontre : brawltime et brawlify n'ont pas le brawler recent.
+#    Sans l'API, le telechargement echoue — c'est ce qui se passait avant.
+d = sous_dossier()
+net = FauxReseau([VRAIE], api=None)
+R.telecharger_assets(net, ["Damian"], [])
+check("sans l'API, le portrait recent est manque",
+      not os.path.exists(os.path.join(d, "brawlers", "damian.png")))
+check("et le script le signale",
+      any("Damian" in e for e in R.ERREURS), R.ERREURS)
+
+# 3. Meme brawler, ponctuation differente entre nos tier lists et l'API :
+#    « Mr. P » donne le fichier mr__p.png, « Mr P » donne mr_p.png.
+#    L'app cherche d'apres le nom de l'API — le fichier doit exister sous
+#    les deux formes, sinon elle affiche un trou.
+AUTRE = "https://cdn.brawlify.com/brawler/borderless/16000042.png"
+d = sous_dossier()
+net = FauxReseau([AUTRE], api=[{"name": "Mr P", "imageUrl2": AUTRE}])
+R.telecharger_assets(net, ["Mr. P"], [])
+dossier = os.path.join(d, "brawlers")
+check("meme cle malgre la ponctuation", R.clef("Mr. P") == R.clef("Mr P") == "mrp")
+check("slugs bien differents", R.slug_cdn("Mr. P") != R.slug_cdn("Mr P"))
+check("enregistre sous le nom des tier lists",
+      os.path.exists(os.path.join(dossier, "mr__p.png")))
+check("et sous le nom de l'API",
+      os.path.exists(os.path.join(dossier, "mr_p.png")))
+
+# 4. Reseau mort : on abandonne au lieu d'enchainer 250 echecs.
+d = sous_dossier()
+net = FauxReseau([], api=[])
+R.telecharger_assets(net, ["N%d" % i for i in range(60)], [])
+tentatives = len([u for u in net.demandes if u != R.API_BRAWLERS])
+check("abandon apres %d echecs d'affilee" % R.ABANDON_APRES,
+      tentatives <= R.ABANDON_APRES * 2, tentatives)
+check("et le dit clairement",
+      any("de suite ont échoué" in e for e in R.ERREURS), R.ERREURS[-1:])
+
 print("\n== %d ok, %d echecs ==" % (ok, fail))
 sys.exit(1 if fail else 0)
