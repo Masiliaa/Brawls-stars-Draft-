@@ -44,17 +44,20 @@ function baliseImage(sources) {
   return '<img src="' + valides[0] + '" data-fb="' + valides.slice(1).join("|") + '"';
 }
 
-/* b.img vient de l'API : c'est la seule URL certaine, les autres sont
-   reconstruites à partir du nom. Un slug deviné se trompe justement sur les
-   noms difficiles (Larry & Lawrie, Mr. P, 8-Bit), donc l'URL de l'API passe
-   avant les deux CDN. */
+/* b.img vient de l'API : c'est la seule adresse certaine. Celle de
+   brawltime est reconstruite à partir du nom — elle marche pour la plupart
+   des brawlers, mais pas pour les plus récents.
+
+   Il y avait ici une troisième source, cdn.brawlify.com/brawlers/borderless/
+   {nom}.png. Vérifiée le 29/07/2026 : elle répond 404 pour tout le monde.
+   C'était une adresse devinée, jamais contrôlée. La garder ne faisait que
+   retarder l'affichage des initiales d'une requête inutile. */
 function sourcesBrawler(b) {
   var slug = slugCdn(b.nom);
   return [
     ASSETS_LOCAUX ? "assets/brawlers/" + slug + ".png" : null,
     b.img,
-    "https://media.brawltime.ninja/brawlers/" + slug + "/avatar.png?size=160",
-    "https://cdn.brawlify.com/brawlers/borderless/" + slug + ".png"
+    "https://media.brawltime.ninja/brawlers/" + slug + "/avatar.png?size=160"
   ];
 }
 

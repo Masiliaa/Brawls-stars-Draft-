@@ -19,7 +19,7 @@ pour un donnees.js à jour.
   --counters   table de matchups        (brawlcalculator.com/counters/)
   --cartes     pool + classements       (brawlcalculator.com/maps/)
   --synergie   duos gagnants            (brawlstats.net — non vérifié)
-  --assets     images en local          (brawltime / brawlify)
+  --assets     images en local          (api.brawlapi.com puis brawltime)
   --tout       tout ce qui précède
 
 Voir DONNEES.md pour l'état de vérification de chaque source.
@@ -56,8 +56,9 @@ BASE_STATS = "https://brawlstats.net"
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
 API_BRAWLERS = "https://api.brawlapi.com/v1/brawlers"
 IMG_BRAWLER = "https://media.brawltime.ninja/brawlers/{slug}/avatar.png?size=160"
-IMG_BRAWLER_ALT = "https://cdn.brawlify.com/brawlers/borderless/{slug}.png"
 IMG_CARTE = "https://media.brawltime.ninja/maps/{id}.png?size=200"
+# Adresse devinee, jamais confirmee : a n'essayer qu'en dernier, et a
+# retirer si elle se revele fausse comme l'equivalent brawler l'etait.
 IMG_CARTE_ALT = "https://cdn.brawlify.com/maps/regular/{id}.png"
 
 # Modes classés, dans l'ordre d'affichage de l'app. La clé de droite est
@@ -628,7 +629,7 @@ def telecharger_assets(net, noms, ids_cartes):
 
             # L'API d'abord, puis les adresses devinées en dernier recours.
             urls = tuple(fiche["urls"]) if fiche else ()
-            urls += (IMG_BRAWLER.format(slug=s), IMG_BRAWLER_ALT.format(slug=s))
+            urls += (IMG_BRAWLER.format(slug=s),)
 
             cible = os.path.join(dossier, s + ".png")
             if not _recuperer_image(net, urls, cible, echecs):

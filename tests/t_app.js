@@ -178,9 +178,19 @@ const check = (nom, cond, detail = '') => {
   });
   check('1re source = brawltime quand l’API n’a rien donné',
     /media\.brawltime\.ninja/.test(img.chaine[0]), img.chaine);
-  check('repli suivant = brawlify', /cdn\.brawlify\.com/.test(img.apres1), img);
   check('slug correct', /larry___lawrie/.test(img.chaine[0]), img.chaine[0]);
   check('initiales en dernier recours', img.ini === 'LL', img.ini);
+
+  // Vérifié le 29/07/2026 : cdn.brawlify.com/brawlers/borderless/{nom}.png
+  // répond 404 pour tous les brawlers. Cette adresse ne doit pas revenir.
+  const toutesSources = await page.evaluate(() => {
+    return brawlers.slice(0, 20)
+      .map(b => sourcesBrawler(b).filter(Boolean).join(" "))
+      .join(" ");
+  });
+  check('l’adresse brawlify en 404 a bien disparu',
+    !/cdn\.brawlify\.com\/brawlers\/borderless/.test(toutesSources),
+    toutesSources.slice(0, 120));
 
   // L'URL fournie par l'API est la seule certaine : elle doit primer sur
   // les URL reconstruites à partir du nom.
@@ -193,8 +203,8 @@ const check = (nom, cond, detail = '') => {
     return [el.getAttribute('src')].concat(el.getAttribute('data-fb').split('|'));
   });
   check('URL de l’API en tête', ordre[0].includes('16000042'), ordre);
-  check('CDN devinés conservés en repli',
-    /brawltime/.test(ordre[1]) && /brawlify/.test(ordre[2]), ordre);
+  check('brawltime conservé en repli', /brawltime/.test(ordre[1]), ordre);
+  check('deux sources seulement, plus la source morte', ordre.length === 2, ordre);
 
   const finale = await page.evaluate(() => {
     const d = document.createElement('div');
