@@ -26,9 +26,12 @@ function echapper(texte) {
     .replace(/"/g, "&quot;");
 }
 
-/* Affiche un nombre à la française : 73.1 → « 73,1 ». */
+/* Le séparateur décimal de la langue courante : 73.1 → « 73,1 » en français
+   et en espagnol, « 73.1 » en anglais. */
 function virgule(nombre) {
-  return String(nombre).replace(".", ",");
+  var separateur = (typeof LANGUES !== "undefined" && LANGUES[langue])
+    ? LANGUES[langue].decimal : ",";
+  return String(nombre).replace(".", separateur);
 }
 
 /* Deux lettres à afficher quand aucune image ne se charge.

@@ -56,7 +56,16 @@ var FAMILLE_DE_CLASSE = {
   "Damage Dealer": "portee", Marksman: "portee"
 };
 var FAMILLE_BATTUE = { agression: "controle", controle: "portee", portee: "agression" };
-var NOM_FAMILLE = { agression: "agression", controle: "contrôle", portee: "portée" };
+/* Le nom affiché d'une famille dépend de la langue : on passe par une clé. */
+var CLE_FAMILLE = { agression: "famAgression", controle: "famControle", portee: "famPortee" };
+function nomFamille(f) { return t(CLE_FAMILLE[f]); }
+
+/* Idem pour les modes : la couleur est dans donnees.js, le nom dans langues.js. */
+var CLE_MODE = {
+  brawlBall: "modeBrawlBall", bounty: "modeBounty", knockout: "modeKnockout",
+  gemGrab: "modeGemGrab", heist: "modeHeist", hotZone: "modeHotZone"
+};
+function nomMode(m) { return t(CLE_MODE[m]); }
 
 
 /* ============ Index dérivés des données ============ */
@@ -106,7 +115,7 @@ function pointsDeTier(cle, mode) {
   var tier = TIER_PAR_MODE[mode][cle] || "D";
   var raisons = [];
   if (tier === "S" || tier === "A") {
-    raisons.push(raison(2, "tier " + tier + " en " + MODES[mode].nom));
+    raisons.push(raison(2, t("raisonTier", { tier: tier, mode: nomMode(mode) })));
   }
   return { tier: tier, points: POINTS_TIER[tier], raisons: raisons };
 }
@@ -120,8 +129,9 @@ function pointsDeCarte(cle, carte) {
     var tauxVictoire = carte.top[i][1];
     return {
       points: BONUS_CARTE[i] || BONUS_CARTE_RESTE,
-      raisons: [raison(1, "n°" + (i + 1) + " sur la carte · "
-                          + virgule(tauxVictoire) + " % de victoires")]
+      raisons: [raison(1, t("raisonCarte", {
+        rang: i + 1, wr: virgule(tauxVictoire)
+      }))]
     };
   }
   return { points: 0, raisons: [] };
@@ -145,29 +155,30 @@ function duel(candidat, ennemi) {
     return null;
   }
 
-  /* La phrase d'explication peut manquer : on n'affiche alors que le verdict,
-     sans deux-points orphelins. */
-  function verdict(entree, points, priorite, debut) {
+  /* La phrase d'explication peut manquer, ou n'exister que dans une autre
+     langue : on n'affiche alors que le verdict, sans deux-points orphelins. */
+  function verdict(entree, points, priorite, cle) {
+    var phrase = phraseCounter(entree[1]);
     return {
       points: points, priorite: priorite,
-      texte: debut + nom + (entree[1] ? " : " + entree[1] : "")
+      texte: t(cle, { nom: nom }) + (phrase ? " : " + phrase : "")
     };
   }
 
   var entree, fiche = COUNTERS[ennemi];
   if (fiche) {
     entree = chercher(fiche.perd, candidat);
-    if (entree) return verdict(entree, PT_MATCHUP, 0, "bat ");
+    if (entree) return verdict(entree, PT_MATCHUP, 0, "raisonBat");
     entree = chercher(fiche.bat, candidat);
-    if (entree) return verdict(entree, -PT_MATCHUP, 7, "perd contre ");
+    if (entree) return verdict(entree, -PT_MATCHUP, 7, "raisonPerd");
   }
 
   fiche = COUNTERS[candidat];
   if (fiche) {
     entree = chercher(fiche.bat, ennemi);
-    if (entree) return verdict(entree, PT_MATCHUP, 0, "bat ");
+    if (entree) return verdict(entree, PT_MATCHUP, 0, "raisonBat");
     entree = chercher(fiche.perd, ennemi);
-    if (entree) return verdict(entree, -PT_MATCHUP, 7, "perd contre ");
+    if (entree) return verdict(entree, -PT_MATCHUP, 7, "raisonPerd");
   }
 
   return null;
@@ -198,10 +209,12 @@ function pointsContreEnnemis(cle) {
     });
     points += (favorables - defavorables) * PT_CYCLE;
     if (favorables > defavorables) {
-      raisons.push(raison(5, NOM_FAMILLE[famille] + " contre leur "
-                             + NOM_FAMILLE[FAMILLE_BATTUE[famille]]));
+      raisons.push(raison(5, t("raisonCycle", {
+        famille: nomFamille(famille),
+        famille2: nomFamille(FAMILLE_BATTUE[famille])
+      })));
     } else if (defavorables > favorables) {
-      raisons.push(raison(8, "mauvais face à leur composition"));
+      raisons.push(raison(8, t("raisonMauvaiseCompo")));
     }
   }
 
@@ -228,10 +241,10 @@ function pointsAvecAllies(cle) {
     allies.forEach(function (a) { if (familleDe(a) === famille) doublons++; });
     if (doublons) {
       points -= PT_ROLE * doublons;
-      raisons.push(raison(6, "double un rôle déjà pris par ton équipe"));
+      raisons.push(raison(6, t("raisonDoubleRole")));
     } else {
       points += PT_ROLE;
-      raisons.push(raison(3, "complète les rôles de ton équipe"));
+      raisons.push(raison(3, t("raisonCompleteRole")));
     }
   }
 
@@ -248,11 +261,14 @@ function pointsAvecAllies(cle) {
   if (plusMarquant) {
     points += Math.max(-SYN_MAX, Math.min(SYN_MAX, total * PT_SYN));
     if (plusMarquant.ecart > 0) {
-      raisons.push(raison(2, "marche avec " + nomBrawler(plusMarquant.allie)
-                             + " · +" + virgule(plusMarquant.ecart)
-                             + " pts de victoires en équipe"));
+      raisons.push(raison(2, t("raisonSynergiePlus", {
+        nom: nomBrawler(plusMarquant.allie),
+        ecart: virgule(plusMarquant.ecart)
+      })));
     } else if (plusMarquant.ecart < 0) {
-      raisons.push(raison(7, "synergie faible avec " + nomBrawler(plusMarquant.allie)));
+      raisons.push(raison(7, t("raisonSynergieMoins", {
+        nom: nomBrawler(plusMarquant.allie)
+      })));
     }
   }
 
@@ -280,7 +296,9 @@ function evaluer(cle, carte) {
 
   /* Aucune règle n'a rien eu à dire : on affiche au moins le tier. */
   if (!raisons.length) {
-    raisons.push(raison(4, "tier " + base.tier + " en " + MODES[carte.mode].nom));
+    raisons.push(raison(4, t("raisonTier", {
+      tier: base.tier, mode: nomMode(carte.mode)
+    })));
   }
   raisons.sort(function (a, b) { return a.priorite - b.priorite; });
 

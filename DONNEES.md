@@ -140,39 +140,67 @@ ajuster sont les expressions passées à `sections()` dans
 Les phrases de brawlcalculator sont en anglais. `refresh.py` ne traduit pas
 tout seul :
 
-- il réutilise `data/traductions.json` (clé = phrase anglaise, valeur = phrase
-  française) ;
-- il dépose les phrases inconnues dans `data/a_traduire.json` ;
-- **les phrases non traduites restent en anglais dans l'app** — visibles,
-  donc corrigeables, plutôt que faussement françaises.
+- il réutilise `data/traductions.json`, au format
+  `{"English sentence": {"fr": "…", "es": "…"}}` ;
+- il dépose les phrases et les langues manquantes dans
+  `data/a_traduire.json`, prêtes à être remplies ;
+- **l'anglais d'origine est toujours conservé** dans `donnees.js`, et l'app
+  s'en sert en repli. Une phrase non traduite s'affiche donc en anglais —
+  visible, donc corrigeable, plutôt que faussement traduite.
 
-Pour les traduire, remplir `data/traductions.json` puis relancer. Le cache
-est persistant : une phrase traduite une fois ne revient plus.
+Pour les traduire, remplir les valeurs vides de `data/a_traduire.json`,
+recopier le tout dans `data/traductions.json`, relancer. Le cache est
+persistant : une phrase traduite une fois ne revient plus.
 
 ## Tests
 
 ```bash
 python3 tests/t_refresh.py            # parseur et réécriture de donnees.js
 
-(python3 -m http.server 8765 &)       # les deux suivants ont besoin d'un serveur
+(python3 -m http.server 8765 &)       # les suivants ont besoin d'un serveur
 node tests/t_app.js                   # moteur de calcul
 node tests/t_parcours.js              # parcours utilisateur complet
+node tests/t_langues.js               # audit des traductions
 ```
 
 Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**137 contrôles au total, tous verts.**
+**211 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
-| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort) | 48 |
+| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort), traduction des phrases de matchup | 60 |
 | `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 47 |
-| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte | 42 |
+| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, changement de langue | 50 |
+| `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit, aucun débordement de la barre de 320 à 430 px | 54 |
 
 Ils ont servi de filet lors du découpage en fichiers : le comportement est
 resté identique d'un bout à l'autre de la réorganisation.
+
+## Langues
+
+L'app est en français, anglais et espagnol. **Tous les textes affichés sont
+dans `langues.js`, et nulle part ailleurs** — un contrôle automatique le
+vérifie et signale tout texte en dur oublié dans le code.
+
+- La langue de départ suit celle du téléphone ; si elle n'est pas gérée,
+  l'app démarre en anglais.
+- Le bouton `FR` / `EN` / `ES` en haut à droite fait défiler les trois.
+- Le choix est retenu sous la clé `manager:langue`, **distincte de celle du
+  roster** : changer de langue ne touche jamais aux brawlers cochés.
+
+**Pour ajouter une langue** : recopier un bloc entier de `LANGUES`, traduire
+les valeurs, garder les clés identiques, ajouter le code à `ORDRE_LANGUES`.
+Le test `t_langues.js` refusera toute clé manquante ou en trop.
+
+Ce qui n'est pas traduit, volontairement : les noms de brawlers et de cartes
+sont des noms propres, identiques dans toutes les langues du jeu.
+
+Les phrases d'explication des matchups sont des objets `{en, fr, es}` :
+l'anglais est la langue d'origine de brawlcalculator, et sert de repli quand
+une traduction manque. Voir « Traduction des explications » ci-dessus.
 
 ## Comment le code est organisé
 

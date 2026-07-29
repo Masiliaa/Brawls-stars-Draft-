@@ -9,7 +9,17 @@ body{min-height:100vh;font-family:'Nunito',system-ui,sans-serif;color:var(--pape
   background-attachment:fixed;-webkit-font-smoothing:antialiased}
 #app{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 15px calc(40px + env(safe-area-inset-bottom))}
 .tt{font-family:'Lilita One',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.01em;line-height:1;text-shadow:0 3px 0 rgba(25,16,54,.85)}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+/* Le logo absorbe la place restante et se réduit avant tout le monde :
+   avec trois langues, le bouton « Mes persos » change de largeur et la
+   barre débordait sur les écrans de 320 px. */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
+.bar .logo{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;font-size:clamp(18px,5.6vw,25px)}
+.bar .actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.b.lang{min-width:42px;padding:8px 9px;letter-spacing:.04em}
+@media (max-width:359px){
+  .bar .b.sm{font-size:11.5px;padding:8px 8px}
+  .b.lang{min-width:36px;padding:8px 6px}
+}
 .logo{font-size:25px;color:var(--gold);-webkit-text-stroke:1px var(--ink)}
 .b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
   font-family:'Lilita One',sans-serif;text-transform:uppercase;font-size:15px;letter-spacing:.02em;

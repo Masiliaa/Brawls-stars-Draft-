@@ -18,7 +18,7 @@ const check = (nom, cond, detail = '') => {
 (async () => {
   const nav = await chromium.launch(
     process.env.CHROME ? { executablePath: process.env.CHROME } : {});
-  const page = await nav.newPage({ viewport: { width: 390, height: 844 } });
+  const page = await nav.newPage({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' });
 
   const erreurs = [];
   page.on('pageerror', e => erreurs.push('pageerror: ' + e.message));
@@ -142,6 +142,33 @@ const check = (nom, cond, detail = '') => {
   await page.locator('[data-act="draft"]').click();
   check('l\'app explique quoi faire',
     (await page.locator('.box p').textContent()).includes('Coche d\'abord'));
+
+  console.log('\n== changement de langue ==');
+  await page.locator('[data-act="draft"], [data-act="roster"]').first().waitFor();
+  const codeDepart = await page.locator('[data-act="langue"]').textContent();
+  check('démarre en français (locale fr-FR)', codeDepart === 'FR', codeDepart);
+
+  await page.locator('[data-act="langue"]').click();
+  check('un clic → anglais',
+    (await page.locator('[data-act="langue"]').textContent()) === 'EN');
+  check('les textes suivent',
+    await page.getByText('My brawlers').first().isVisible());
+  check('l’attribut lang de la page suit',
+    (await page.getAttribute('html', 'lang')) === 'en');
+
+  await page.locator('[data-act="langue"]').click();
+  check('deux clics → espagnol',
+    (await page.locator('[data-act="langue"]').textContent()) === 'ES');
+  check('les textes suivent',
+    await page.getByText('Mis brawlers').first().isVisible());
+
+  await page.reload({ waitUntil: 'networkidle' });
+  check('la langue survit au rechargement',
+    (await page.locator('[data-act="langue"]').textContent()) === 'ES');
+
+  await page.locator('[data-act="langue"]').click();
+  check('trois clics → retour au français',
+    (await page.locator('[data-act="langue"]').textContent()) === 'FR');
 
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);

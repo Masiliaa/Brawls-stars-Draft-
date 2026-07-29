@@ -193,5 +193,69 @@ check("abandon apres %d echecs d'affilee" % R.ABANDON_APRES,
 check("et le dit clairement",
       any("de suite ont échoué" in e for e in R.ERREURS), R.ERREURS[-1:])
 
+print("\n== traduction des phrases de matchup ==")
+
+def traducteur_avec(table):
+    d = tempfile.mkdtemp()
+    R.DONNEES = d
+    if table is not None:
+        json.dump(table, open(os.path.join(d, "traductions.json"), "w",
+                              encoding="utf-8"), ensure_ascii=False)
+    return R.Traducteur(), d
+
+# 1. Aucune traduction connue : on garde l'anglais d'origine, et on le note.
+tr2, d = traducteur_avec({})
+sortie = tr2("Outmuscles him in melee")
+check("l'anglais d'origine est conserve",
+      sortie == {"en": "Outmuscles him in melee"}, sortie)
+tr2.enregistrer()
+attente = json.load(open(os.path.join(d, "a_traduire.json"), encoding="utf-8"))
+check("la phrase est mise en attente de traduction",
+      "Outmuscles him in melee" in attente, list(attente))
+check("les deux langues manquantes sont listees",
+      sorted(attente["Outmuscles him in melee"]) == ["es", "fr"], attente)
+
+# 2. Traductions connues : elles accompagnent l'anglais.
+tr2, d = traducteur_avec({
+    "Outmuscles him in melee": {"fr": "Le surpasse au corps a corps",
+                                "es": "Le supera cuerpo a cuerpo"}})
+sortie = tr2("Outmuscles him in melee")
+check("les trois langues sont servies",
+      sortie == {"en": "Outmuscles him in melee",
+                 "fr": "Le surpasse au corps a corps",
+                 "es": "Le supera cuerpo a cuerpo"}, sortie)
+tr2.enregistrer()
+check("plus rien en attente",
+      json.load(open(os.path.join(d, "a_traduire.json"), encoding="utf-8")) == {})
+
+# 3. Traduction partielle : l'espagnol manque, on le signale sans perdre le fr.
+tr2, d = traducteur_avec({"Slips between the arcs": {"fr": "Se faufile entre les arcs"}})
+sortie = tr2("Slips between the arcs")
+check("le francais connu est garde", sortie.get("fr") == "Se faufile entre les arcs", sortie)
+check("l'espagnol absent n'est pas invente", "es" not in sortie, sortie)
+tr2.enregistrer()
+attente = json.load(open(os.path.join(d, "a_traduire.json"), encoding="utf-8"))
+check("seul l'espagnol est reclame", attente["Slips between the arcs"] == {"es": ""}, attente)
+
+# 4. Ancien format (une chaine = du francais) : relu sans casser.
+tr2, d = traducteur_avec({"Punishes low health": "Punit ses faibles PV"})
+sortie = tr2("Punishes low health")
+check("l'ancien format est repris comme francais",
+      sortie.get("fr") == "Punit ses faibles PV", sortie)
+
+# 5. Rendu JS : les phrases multilingues arrivent bien dans donnees.js.
+R.DONNEES = os.path.join(R.RACINE, "data")
+table_ml = {"mortis": {
+    "perd": [["jacky", {"en": "Outmuscles him", "fr": "Le surpasse", "es": "Le supera"}]],
+    "bat": [["barley", {"en": "Slips between the arcs"}]]}}
+rendu = R.rendre_counters(table_ml)
+check("les trois langues sont ecrites",
+      '"en":"Outmuscles him"' in rendu and '"fr":"Le surpasse"' in rendu
+      and '"es":"Le supera"' in rendu, rendu[:160])
+check("une phrase anglaise seule reste valide",
+      '"en":"Slips between the arcs"' in rendu, rendu)
+h7 = R.ecrire_bloc(html, "COUNTERS", rendu)
+check("le bloc reste bien clos", R.lire_bloc(h7, "COUNTERS").rstrip().endswith("};"))
+
 print("\n== %d ok, %d echecs ==" % (ok, fail))
 sys.exit(1 if fail else 0)

@@ -24,10 +24,12 @@ var MAJ={tiers:["29/07/2026","Brawl Time Ninja"],
 var ASSETS_LOCAUX=false;
 /* @END:ASSETS */
 
-/* Les 6 modes du classé, avec la couleur qui les identifie à l'écran. */
+/* Les 6 modes du classé, avec la couleur qui les identifie à l'écran.
+   Leurs noms affichés sont dans langues.js (clés modeBrawlBall, modeBounty…),
+   puisqu'ils changent selon la langue. */
 /* @DATA:MODES */
-var MODES={brawlBall:{nom:"Brawl Ball",c:"#5EC8F5"},bounty:{nom:"Prime",c:"#FFB020"},knockout:{nom:"Hors-jeu",c:"#FF7A5C"},
-gemGrab:{nom:"Razzia de gemmes",c:"#B98BFF"},heist:{nom:"Braquage",c:"#57D9A3"},hotZone:{nom:"Zone réservée",c:"#FF5D8F"}};
+var MODES={brawlBall:{c:"#5EC8F5"},bounty:{c:"#FFB020"},knockout:{c:"#FF7A5C"},
+gemGrab:{c:"#B98BFF"},heist:{c:"#57D9A3"},hotZone:{c:"#FF5D8F"}};
 /* @END:MODES */
 
 /* Le pool de cartes du classé.

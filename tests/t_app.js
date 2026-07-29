@@ -16,7 +16,8 @@ const check = (nom, cond, detail = '') => {
 (async () => {
   const nav = await chromium.launch(
     process.env.CHROME ? { executablePath: process.env.CHROME } : {});
-  const page = await nav.newPage();
+  // locale fr-FR : verifie aussi la detection automatique de la langue.
+  const page = await nav.newPage({ locale: 'fr-FR' });
 
   const erreurs = [];
   page.on('pageerror', e => erreurs.push('pageerror: ' + e.message));
@@ -132,7 +133,7 @@ const check = (nom, cond, detail = '') => {
 
   console.log('\n== pied de page honnête ==');
   const note1 = await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; return noteHTML(); });
-  check('dit que la table de matchups manque', /Table de matchups absente/.test(note1));
+  check('dit que la table de matchups manque', /Table de matchups absente/.test(note1), note1);
   check('dit que les alliés ne servent qu’aux rôles', /pas à une synergie mesurée/.test(note1));
   const note2 = await page.evaluate(() => {
     COUNTERS = { a: {}, b: {} }; SYNERGIE = { 'a|b': 1 }; return noteHTML();
@@ -156,14 +157,14 @@ const check = (nom, cond, detail = '') => {
     return s;
   });
   check('date propre à chaque source',
-    /Tiers par mode relevés le 29\/07\/2026/.test(note3) &&
-    /relevés le 01\/09\/2026 sur brawlcalculator\.com/.test(note3), note3);
+    /Tiers par mode · source Brawl Time Ninja, 29\/07\/2026/.test(note3) &&
+    /source brawlcalculator\.com, 01\/09\/2026/.test(note3), note3);
   const note4 = await page.evaluate(() => {
     COUNTERS = { a: {} }; MAJ.matchups = null;
     const s = noteHTML(); COUNTERS = {}; return s;
   });
   check('aucune date inventée pour une source non datée',
-    /Matchups : 1 brawler,/.test(note4) && !/1 brawler relevé le/.test(note4), note4);
+    /Matchups : 1 brawler ·/.test(note4) && !/source/.test(note4.split('Matchups')[1]), note4);
 
   console.log('\n== persistance du roster ==');
   const cle = await page.evaluate(() => {

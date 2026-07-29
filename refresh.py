@@ -284,12 +284,20 @@ def sections(blocs, motif):
 # ---------------------------------------------------------------------------
 
 class Traducteur:
-    """Cache de traductions sur disque + glossaire de secours.
+    """Phrases d'explication, dans les langues de l'app.
 
-    Le script ne traduit pas tout seul : il réutilise ce qui est déjà dans
-    data/traductions.json et dépose le reste dans data/a_traduire.json.
-    Les phrases non traduites restent en anglais dans donnees.js — visible,
-    donc corrigeable, plutôt que faussement français."""
+    La source (brawlcalculator) est en anglais. Chaque phrase devient donc
+    un objet {"en": original, "fr": ..., "es": ...}, où seules les langues
+    réellement traduites figurent — l'app sert l'anglais en repli.
+
+    Le script ne traduit pas tout seul : il réutilise data/traductions.json
+    et dépose les phrases inconnues dans data/a_traduire.json.
+
+    Format de data/traductions.json :
+        {"English sentence": {"fr": "Phrase française", "es": "Frase"}}
+    """
+
+    LANGUES = ("fr", "es")
 
     def __init__(self):
         self.fichier = os.path.join(DONNEES, "traductions.json")
@@ -300,29 +308,44 @@ class Traducteur:
                 self.table = json.load(open(self.fichier, encoding="utf-8"))
             except Exception as e:
                 souci("traductions.json illisible (%s), on repart de zéro" % e)
-        self.manquantes = []
+        self.manquantes = {}
 
     def __call__(self, phrase):
-        p = " ".join(str(phrase).split())
-        if not p:
-            return ""
-        if p in self.table:
-            return self.table[p]
-        self.manquantes.append(p)
-        return p
+        original = " ".join(str(phrase).split())
+        if not original:
+            return {}
+
+        out = {"en": original}
+        connues = self.table.get(original) or {}
+        if isinstance(connues, str):      # ancien format : une seule langue
+            connues = {"fr": connues}
+
+        absentes = []
+        for code in self.LANGUES:
+            if connues.get(code):
+                out[code] = connues[code]
+            else:
+                absentes.append(code)
+        if absentes:
+            self.manquantes[original] = absentes
+        return out
 
     def enregistrer(self):
         json.dump(self.table, open(self.fichier, "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1, sort_keys=True)
+
         cible = os.path.join(DONNEES, "a_traduire.json")
-        restant = sorted(set(self.manquantes))
-        json.dump(restant, open(cible, "w", encoding="utf-8"),
+        attente = {p: {c: "" for c in codes}
+                   for p, codes in sorted(self.manquantes.items())}
+        json.dump(attente, open(cible, "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1)
-        if restant:
-            note("%d phrases restent en anglais → %s"
-                 % (len(restant), os.path.relpath(cible, RACINE)))
-            note("  pour les traduire : remplis data/traductions.json "
-                 "(clé = phrase anglaise) puis relance le script")
+
+        if attente:
+            note("%d phrases sans traduction → %s"
+                 % (len(attente), os.path.relpath(cible, RACINE)))
+            note("  elles resteront en anglais dans l'app. Pour les traduire :")
+            note("  remplis les valeurs vides, recopie le tout dans "
+                 "data/traductions.json, relance le script.")
 
 
 # ---------------------------------------------------------------------------
@@ -396,7 +419,7 @@ def extraire_matchups(blocs, motif_titre, tr):
                     courant = clef(b["texte"])
                     if courant not in vus:
                         vus.add(courant)
-                        out.append([courant, ""])
+                        out.append([courant, {}])
                 else:
                     courant = None
             elif b["type"] == "texte" and courant and out and out[-1][0] == courant:
@@ -692,7 +715,8 @@ def ecrire_bloc(html, nom, contenu):
 
 
 def js(valeur):
-    return json.dumps(valeur, ensure_ascii=False)
+    """Sérialise en JS compact — même densité que le reste de donnees.js."""
+    return json.dumps(valeur, ensure_ascii=False, separators=(",", ":"))
 
 
 def rendre_maps(cartes):
@@ -708,6 +732,7 @@ def rendre_maps(cartes):
 
 
 def rendre_counters(table):
+    """Les phrases sont des objets {en, fr, es} : l'app choisit la langue."""
     lignes = ["var COUNTERS={"]
     cles = sorted(table)
     for i, k in enumerate(cles):

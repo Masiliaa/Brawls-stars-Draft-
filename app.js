@@ -34,6 +34,9 @@ conteneur.addEventListener("input", function (e) {
 
 var ACTIONS = {
 
+  /* Fait défiler les langues : français → anglais → espagnol → français. */
+  langue: function () { definirLangue(langueSuivante()); },
+
   /* — Navigation — */
   roster: function () { ecran = "roster"; recherche = ""; },
   draft: function () { ecran = "draft"; recherche = ""; cibleAjout = null; },
@@ -110,5 +113,6 @@ conteneur.addEventListener("click", function (e) {
    utilisable sans attendre le réseau, puis on redessine quand l'API a
    répondu (ou échoué). */
 
+chargerLangue();
 render();
 chargerBrawlers().then(render);

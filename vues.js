@@ -94,9 +94,14 @@ function vignette(carte, largeur) {
 function barreHaut() {
   var versRoster = ecran !== "roster";
   return '<div class="bar"><div class="tt logo">Le Manager</div>'
+       + '<div class="actions">'
+       + '<button class="b alt sm lang" data-act="langue"'
+       + ' title="' + echapper(t("changerLangue")) + '"'
+       + ' aria-label="' + echapper(t("changerLangue")) + '">'
+       + LANGUES[langue].etiquette + "</button>"
        + '<button class="b alt sm" data-act="' + (versRoster ? "roster" : "draft") + '">'
-       + (versRoster ? "Mes persos" : "Retour")
-       + "</button></div>";
+       + echapper(versRoster ? t("mesPersos") : t("retour"))
+       + "</button></div></div>";
 }
 
 /* La grille de brawlers, en deux usages :
@@ -123,7 +128,7 @@ function grilleBrawlers(usage) {
    exactement la même forme : des pastilles retirables, plus un bouton
    d'ajout tant que la limite n'est pas atteinte. */
 function sectionPastilles(titre, cles, classe, actionRetirer, actionAjouter, maximum) {
-  var html = '<div class="lab">' + titre + '</div><div class="wrap">';
+  var html = '<div class="lab">' + echapper(titre) + '</div><div class="wrap">';
 
   cles.forEach(function (cle) {
     html += '<button class="pil ' + classe + '"'
@@ -133,7 +138,8 @@ function sectionPastilles(titre, cles, classe, actionRetirer, actionAjouter, max
   });
 
   if (cles.length < maximum) {
-    html += '<button class="pil add" data-act="' + actionAjouter + '">+ ajouter</button>';
+    html += '<button class="pil add" data-act="' + actionAjouter + '">'
+          + echapper(t("ajouter")) + "</button>";
   }
   return html + "</div>";
 }
@@ -144,13 +150,13 @@ function sectionPastilles(titre, cles, classe, actionRetirer, actionAjouter, max
 function ecranRoster() {
   var nb = roster.size;
   return barreHaut()
-       + '<p class="intro">Coche les brawlers niveau 9 minimum que tu sais jouer. '
-       + nb + " coché" + (nb > 1 ? "s" : "") + ".</p>"
+       + '<p class="intro">'
+       + echapper(t(pluriel(nb) ? "rosterIntroN" : "rosterIntro1", { n: nb })) + "</p>"
        + '<div class="wrap" style="margin-bottom:12px">'
-       + '<button class="b sm" data-act="tout">Tout cocher</button>'
-       + '<button class="b alt sm" data-act="rien">Tout décocher</button></div>'
-       + '<input class="inp" id="q" placeholder="Chercher un brawler" value="'
-       + echapper(recherche) + '">'
+       + '<button class="b sm" data-act="tout">' + echapper(t("toutCocher")) + "</button>"
+       + '<button class="b alt sm" data-act="rien">' + echapper(t("toutDecocher")) + "</button></div>"
+       + '<input class="inp" id="q" placeholder="' + echapper(t("chercherBrawler"))
+       + '" value="' + echapper(recherche) + '">'
        + '<div class="grid" id="grid">' + grilleBrawlers("roster") + "</div>";
 }
 
@@ -163,7 +169,8 @@ function ecranCartes() {
   Object.keys(MODES).forEach(function (mode) {
     var info = MODES[mode];
     html += '<div style="margin-bottom:16px">'
-          + '<div class="lab" style="color:' + info.c + ';margin-top:0">' + info.nom + "</div>";
+          + '<div class="lab" style="color:' + info.c + ';margin-top:0">'
+          + echapper(nomMode(mode)) + "</div>";
 
     MAPS.filter(function (c) { return c.mode === mode; }).forEach(function (carte) {
       html += '<div style="margin-bottom:8px">'
@@ -185,18 +192,17 @@ function ecranCartes() {
 
 /* ============ Écran 3 — désigner un brawler ============ */
 
-var TITRE_CHOIX = {
-  ennemi: "Qui est pris en face ?",
-  allie: "Qu'a pris ton coéquipier ?",
-  ban: "Quel brawler est banni ?"
-};
+var CLE_TITRE_CHOIX = { ennemi: "choixEnnemi", allie: "choixAllie", ban: "choixBan" };
 
 function ecranChoix() {
   return barreHaut()
-       + '<div class="lab" style="margin-top:0">' + TITRE_CHOIX[cibleAjout] + "</div>"
-       + '<input class="inp" id="q" placeholder="Chercher" value="' + echapper(recherche) + '">'
+       + '<div class="lab" style="margin-top:0">'
+       + echapper(t(CLE_TITRE_CHOIX[cibleAjout])) + "</div>"
+       + '<input class="inp" id="q" placeholder="' + echapper(t("chercher"))
+       + '" value="' + echapper(recherche) + '">'
        + '<div class="grid" id="grid">' + grilleBrawlers("choix") + "</div>"
-       + '<button class="b alt sm" style="margin-top:12px" data-act="annuler">Annuler</button>';
+       + '<button class="b alt sm" style="margin-top:12px" data-act="annuler">'
+       + echapper(t("annuler")) + "</button>";
 }
 
 
@@ -209,28 +215,28 @@ function boutonCarte(carte, couleur) {
        + '<span style="display:flex;align-items:center;gap:11px">'
        + (carte ? vignette(carte, 32) : "")
        + '<span><span style="display:block;font-size:11px;opacity:.75">'
-       + (carte ? MODES[carte.mode].nom : "Étape 1") + "</span>"
+       + echapper(carte ? nomMode(carte.mode) : t("etape1")) + "</span>"
        + '<span style="font-size:20px">'
-       + (carte ? echapper(carte.nom) : "Choisir la carte") + "</span></span></span>"
-       + '<span style="font-size:13px">changer</span></button>';
+       + echapper(carte ? carte.nom : t("choisirCarte")) + "</span></span></span>"
+       + '<span style="font-size:13px">' + echapper(t("changer")) + "</span></button>";
 }
 
 function encadre(message, action, libelle) {
-  return '<div class="box"><p>' + message + "</p>"
-       + '<button class="b" data-act="' + action + '">' + libelle + "</button></div>";
+  return '<div class="box"><p>' + echapper(message) + "</p>"
+       + '<button class="b" data-act="' + action + '">' + echapper(libelle) + "</button></div>";
 }
 
 /* Le brawler recommandé, en grand, puis les suivants en liste. */
 function blocConseils(liste, couleurMode) {
   if (!liste.length) {
-    return '<div class="box"><p>Tous tes brawlers sont bannis ou déjà pris.</p></div>';
+    return '<div class="box"><p>' + echapper(t("tousBannis")) + "</p></div>";
   }
 
   var premier = liste[0];
   var html = '<div class="hero" style="--r:' + (premier.b.couleur || couleurMode) + '">'
-           + '<span class="tierb">Tier ' + premier.tier + "</span>"
+           + '<span class="tierb">' + echapper(t("tier", { tier: premier.tier })) + "</span>"
            + '<div class="in">' + portrait(premier.b, 84, true)
-           + '<span><span class="ribbon">Prends</span>'
+           + '<span><span class="ribbon">' + echapper(t("prends")) + "</span>"
            + '<div class="tt name">' + echapper(premier.nom) + "</div></span></div>"
            + '<div class="why">' + echapper(premier.raison) + "</div></div>";
 
@@ -249,22 +255,19 @@ function ecranDraft() {
   var html = barreHaut() + boutonCarte(carte, couleur);
 
   if (!carte) {
-    return html + encadre(
-      "Ouvre la carte annoncée au début du draft. Tu auras un nom tout de suite.",
-      "cartes", "Choisir la carte") + noteHTML();
+    return html + encadre(t("inviteCarte"), "cartes", t("choisirCarte")) + noteHTML();
   }
 
   if (roster.size === 0) {
-    return html + encadre(
-      "Coche d'abord tes brawlers, sinon impossible de te conseiller un perso jouable.",
-      "roster", "Cocher mes persos") + noteHTML();
+    return html + encadre(t("inviteRoster"), "roster", t("cocherMesPersos")) + noteHTML();
   }
 
   html += blocConseils(conseils(), couleur);
-  html += sectionPastilles("Mon équipe", allies, "allie", "rma", "addA", MAX_ALLIES);
-  html += sectionPastilles("Pris en face", ennemis, "", "rme", "addE", MAX_ENNEMIS);
-  html += sectionPastilles("Bannis", bans, "ban", "rmb", "addB", MAX_BANS);
-  html += '<button class="b alt sm" style="margin-top:18px" data-act="reset">Nouveau draft</button>';
+  html += sectionPastilles(t("monEquipe"), allies, "allie", "rma", "addA", MAX_ALLIES);
+  html += sectionPastilles(t("prisEnFace"), ennemis, "", "rme", "addE", MAX_ENNEMIS);
+  html += sectionPastilles(t("bannis"), bans, "ban", "rmb", "addB", MAX_BANS);
+  html += '<button class="b alt sm" style="margin-top:18px" data-act="reset">'
+        + echapper(t("nouveauDraft")) + "</button>";
 
   return html + noteHTML();
 }
@@ -275,39 +278,40 @@ function ecranDraft() {
    doit jamais y passer pour une mesure. */
 
 function noteHTML() {
-  /* pluriel : marque à accorder avec ce qui précède (« relevé » / « relevés »). */
-  function source(bloc, pluriel) {
-    return bloc ? " relevé" + (pluriel || "") + " le " + bloc[0] + " sur " + bloc[1] : "";
+  /* Chaque bloc a deux formulations : avec sa date et sa source quand elles
+     sont connues, sans elles sinon. Écrire les deux phrases en entier dans
+     chaque langue évite les accords bancals d'un assemblage automatique. */
+  function avec(bloc, cleDatee, cleSimple, extra) {
+    var valeurs = extra || {};
+    if (!bloc) return t(cleSimple, valeurs);
+    valeurs.source = bloc[1];
+    valeurs.date = bloc[0];
+    return t(cleDatee, valeurs);
   }
 
-  var texte = "Tiers par mode" + source(MAJ.tiers, "s") + ", saison " + SAISON + ". ";
-  texte += "Classements par carte" + source(MAJ.cartes, "s") + ". ";
+  var texte = avec(MAJ.tiers, "noteTiers", "noteTiersSansDate", { saison: SAISON });
+  texte += avec(MAJ.cartes, "noteCartes", "noteCartesSansDate");
 
   var nb = Object.keys(COUNTERS).length;
   texte += nb
-    ? "Matchups : " + nb + " brawler" + (nb > 1 ? "s" : "") + source(MAJ.matchups, nb > 1 ? "s" : "")
-      + ", un jugement d'experts adossé aux classements SpenLC — pas une mesure statistique. "
-    : "Table de matchups absente : l'app retombe sur le cycle agression → contrôle → portée, "
-      + "une approximation, pas une mesure. ";
+    ? avec(MAJ.matchups, "noteMatchups", "noteMatchupsSansDate",
+           { n: nb, mot: motBrawler(nb) })
+    : t("noteMatchupsAbsents");
 
   texte += Object.keys(SYNERGIE).length
-    ? "Synergie alliée : écarts de taux de victoire en équipe" + source(MAJ.synergie, "s")
-      + ", ajoutés à l'équilibre des rôles. "
-    : "Les picks alliés servent à l'équilibre des rôles, pas à une synergie mesurée. ";
+    ? avec(MAJ.synergie, "noteSynergie", "noteSynergieSansDate")
+    : t("noteSynergieAbsente");
 
-  if (etatApi === "hors") {
-    texte += "Couleurs de rareté et classes indisponibles : l'API n'a pas répondu. ";
-  }
+  if (etatApi === "hors") texte += t("noteApiHors");
 
   /* Mention exigée par la Fan Content Policy de Supercell, dont relève cet
      outil : usage personnel, non monétisé, images servies par leur CDN.
      Le lien est ajouté après l'échappement, c'est le seul HTML de la note. */
-  texte += "Images et noms de brawlers appartiennent à Supercell. Ce contenu "
-         + "n'est ni affilié, ni approuvé, ni sponsorisé par Supercell — voir la ";
+  texte += t("noteSupercell");
 
   return '<div class="note">' + echapper(texte)
        + '<a href="https://supercell.com/fan-content-policy" target="_blank"'
-       + ' rel="noopener noreferrer">Fan Content Policy</a>.</div>';
+       + ' rel="noopener noreferrer">' + echapper(t("lienPolicy")) + "</a>.</div>";
 }
 
 
