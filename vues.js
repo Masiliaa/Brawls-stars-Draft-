@@ -26,9 +26,15 @@ function fbImg(img) {
     return;
   }
 
+  /* L'image a pu quitter la page entre-temps : chaque clic redessine tout
+     l'écran, et l'échec de chargement arrive après coup. Sans ce garde-fou,
+     parentNode vaut null et le navigateur remonte une erreur. */
+  var parent = img.parentNode;
+  if (!parent) return;
+
   /* Plus aucune source : on affiche les initiales, ou rien pour une carte. */
   var ini = img.getAttribute("data-ini");
-  if (ini) img.parentNode.innerHTML = "<em>" + echapper(ini) + "</em>";
+  if (ini) parent.innerHTML = "<em>" + echapper(ini) + "</em>";
   else img.remove();
 }
 

@@ -206,6 +206,20 @@ const check = (nom, cond, detail = '') => {
   });
   check('finit sur les initiales, pas sur du vide', /<em>MO<\/em>/.test(finale), finale);
 
+  // Cas reel : on clique pendant qu'une image charge encore. Le nouvel
+  // ecran remplace tout, l'echec de chargement arrive sur une balise qui
+  // n'est plus dans la page. Ne doit pas lever d'erreur.
+  const detachee = await page.evaluate(() => {
+    const d = document.createElement('div');
+    d.innerHTML = portrait({ nom: 'Mortis', k: 'mortis' }, 40, false);
+    const img = d.querySelector('img');
+    img.setAttribute('data-fb', '');        // plus aucune source de repli
+    d.innerHTML = '';                       // l'ecran est redessine
+    try { fbImg(img); return 'ok'; }
+    catch (e) { return 'erreur: ' + e.message; }
+  });
+  check('image detachee de la page : aucune erreur', detachee === 'ok', detachee);
+
   console.log('\n== parcours complet à l’écran ==');
   await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; carteId = null; ennemis = []; allies = []; bans = []; roster = new Set(['mortis','piper','bo','emz']); ecran = 'draft'; render(); });
   await page.getByText('Choisir la carte').first().click();

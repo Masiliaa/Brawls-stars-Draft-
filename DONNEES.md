@@ -123,12 +123,12 @@ Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**133 contrôles au total, tous verts.**
+**134 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
 | `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort) | 48 |
-| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 43 |
+| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 44 |
 | `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte | 42 |
 
 Ils ont servi de filet lors du découpage en fichiers : le comportement est
@@ -141,7 +141,7 @@ déclaré en bas de `index.html`.
 
 | Fichier | À quoi il sert | Lignes |
 |---|---|---|
-| `index.html` | la page, presque vide : elle ne fait que charger le reste | 43 |
+| `index.html` | la page, presque vide : elle ne fait que charger le reste | 44 |
 | `style.css` | toute l'apparence | 77 |
 | `outils.js` | petites fonctions de base (nettoyer un nom, échapper du texte) | 51 |
 | `donnees.js` | **d'où viennent les chiffres** — seul fichier réécrit par `refresh.py` | 84 |
