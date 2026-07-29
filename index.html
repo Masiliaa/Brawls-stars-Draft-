@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Le Manager">
+<meta name="theme-color" content="#211545">
+<title>Le Manager — draft Brawl Stars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#191036;--gold:#FFC93C;--goldd:#C4890C;--paper:#FFF8E9;--mute:#B7A9E0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{min-height:100vh;font-family:'Nunito',system-ui,sans-serif;color:var(--paper);
+  background:radial-gradient(120% 55% at 50% 0%,#5B44B8 0%,rgba(91,68,184,0) 62%),linear-gradient(180deg,#3A2A7D 0%,#211545 100%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+#app{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 15px calc(40px + env(safe-area-inset-bottom))}
+.tt{font-family:'Lilita One',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.01em;line-height:1;text-shadow:0 3px 0 rgba(25,16,54,.85)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.logo{font-size:25px;color:var(--gold);-webkit-text-stroke:1px var(--ink)}
+.b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Lilita One',sans-serif;text-transform:uppercase;font-size:15px;letter-spacing:.02em;
+  color:var(--ink);background:var(--gold);border:3px solid var(--ink);border-radius:15px;padding:11px 15px;
+  cursor:pointer;box-shadow:0 5px 0 var(--goldd),0 8px 12px rgba(15,8,35,.4);min-height:46px;
+  transition:transform .06s,box-shadow .06s}
+.b:active{transform:translateY(4px);box-shadow:0 1px 0 var(--goldd)}
+.b:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.b[disabled]{opacity:.45;pointer-events:none}
+.b.alt{background:#6A55C8;color:var(--paper);box-shadow:0 5px 0 #3E2E8C,0 8px 12px rgba(15,8,35,.4);text-shadow:0 2px 0 rgba(25,16,54,.6)}
+.b.alt:active{box-shadow:0 1px 0 #3E2E8C}
+.b.sm{font-size:13px;padding:8px 12px;min-height:40px;border-radius:12px}
+.b.full{width:100%;justify-content:space-between;text-align:left}
+.port{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;overflow:hidden;
+  border:3px solid var(--ink);background:var(--r);
+  background:linear-gradient(170deg,color-mix(in srgb,var(--r) 92%,#fff) 0%,var(--r) 45%,color-mix(in srgb,var(--r) 62%,#1B1140) 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 3px 0 rgba(25,16,54,.55)}
+.port img{width:112%;height:112%;object-fit:cover;object-position:center 22%;display:block}
+.port em{font-family:'Lilita One',sans-serif;font-style:normal;color:#221545;font-size:var(--fs);text-shadow:0 2px 0 rgba(255,255,255,.35)}
+.port.tilt{transform:rotate(-4deg)}
+.vig{position:relative;display:block;flex:none;overflow:hidden;border-radius:10px;border:3px solid var(--ink);
+  background:#241A52;box-shadow:0 3px 0 rgba(25,16,54,.55)}
+.vig img{width:100%;height:100%;object-fit:cover;display:block}
+.hero{position:relative;background:linear-gradient(180deg,#4C3AA0,#37287C);border:3px solid var(--ink);border-radius:24px;
+  padding:18px 16px 16px;margin-bottom:12px;overflow:hidden;box-shadow:0 7px 0 #241858,0 14px 22px rgba(12,6,30,.45)}
+.hero:before{content:"";position:absolute;top:-42%;left:50%;width:150%;height:150%;transform:translateX(-50%);
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--r) 55%,transparent),transparent 72%);pointer-events:none}
+.hero .in{position:relative;display:flex;align-items:center;gap:14px}
+.ribbon{display:inline-block;background:var(--gold);color:var(--ink);border:3px solid var(--ink);border-radius:9px;
+  font-family:'Lilita One',sans-serif;text-transform:uppercase;font-size:12px;padding:3px 10px;letter-spacing:.06em;
+  box-shadow:0 3px 0 var(--goldd);margin-bottom:8px}
+.name{font-size:clamp(30px,9.5vw,44px);word-break:break-word}
+.tierb{font-family:'Lilita One',sans-serif;font-size:12px;color:var(--ink);background:var(--paper);border:3px solid var(--ink);
+  border-radius:9px;padding:2px 8px;position:absolute;top:14px;right:14px;z-index:2}
+.why{position:relative;margin-top:12px;background:rgba(20,12,48,.5);border-radius:12px;padding:9px 12px;font-size:13.5px;font-weight:700;color:#EBE2FF}
+.row{display:flex;align-items:center;gap:12px;background:#43338F;border:3px solid var(--ink);border-radius:17px;
+  padding:9px 13px;margin-bottom:8px;box-shadow:0 4px 0 #251858}
+.row .n{font-family:'Lilita One',sans-serif;text-transform:uppercase;font-size:20px;text-shadow:0 2px 0 rgba(25,16,54,.8)}
+.row .w{margin-left:auto;text-align:right;font-size:11.5px;font-weight:700;color:var(--mute);max-width:48%;line-height:1.3}
+.pil{display:inline-flex;align-items:center;gap:8px;background:#43338F;border:3px solid var(--ink);border-radius:999px;
+  padding:4px 12px 4px 4px;cursor:pointer;min-height:42px;box-shadow:0 4px 0 #251858;
+  font-family:'Lilita One',sans-serif;text-transform:uppercase;font-size:14px;color:var(--paper)}
+.pil.ban{background:#2E2461;color:var(--mute)}
+.pil.allie{background:#2E6B57;box-shadow:0 4px 0 #1B4436}
+.pil.add{background:transparent;border-style:dashed;box-shadow:none;color:var(--mute);padding:4px 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:9px}
+.cel{background:#3A2C7E;border:3px solid var(--ink);border-radius:16px;padding:8px 4px 7px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 0 #241858}
+.cel:active{transform:translateY(3px);box-shadow:0 1px 0 #241858}
+.cel.on{background:var(--gold);box-shadow:0 4px 0 var(--goldd)}
+.cel b{font-family:'Lilita One',sans-serif;font-weight:400;text-transform:uppercase;font-size:11px;line-height:1.1;
+  word-break:break-word;color:var(--paper);text-shadow:0 2px 0 rgba(25,16,54,.7)}
+.cel.on b{color:var(--ink);text-shadow:none}
+.lab{font-family:'Lilita One',sans-serif;text-transform:uppercase;font-size:12px;letter-spacing:.08em;color:var(--gold);
+  margin:18px 0 9px;text-shadow:0 2px 0 rgba(25,16,54,.8)}
+.wrap{display:flex;flex-wrap:wrap;gap:8px}
+.inp{width:100%;background:#241A52;border:3px solid var(--ink);border-radius:14px;padding:12px 14px;color:var(--paper);
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:16px;margin-bottom:11px}
+.inp::placeholder{color:var(--mute)}
+.inp:focus{outline:3px solid var(--gold);outline-offset:1px}
+.box{background:#3A2C7E;border:3px dashed #6A55C8;border-radius:20px;padding:24px 18px;text-align:center}
+.box p{margin:0 0 14px;font-size:14px;font-weight:700;color:var(--mute);line-height:1.5}
+.note{margin-top:24px;font-size:11.5px;font-weight:600;color:var(--mute);line-height:1.65;opacity:.85}
+.intro{font-size:14px;font-weight:700;color:var(--mute);margin:0 0 12px;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.b:active,.cel:active{transform:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ================= DONNÉES — relevées le 29/07/2026 sur Brawl Time Ninja, saison 52 ================= */
+var MODES={brawlBall:{nom:"Brawl Ball",c:"#5EC8F5"},bounty:{nom:"Prime",c:"#FFB020"},knockout:{nom:"Hors-jeu",c:"#FF7A5C"},
+gemGrab:{nom:"Razzia de gemmes",c:"#B98BFF"},heist:{nom:"Braquage",c:"#57D9A3"},hotZone:{nom:"Zone réservée",c:"#FF5D8F"}};
+
+var MAPS=[
+{id:"center-stage",img:15000132,nom:"Center Stage",mode:"brawlBall",top:[["Bolt",73.1],["Sam",72.5],["Eve",71.9]]},
+{id:"pinball-dreams",img:15000118,nom:"Pinball Dreams",mode:"brawlBall",top:[["Bolt",81.2],["Chuck",76.0],["Juju",75.4]]},
+{id:"sneaky-fields",img:15000050,nom:"Sneaky Fields",mode:"brawlBall",top:[["Bolt",77.7],["Eve",75.8],["Chuck",75.4]]},
+{id:"dry-season",img:15000083,nom:"Dry Season",mode:"bounty",top:[["Rosa",77.3],["Ollie",76.6],["Buster",74.3]]},
+{id:"hideout",img:15000022,nom:"Hideout",mode:"bounty",top:[["Ash",76.9],["Rosa",76.9],["Buster",76.0]]},
+{id:"layer-cake",img:15000082,nom:"Layer Cake",mode:"bounty",top:[["Bolt",72.2],["Ollie",71.4],["Ash",71.4]]},
+{id:"belles-rock",img:15000368,nom:"Belle's Rock",mode:"knockout",top:[["Ash",78.8],["Bolt",76.9],["Rosa",76.4]]},
+{id:"flaring-phoenix",img:15000440,nom:"Flaring Phoenix",mode:"knockout",top:[["Sam",78.4],["Clancy",76.8],["Ash",76.6]]},
+{id:"out-in-the-open",img:15000548,nom:"Out in the Open",mode:"knockout",top:[["Bolt",78.4],["Rosa",76.4],["Ash",75.2]]},
+{id:"crystal-arcade",img:15000008,nom:"Crystal Arcade",mode:"gemGrab",top:[["Eve",82.0],["Sam",79.2],["Buster",78.0]]},
+{id:"deathcap-trap",img:15000009,nom:"Deathcap Trap",mode:"gemGrab",top:[["Sam",79.8],["Ollie",79.6],["Eve",78.8]]},
+{id:"gem-fort",img:15000010,nom:"Gem Fort",mode:"gemGrab",top:[["Nori",77.8],["Ollie",75.9],["Bolt",75.4]]},
+{id:"hot-potato",img:15000053,nom:"Hot Potato",mode:"heist",top:[["Nori",76.4],["Sam",76.1],["Trunk",71.9]]},
+{id:"safe-zone",img:15000019,nom:"Safe Zone",mode:"heist",top:[["Sam",80.1],["Finx",76.9],["Glowy",76.3]]},
+{id:"dueling-beetles",img:15000306,nom:"Dueling Beetles",mode:"hotZone",top:[["Sam",76.6],["Nori",74.0],["Ollie",72.7]]},
+{id:"parallel-plays",img:15000293,nom:"Parallel Plays",mode:"hotZone",top:[["Sam",76.5],["Nori",74.6],["Bolt",74.3]]}];
+
+var TIERS={
+brawlBall:{S:"Surge,Bibi",A:"Damian,Mortis,Chester,Bull,Starr Nova,Edgar,Mina,Griff,Nori,Rico",B:"Colette,Bolt,Sirius,Stu,Kenji,Cordelius,Crow,Fang,Meg,Shade,Emz,Max,Buzz,Colt,Otis,Spike,Frank,Clancy,Melodie,Leon,Lumi,Tara,Pierce,Gale",C:"Kaze,Darryl,Brock,Dynamike,Shelly,8-Bit,Nita,Najia,Bo,Lou,Sandy,Meeple,Carl,Doug,Draco,Jacky,El Primo,Maisie,Trunk,Kit,Buster,Lily,Willow,Alli,Moe,Poco,Ollie,Finx,Amber,Ash",D:"Charlie,Bea,Gigi,Squeak,Pearl,Ruffs,Byron,R-T,Jae-yong,Hank,Tick,Glowy,Gus,Larry & Lawrie,Sam,Gray,Jessie,Mico,Berry,Barley,Ziggy,Rosa,Penny,Nani,Mandy,Gene,Juju,Janet,Sprout,Lola,Bonnie,Mr. P,Belle,Grom,Pam,Piper,Chuck,Eve,Angelo"},
+bounty:{S:"Pierce,Brock",A:"Najia,Byron,Piper,Nori,Bolt,Belle,Angelo,Crow,Mandy,Meeple",B:"Leon,Gus,8-Bit,Starr Nova,Colette,Bea,Edgar,Nani,Kit,Colt,Mina,Max,Otis,Fang,Chester,Sirius,Mortis,Gray,Surge,Spike,Lumi,Ruffs,Griff,Meg,Gene,Lily,Carl",C:"Damian,Squeak,Stu,Kaze,Alli,Rico,Ziggy,Bonnie,Jae-yong,Penny,Shade,R-T,Charlie,Tick,Finx,Glowy,Cordelius,Grom,Kenji,Bo,Maisie,Lou,Janet,Mico,Pearl,Emz,Dynamike,Mr. P,Juju,Melodie,Tara,Eve",D:"Amber,Willow,Gale,Buzz,Larry & Lawrie,Lola,Buster,Gigi,Doug,Sprout,Bibi,Moe,Darryl,Barley,Ollie,Clancy,Sandy,Jessie,Berry,Frank,Bull,Pam,Nita,Hank,El Primo,Trunk,Draco,Shelly,Poco,Chuck,Ash,Rosa,Jacky,Sam"},
+knockout:{S:"Pierce,Najia",A:"Brock,Piper,Byron,Mandy,Leon,Nani,Edgar,Belle,Starr Nova,Angelo,Colt,Meeple,Crow",B:"Bea,Nori,Sirius,8-Bit,Rico,Gene,Chester,Colette,Spike,Surge,Gus,Gray,Bolt,Mina,Kit,Lily,Otis,Squeak,Tick,Mortis,Max,Damian,Carl,Griff,Lumi,Mr. P",C:"R-T,Kaze,Fang,Bo,Cordelius,Ruffs,Meg,Stu,Charlie,Finx,Pearl,Mico,Grom,Alli,Emz,Sprout,Bonnie,Kenji,Maisie,Dynamike,Melodie,Lou,Ziggy,Janet,Shade,Jae-yong,Glowy,Eve,Penny,Juju,Amber,Tara,Lola,Larry & Lawrie,Bibi,Buster,Willow",D:"Gale,Gigi,Moe,Buzz,Darryl,Clancy,Bull,Poco,Berry,Pam,Sandy,Doug,Ollie,Jessie,Barley,Shelly,Draco,Nita,Frank,Hank,El Primo,Trunk,Chuck,Ash,Sam,Rosa,Jacky"},
+gemGrab:{S:"Surge,8-Bit",A:"Crow,Starr Nova,Chester,Bo,Pierce,Damian,Colette,Griff,Bolt,Meg,Lumi,Edgar,Mina",B:"Meeple,Mortis,Otis,Emz,Max,Sirius,Rico,Tara,Lily,Nori,Leon,Brock,Cordelius,Najia,Ruffs,Shade,Kenji,Charlie,Alli,Sandy,Spike,Amber,Squeak,Byron",C:"Gene,Fang,Lou,Bibi,Stu,Finx,Colt,Gale,Kaze,Gus,Janet,Carl,Gray,Poco,Bull,Penny,Jessie,Moe,Nita,Buster,Frank,Mr. P,Pearl,Clancy,Kit,Melodie",D:"Belle,Tick,Ash,Buzz,Larry & Lawrie,Doug,Glowy,Draco,Trunk,Mico,Ollie,Bea,Darryl,Gigi,Rosa,Berry,Jae-yong,Pam,Lola,Dynamike,Grom,Ziggy,Nani,Barley,R-T,Juju,Bonnie,Eve,Jacky,Sprout,Shelly,Willow,El Primo,Maisie,Chuck,Mandy,Piper,Hank,Sam,Angelo"},
+heist:{S:"8-Bit,Chuck",A:"Colt,Melodie,Crow,Edgar,Brock,Colette,Mico,Griff,Nita,Rico,Bull",B:"Penny,Pierce,Jessie,Kaze,Lumi,Berry,Mandy,Spike,Amber,Sirius,Emz,Starr Nova,Otis,Nani,Chester,Bo,Nori,Clancy,Carl,Meg",C:"Najia,Surge,Darryl,Lola,Cordelius,Dynamike,Barley,Tick,Bibi,Squeak,Piper,Leon,Grom,Bolt,Angelo,Byron,Belle,Eve,Larry & Lawrie,R-T,Damian,Moe,Shade,Pearl,Max,Buzz,Lily,Ruffs,Meeple,Tara,Juju,Bea,Draco",D:"Stu,Gigi,Kenji,Ziggy,Kit,Mina,Alli,Charlie,Finx,Lou,Fang,Maisie,Trunk,Sandy,Shelly,Willow,Janet,Glowy,Hank,Bonnie,Mr. P,Gale,El Primo,Doug,Sprout,Ash,Frank,Jae-yong,Sam,Gus,Gene,Buster,Mortis,Pam,Jacky,Poco,Gray,Rosa,Ollie"},
+hotZone:{S:"Emz,Bo",A:"Lou,8-Bit,Griff,Damian,Crow,Mina,Pierce,Surge,Tick,Sirius",B:"Nori,Chester,Meg,Spike,Squeak,Jessie,Starr Nova,Sandy,Bibi,Edgar,Kenji,Colette,Tara,Otis,Lumi,Gale,Barley,Penny,Finx,Berry,Najia,Amber,Brock,Bolt",C:"Poco,Buster,Frank,Shade,Chuck,Nita,Hank,Meeple,Ziggy,Kaze,Fang,Clancy,Pearl,Rico,Cordelius,Byron,Stu,Trunk,Grom,Ruffs,R-T,Bea,Glowy,Larry & Lawrie,Draco,Gray,Pam,Doug,Max,Carl,Bull,Ollie,Dynamike,Gus",D:"Jae-yong,Juju,Jacky,Mortis,Colt,Leon,Eve,Charlie,Kit,Moe,Willow,Gigi,Janet,Buzz,Darryl,Alli,Mr. P,Lily,Sprout,Mico,Mandy,Melodie,Maisie,Ash,Gene,Lola,Rosa,El Primo,Belle,Shelly,Bonnie,Piper,Angelo,Nani,Sam"}};
+
+var PTS={S:100,A:82,B:62,C:40,D:20};
+var FAMILLE={Assassin:"agression",Tank:"agression",Controller:"controle",Artillery:"controle",Support:"controle","Damage Dealer":"portee",Marksman:"portee"};
+var BAT={agression:"controle",controle:"portee",portee:"agression"};
+var LFAM={agression:"agression",controle:"contrôle",portee:"portée"};
+
+function clef(n){return String(n||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function slugCdn(n){return String(n).toLowerCase().replace(/[^a-z0-9-]/g,"_");}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+var INDEX={};
+Object.keys(TIERS).forEach(function(m){INDEX[m]={};Object.keys(TIERS[m]).forEach(function(t){
+  TIERS[m][t].split(",").forEach(function(n){INDEX[m][clef(n)]=t;});});});
+
+var SECOURS=(function(){var vu={},out=[];
+  Object.keys(TIERS).forEach(function(m){Object.keys(TIERS[m]).forEach(function(t){
+    TIERS[m][t].split(",").forEach(function(n){var k=clef(n);if(!vu[k]){vu[k]=1;out.push(n);}});});});
+  return out.sort(function(a,b){return a.localeCompare(b,"fr");});})();
+
+function teinte(k){var h=0;for(var i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))%360;return "hsl("+h+" 62% 55%)";}
+function initiales(n){var m=String(n).replace(/[^a-zA-Z0-9 &-]/g,"").split(/[ &-]+/).filter(Boolean);
+  return (m.length>=2?m[0][0]+m[1][0]:String(n).slice(0,2)).toUpperCase();}
+
+/* ================= ÉTAT ================= */
+var vue="draft",cible=null,carteId=null,q="";
+var ennemis=[],bans=[],allies=[],roster=new Set(),meta="charge";
+var brawlers=SECOURS.map(function(n){return {nom:n,k:clef(n),img:null,couleur:null,classe:null};});
+var parClef={};
+function indexer(){parClef={};brawlers.forEach(function(b){parClef[b.k]=b;});}
+indexer();
+
+var KEY="manager:roster";
+try{var r=localStorage.getItem(KEY);if(r)roster=new Set(JSON.parse(r));}catch(e){}
+function sauver(){try{localStorage.setItem(KEY,JSON.stringify(Array.from(roster)));}catch(e){}}
+
+fetch("https://api.brawlapi.com/v1/brawlers").then(function(r){return r.ok?r.json():Promise.reject();})
+.then(function(d){
+  brawlers=(d.list||[]).filter(function(b){return b.released!==false;}).map(function(b){
+    return {nom:b.name,k:clef(b.name),img:b.imageUrl2||b.imageUrl||null,
+      couleur:(b.rarity&&b.rarity.color)||null,
+      classe:(b.class&&b.class.name!=="Unknown")?b.class.name:null};
+  }).sort(function(a,b){return a.nom.localeCompare(b.nom,"fr");});
+  indexer();meta="ok";render();
+}).catch(function(){meta="hors";render();});
+
+/* ================= IMAGES ================= */
+function fbImg(el){
+  var n=el.getAttribute("data-next");
+  if(n){el.removeAttribute("data-next");el.src=n;return;}
+  var ini=el.getAttribute("data-ini");
+  if(ini){el.parentNode.innerHTML="<em>"+esc(ini)+"</em>";}else{el.remove();}
+}
+function portrait(b,t,tilt){
+  var s1="https://media.brawltime.ninja/brawlers/"+slugCdn(b.nom)+"/avatar.png?size=160";
+  var s2=b.img||("https://cdn.brawlify.com/brawlers/borderless/"+slugCdn(b.nom)+".png");
+  var col=b.couleur||teinte(b.k||"x");
+  return '<span class="port'+(tilt?" tilt":"")+'" style="width:'+t+'px;height:'+t+'px;--r:'+col+
+    ';--fs:'+Math.round(t*0.4)+'px;border-radius:'+Math.round(t*0.26)+'px">'+
+    '<img src="'+s1+'" data-next="'+s2+'" data-ini="'+esc(initiales(b.nom))+'" alt="" onerror="fbImg(this)"></span>';
+}
+function vignette(m,l){
+  var s1="https://media.brawltime.ninja/maps/"+m.img+".png?size=200";
+  var s2="https://cdn.brawlify.com/maps/regular/"+m.img+".png";
+  return '<span class="vig" style="width:'+l+'px;height:'+Math.round(l*1.5)+'px">'+
+    '<img src="'+s1+'" data-next="'+s2+'" alt="" onerror="fbImg(this)"></span>';
+}
+
+/* ================= MOTEUR ================= */
+function bDe(k){return parClef[k]||{nom:k,k:k,img:null,couleur:null,classe:null};}
+function familleDe(k){var b=parClef[k];return b&&b.classe?(FAMILLE[b.classe]||null):null;}
+function carteActive(){for(var i=0;i<MAPS.length;i++)if(MAPS[i].id===carteId)return MAPS[i];return null;}
+
+function conseils(){
+  var c=carteActive();if(!c)return [];
+  var exclus={};ennemis.concat(bans).concat(allies).forEach(function(k){exclus[k]=1;});
+  var famE=ennemis.map(familleDe).filter(Boolean);
+  var famA=allies.map(familleDe).filter(Boolean),cntA={};
+  famA.forEach(function(x){cntA[x]=(cntA[x]||0)+1;});
+  var rang={};c.top.forEach(function(p,i){rang[clef(p[0])]={rang:i,wr:p[1]};});
+  var out=[];
+  roster.forEach(function(k){
+    if(exclus[k])return;
+    var tier=INDEX[c.mode][k]||"D",score=PTS[tier],rs=[];
+    var s=rang[k];
+    if(s){score+=[20,15,11][s.rang];rs.push({p:1,t:"n°"+(s.rang+1)+" sur la carte · "+s.wr+"% de victoires"});}
+    if(tier==="S"||tier==="A")rs.push({p:2,t:"tier "+tier+" en "+MODES[c.mode].nom});
+    var f=familleDe(k);
+    if(f&&famE.length){
+      var g=0,pd=0;
+      famE.forEach(function(fe){if(BAT[f]===fe)g++;if(BAT[fe]===f)pd++;});
+      score+=g*9-pd*9;
+      if(g>pd)rs.push({p:0,t:LFAM[f]+" contre leur "+LFAM[BAT[f]]});
+      else if(pd>g)rs.push({p:3,t:"mauvais face à leur composition"});
+    }
+    if(f&&famA.length){
+      if(cntA[f]){score-=6*cntA[f];rs.push({p:6,t:"double un rôle déjà pris par ton équipe"});}
+      else{score+=6;rs.push({p:2,t:"complète les rôles de ton équipe"});}
+    }
+    if(!rs.length)rs.push({p:4,t:"tier "+tier+" en "+MODES[c.mode].nom});
+    rs.sort(function(a,b){return a.p-b.p;});
+    var b=bDe(k);
+    out.push({k:k,b:b,nom:b.nom,tier:tier,score:score,raison:rs[0].t});
+  });
+  out.sort(function(a,b){return b.score-a.score;});
+  return out.slice(0,4);
+}
+
+/* ================= RENDU ================= */
+function grilleHTML(mode){
+  var f=q.trim().toLowerCase();
+  var l=brawlers.filter(function(b){return b.nom.toLowerCase().indexOf(f)>-1;});
+  if(mode==="choix")l=l.slice(0,60);
+  return l.map(function(b){
+    var on=mode==="roster"&&roster.has(b.k);
+    return '<button class="cel'+(on?" on":"")+'" data-act="'+(mode==="roster"?"toggle":"choisir")+'" data-v="'+b.k+'">'+
+      portrait(b,40,false)+"<b>"+esc(b.nom)+"</b></button>";
+  }).join("");
+}
+
+function vueHTML(){
+  var h='<div class="bar"><div class="tt logo">Le Manager</div>'+
+    '<button class="b alt sm" data-act="'+(vue==="roster"?"draft":"roster")+'">'+(vue==="roster"?"Retour":"Mes persos")+"</button></div>";
+
+  if(vue==="roster"){
+    h+='<p class="intro">Coche les brawlers niveau 9 minimum que tu sais jouer. '+roster.size+" coché"+(roster.size>1?"s":"")+".</p>";
+    h+='<div class="wrap" style="margin-bottom:12px"><button class="b sm" data-act="tout">Tout cocher</button>'+
+       '<button class="b alt sm" data-act="rien">Tout décocher</button></div>';
+    h+='<input class="inp" id="q" placeholder="Chercher un brawler" value="'+esc(q)+'">';
+    h+='<div class="grid" id="grid">'+grilleHTML("roster")+"</div>";
+    return h;
+  }
+
+  if(vue==="cartes"){
+    Object.keys(MODES).forEach(function(m){
+      var info=MODES[m];
+      h+='<div style="margin-bottom:16px"><div class="lab" style="color:'+info.c+';margin-top:0">'+info.nom+"</div>";
+      MAPS.filter(function(x){return x.mode===m;}).forEach(function(x){
+        h+='<div style="margin-bottom:8px"><button class="b full" data-act="carte" data-v="'+x.id+
+           '" style="background:'+info.c+';color:#191036;text-shadow:none;box-shadow:0 5px 0 color-mix(in srgb,'+info.c+' 55%,#191036)">'+
+           '<span style="display:flex;align-items:center;gap:11px">'+vignette(x,34)+
+           '<span style="font-size:18px">'+esc(x.nom)+"</span></span><span style=\"font-size:13px\">›</span></button></div>";
+      });
+      h+="</div>";
+    });
+    return h;
+  }
+
+  if(cible){
+    h+='<div class="lab" style="margin-top:0">'+(cible==="ennemi"?"Qui est pris en face ?":cible==="allie"?"Qu'a pris ton coéquipier ?":"Quel brawler est banni ?")+"</div>";
+    h+='<input class="inp" id="q" placeholder="Chercher" value="'+esc(q)+'">';
+    h+='<div class="grid" id="grid">'+grilleHTML("choix")+"</div>";
+    h+='<button class="b alt sm" style="margin-top:12px" data-act="annuler">Annuler</button>';
+    return h;
+  }
+
+  var c=carteActive(),cm=c?MODES[c.mode].c:"#FFC93C";
+  h+='<button class="b full" data-act="cartes" style="background:'+cm+';box-shadow:0 5px 0 color-mix(in srgb,'+cm+' 55%,#191036);margin-bottom:14px">'+
+     '<span style="display:flex;align-items:center;gap:11px">'+(c?vignette(c,32):"")+
+     '<span><span style="display:block;font-size:11px;opacity:.75">'+(c?MODES[c.mode].nom:"Étape 1")+"</span>"+
+     '<span style="font-size:20px">'+(c?esc(c.nom):"Choisir la carte")+"</span></span></span>"+
+     '<span style="font-size:13px">changer</span></button>';
+
+  if(!c){h+='<div class="box"><p>Ouvre la carte annoncée au début du draft. Tu auras un nom tout de suite.</p>'+
+    '<button class="b" data-act="cartes">Choisir la carte</button></div>';return h+noteHTML();}
+
+  if(roster.size===0){h+='<div class="box"><p>Coche d\'abord tes brawlers, sinon impossible de te conseiller un perso jouable.</p>'+
+    '<button class="b" data-act="roster">Cocher mes persos</button></div>';return h+noteHTML();}
+
+  var l=conseils();
+  if(!l.length){h+='<div class="box"><p>Tous tes brawlers sont bannis ou déjà pris.</p></div>';}
+  else{
+    var t=l[0];
+    h+='<div class="hero" style="--r:'+(t.b.couleur||cm)+'"><span class="tierb">Tier '+t.tier+"</span>"+
+       '<div class="in">'+portrait(t.b,84,true)+
+       '<span><span class="ribbon">Prends</span><div class="tt name">'+esc(t.nom)+"</div></span></div>"+
+       '<div class="why">'+esc(t.raison)+"</div></div>";
+    l.slice(1).forEach(function(x){
+      h+='<div class="row">'+portrait(x.b,40,false)+'<span class="n">'+esc(x.nom)+"</span>"+
+         '<span class="w">'+esc(x.raison)+"</span></div>";
+    });
+  }
+
+  h+='<div class="lab">Mon équipe</div><div class="wrap">';
+  allies.forEach(function(k){h+='<button class="pil allie" data-act="rma" data-v="'+k+'">'+portrait(bDe(k),32,false)+esc(bDe(k).nom)+" ✕</button>";});
+  if(allies.length<2)h+='<button class="pil add" data-act="addA">+ ajouter</button>';
+  h+="</div>";
+
+  h+='<div class="lab">Pris en face</div><div class="wrap">';
+  ennemis.forEach(function(k){h+='<button class="pil" data-act="rme" data-v="'+k+'">'+portrait(bDe(k),32,false)+esc(bDe(k).nom)+" ✕</button>";});
+  if(ennemis.length<3)h+='<button class="pil add" data-act="addE">+ ajouter</button>';
+  h+="</div>";
+
+  h+='<div class="lab">Bannis</div><div class="wrap">';
+  bans.forEach(function(k){h+='<button class="pil ban" data-act="rmb" data-v="'+k+'">'+portrait(bDe(k),32,false)+esc(bDe(k).nom)+" ✕</button>";});
+  if(bans.length<6)h+='<button class="pil add" data-act="addB">+ ajouter</button>';
+  h+="</div>";
+
+  h+='<button class="b alt sm" style="margin-top:18px" data-act="reset">Nouveau draft</button>';
+  return h+noteHTML();
+}
+
+function noteHTML(){
+  return '<div class="note">Winrates et tiers relevés le 29/07/2026 sur Brawl Time Ninja, saison 52. '+
+   "Les picks alliés servent à l'équilibre des rôles, pas à une synergie mesurée. L'ajustement contre les picks adverses suit le cycle agression → contrôle → portée : approximation, en attendant de vraies données de matchups."+
+   (meta==="hors"?" Couleurs de rareté et classes indisponibles : l'+"'"+'API n\'a pas répondu.":"")+
+   " Contenu non affilié à Supercell.</div>";
+}
+
+var app=document.getElementById("app");
+function render(){app.innerHTML=vueHTML();}
+
+app.addEventListener("input",function(e){
+  if(e.target.id==="q"){q=e.target.value;var g=document.getElementById("grid");
+    if(g)g.innerHTML=grilleHTML(vue==="roster"?"roster":"choix");}
+});
+
+app.addEventListener("click",function(e){
+  var el=e.target.closest("[data-act]");if(!el)return;
+  var a=el.getAttribute("data-act"),v=el.getAttribute("data-v");
+  if(a==="roster"){vue="roster";q="";}
+  else if(a==="draft"){vue="draft";q="";cible=null;}
+  else if(a==="cartes"){vue="cartes";}
+  else if(a==="carte"){carteId=v;ennemis=[];bans=[];allies=[];cible=null;vue="draft";}
+  else if(a==="tout"){roster=new Set(brawlers.map(function(b){return b.k;}));sauver();}
+  else if(a==="rien"){roster=new Set();sauver();}
+  else if(a==="toggle"){roster.has(v)?roster.delete(v):roster.add(v);sauver();}
+  else if(a==="addA"){cible="allie";q="";}
+  else if(a==="addE"){cible="ennemi";q="";}
+  else if(a==="addB"){cible="ban";q="";}
+  else if(a==="annuler"){cible=null;q="";}
+  else if(a==="choisir"){
+    if(cible==="ennemi"&&ennemis.length<3&&ennemis.indexOf(v)<0)ennemis.push(v);
+    if(cible==="ban"&&bans.length<6&&bans.indexOf(v)<0)bans.push(v);
+    if(cible==="allie"&&allies.length<2&&allies.indexOf(v)<0)allies.push(v);
+    cible=null;q="";}
+  else if(a==="rma"){allies=allies.filter(function(x){return x!==v;});}
+  else if(a==="rme"){ennemis=ennemis.filter(function(x){return x!==v;});}
+  else if(a==="rmb"){bans=bans.filter(function(x){return x!==v;});}
+  else if(a==="reset"){ennemis=[];bans=[];allies=[];cible=null;}
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
