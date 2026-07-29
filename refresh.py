@@ -639,6 +639,20 @@ def urls_depuis_api(net):
 def telecharger_assets(net, noms, ids_cartes):
     print("\n[1] Images en local")
     api = urls_depuis_api(net)
+
+    # Les tier lists retardent toujours d'un brawler ou deux sur le jeu.
+    # L'app nomme ses fichiers d'après l'API : si on ne téléchargeait que les
+    # noms des tier lists, les brawlers récents (Wendy…) resteraient en 404
+    # dans assets/ et repartiraient chercher le CDN à chaque affichage.
+    connus = {clef(n) for n in noms}
+    en_plus = [fiche["nom"] for cle, fiche in sorted(api.items())
+               if cle not in connus]
+    if en_plus:
+        note("%d brawler(s) connus de l'API mais absents des tier lists, "
+             "ajoutés au téléchargement : %s"
+             % (len(en_plus), ", ".join(en_plus[:6])))
+        noms = list(noms) + en_plus
+
     ok_b = ok_c = 0
     echecs = [0]
     interrompu = False

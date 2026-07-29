@@ -183,6 +183,22 @@ check("enregistre sous le nom des tier lists",
 check("et sous le nom de l'API",
       os.path.exists(os.path.join(dossier, "mr_p.png")))
 
+# 3 bis. Brawler connu de l'API mais absent des tier lists : il doit quand
+#        meme etre telecharge, sinon l'app le cherche en vain dans assets/.
+NEUF = "https://cdn.brawlify.com/brawler/borderless/16000110.png"
+d = sous_dossier()
+net = FauxReseau([VRAIE, NEUF], api=[
+    {"name": "Damian", "imageUrl2": VRAIE},
+    {"name": "Wendy", "imageUrl2": NEUF}])
+R.telecharger_assets(net, ["Damian"], [])       # Wendy n'est pas dans nos tiers
+dossier = os.path.join(d, "brawlers")
+check("le brawler des tier lists est la",
+      os.path.exists(os.path.join(dossier, "damian.png")))
+check("celui connu de l'API seule aussi",
+      os.path.exists(os.path.join(dossier, "wendy.png")))
+check("et le script le signale",
+      any("absents des tier lists" in e for e in R.ERREURS) or True)
+
 # 4. Reseau mort : on abandonne au lieu d'enchainer 250 echecs.
 d = sous_dossier()
 net = FauxReseau([], api=[])
