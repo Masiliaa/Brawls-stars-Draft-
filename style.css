@@ -73,5 +73,6 @@ body{min-height:100vh;font-family:'Nunito',system-ui,sans-serif;color:var(--pape
 .box{background:#3A2C7E;border:3px dashed #6A55C8;border-radius:20px;padding:24px 18px;text-align:center}
 .box p{margin:0 0 14px;font-size:14px;font-weight:700;color:var(--mute);line-height:1.5}
 .note{margin-top:24px;font-size:11.5px;font-weight:600;color:var(--mute);line-height:1.65;opacity:.85}
+.note a{color:var(--gold);text-decoration:underline}
 .intro{font-size:14px;font-weight:700;color:var(--mute);margin:0 0 12px;line-height:1.5}
 @media (prefers-reduced-motion:reduce){.b:active,.cel:active{transform:none}}

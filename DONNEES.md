@@ -67,9 +67,28 @@ Ce qui reste, dans l'ordre d'essai :
    elle ne connaît pas les brawlers récents (Damian, Nori) ;
 4. les initiales.
 
+Le CDN brawlify range bien les portraits sous `/brawlers/borderless/`, mais
+**par identifiant numérique** (`16000085.png`), pas par nom. C'est là que
+l'adresse devinée se trompait. Ces identifiants ne figurent nulle part dans
+`donnees.js` : ils viennent de l'API, qui fournit alors directement l'adresse
+complète. Reconstruire l'adresse serait donc redondant — sauf à stocker les
+identifiants dans `donnees.js` pour disposer d'un repli hors API. Piste
+ouverte, pas encore nécessaire.
+
 `cdn.brawlify.com/maps/regular/{id}.png` est **encore une adresse devinée**
-pour les vignettes de carte. À tester de la même façon, et à retirer si elle
-répond 404 elle aussi.
+pour les vignettes de carte, et souffre peut-être du même défaut. À tester
+de la même façon.
+
+## Droits sur les images
+
+Les portraits appartiennent à Supercell et sont servis par le CDN de
+Brawlify. Cet usage — outil personnel, non monétisé, assets non modifiés —
+relève de la [Fan Content Policy](https://supercell.com/fan-content-policy),
+qui exige d'afficher la mention de non-affiliation. Elle est dans le pied de
+page de l'app, avec le lien vers la policy.
+
+**Si l'app est un jour monétisée ou porte de la publicité, cela change de
+catégorie** et la policy doit être relue.
 
 ### Sur le seuil de 0,3 %
 
@@ -144,12 +163,12 @@ Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**135 contrôles au total, tous verts.**
+**137 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
 | `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort) | 48 |
-| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 45 |
+| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images | 47 |
 | `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte | 42 |
 
 Ils ont servi de filet lors du découpage en fichiers : le comportement est
@@ -162,7 +181,7 @@ déclaré en bas de `index.html`.
 
 | Fichier | À quoi il sert | Lignes |
 |---|---|---|
-| `index.html` | la page, presque vide : elle ne fait que charger le reste | 45 |
+| `index.html` | la page, presque vide : elle ne fait que charger le reste | 47 |
 | `style.css` | toute l'apparence | 77 |
 | `outils.js` | petites fonctions de base (nettoyer un nom, échapper du texte) | 51 |
 | `donnees.js` | **d'où viennent les chiffres** — seul fichier réécrit par `refresh.py` | 84 |

@@ -298,9 +298,16 @@ function noteHTML() {
   if (etatApi === "hors") {
     texte += "Couleurs de rareté et classes indisponibles : l'API n'a pas répondu. ";
   }
-  texte += "Contenu non affilié à Supercell.";
 
-  return '<div class="note">' + echapper(texte) + "</div>";
+  /* Mention exigée par la Fan Content Policy de Supercell, dont relève cet
+     outil : usage personnel, non monétisé, images servies par leur CDN.
+     Le lien est ajouté après l'échappement, c'est le seul HTML de la note. */
+  texte += "Images et noms de brawlers appartiennent à Supercell. Ce contenu "
+         + "n'est ni affilié, ni approuvé, ni sponsorisé par Supercell — voir la ";
+
+  return '<div class="note">' + echapper(texte)
+       + '<a href="https://supercell.com/fan-content-policy" target="_blank"'
+       + ' rel="noopener noreferrer">Fan Content Policy</a>.</div>';
 }
 
 

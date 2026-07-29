@@ -140,7 +140,12 @@ const check = (nom, cond, detail = '') => {
   check('annonce le nb de brawlers couverts', /Matchups : 2 brawlers/.test(note2), note2);
   check('ne présente pas les counters comme une mesure',
     /pas une mesure statistique/.test(note2), note2);
-  check('mentionne Supercell', /non affilié à Supercell/.test(note2));
+  check('mention Fan Content Policy de Supercell',
+    /ni affilié, ni approuvé, ni sponsorisé par Supercell/.test(note2), note2);
+  check('lien cliquable vers la policy',
+    /href="https:\/\/supercell\.com\/fan-content-policy"/.test(note2), note2);
+  check('le reste de la note est bien échappé',
+    !/<(?!\/?(a|div)\b)/.test(note2), note2);
 
   // Une source non relevée ne doit jamais hériter de la date d'une autre.
   const note3 = await page.evaluate(() => {
