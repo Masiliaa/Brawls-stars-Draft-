@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Contrôles hors-ligne de refresh.py : parseur, rendu, réécriture des blocs."""
+"""Contrôles hors-ligne de refresh.py : parseur, rendu, réécriture de donnees.js.
+
+    python3 tests/t_refresh.py
+"""
 import json, os, re, shutil, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -54,7 +57,7 @@ check("phrase barley captee", bat[0][1].startswith("Slips"), bat[0])
 check("section maps non melangee", all(p[0] != "pinballdreams" for p in perd + bat))
 
 print("\n== lecture des blocs de index.html ==")
-html = open(R.INDEX, encoding="utf-8").read()
+html = open(R.FICHIER_DONNEES, encoding="utf-8").read()
 noms = R.noms_depuis_tiers(html)
 check("noms uniques", len(noms) == len(set(R.clef(n) for n in noms)), len(noms))
 check("nb brawlers plausible", 100 <= len(noms) <= 115, len(noms))
@@ -71,8 +74,8 @@ check("modes valides", all(c["mode"] in R.MODES for c in cartes))
 
 print("\n== rendu + reecriture (aller-retour) ==")
 tmp = tempfile.mkdtemp()
-cible = os.path.join(tmp, "index.html")
-shutil.copy(R.INDEX, cible)
+cible = os.path.join(tmp, "donnees.js")
+shutil.copy(R.FICHIER_DONNEES, cible)
 
 table = {"mortis": {"perd": [["jacky", "Le surpasse au corps a corps"]],
                     "bat": [["barley", "Punit ses faibles PV"]]},

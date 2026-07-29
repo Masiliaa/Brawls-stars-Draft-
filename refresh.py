@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-refresh.py — régénère les blocs de données de index.html.
+refresh.py — régénère les blocs de données de donnees.js.
 
 Une seule commande, à relancer à chaque nouvelle saison :
 
@@ -13,8 +13,8 @@ disque et espace ses requêtes.
 
 Il n'invente jamais de valeur. Quand une source est inaccessible ou que sa
 structure a changé, il le dit, laisse le bloc concerné inchangé et sort en
-erreur — de sorte qu'un index.html à moitié rempli ne puisse pas passer
-pour un index.html à jour.
+erreur — de sorte qu'un donnees.js à moitié rempli ne puisse pas passer
+pour un donnees.js à jour.
 
   --counters   table de matchups        (brawlcalculator.com/counters/)
   --cartes     pool + classements       (brawlcalculator.com/maps/)
@@ -40,7 +40,8 @@ import urllib.robotparser
 from html.parser import HTMLParser
 
 RACINE = os.path.dirname(os.path.abspath(__file__))
-INDEX = os.path.join(RACINE, "index.html")
+# Seul fichier réécrit : toutes les données de l'app y sont regroupées.
+FICHIER_DONNEES = os.path.join(RACINE, "donnees.js")
 CACHE = os.path.join(RACINE, ".cache")
 DONNEES = os.path.join(RACINE, "data")
 ASSETS = os.path.join(RACINE, "assets")
@@ -73,12 +74,12 @@ ERREURS = []
 
 
 def clef(nom):
-    """Même normalisation que la fonction clef() de index.html."""
+    """Même normalisation que la fonction clef() de outils.js."""
     return re.sub(r"[^a-z0-9]", "", str(nom or "").lower())
 
 
 def slug_cdn(nom):
-    """Même normalisation que slugCdn() de index.html."""
+    """Même normalisation que slugCdn() de outils.js."""
     return re.sub(r"[^a-z0-9-]", "_", str(nom).lower())
 
 
@@ -281,7 +282,7 @@ class Traducteur:
 
     Le script ne traduit pas tout seul : il réutilise ce qui est déjà dans
     data/traductions.json et dépose le reste dans data/a_traduire.json.
-    Les phrases non traduites restent en anglais dans index.html — visible,
+    Les phrases non traduites restent en anglais dans donnees.js — visible,
     donc corrigeable, plutôt que faussement français."""
 
     def __init__(self):
@@ -605,21 +606,21 @@ def telecharger_assets(net, noms, ids_cartes):
 
 
 # ---------------------------------------------------------------------------
-# Écriture dans index.html
+# Écriture dans donnees.js
 # ---------------------------------------------------------------------------
 
 def lire_bloc(html, nom):
     m = re.search(r"/\* @DATA:%s \*/\n(.*?)\n/\* @END:%s \*/" % (nom, nom),
                   html, re.S)
     if not m:
-        raise SystemExit("marqueur @DATA:%s introuvable dans index.html" % nom)
+        raise SystemExit("marqueur @DATA:%s introuvable dans donnees.js" % nom)
     return m.group(1)
 
 
 def ecrire_bloc(html, nom, contenu):
     pat = re.compile(r"(/\* @DATA:%s \*/\n).*?(\n/\* @END:%s \*/)" % (nom, nom), re.S)
     if not pat.search(html):
-        raise SystemExit("marqueur @DATA:%s introuvable dans index.html" % nom)
+        raise SystemExit("marqueur @DATA:%s introuvable dans donnees.js" % nom)
     return pat.sub(lambda m: m.group(1) + contenu + m.group(2), html, count=1)
 
 
@@ -759,7 +760,7 @@ def main():
     ap.add_argument("--delai", type=float, default=1.5, help="secondes entre requêtes")
     ap.add_argument("--ttl", type=int, default=7, help="âge max du cache, en jours")
     ap.add_argument("--sans-cache", action="store_true")
-    ap.add_argument("--blanc", action="store_true", help="n'écrit pas index.html")
+    ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE", help="'counters' ou 'maps'")
     a = ap.parse_args()
 
@@ -775,7 +776,7 @@ def main():
         ap.print_help()
         return 1
 
-    html = open(INDEX, encoding="utf-8").read()
+    html = open(FICHIER_DONNEES, encoding="utf-8").read()
     noms = noms_depuis_tiers(html)
     maj, saison = maj_actuelle(html)
     aujourdhui = dt.date.today().strftime("%d/%m/%Y")
@@ -823,10 +824,10 @@ def main():
     # TIERS n'est pas re-scrapé par ce script, sa date reste donc manuelle.
     if touche and not a.blanc:
         html = ecrire_bloc(html, "MAJ", rendre_maj(maj, saison))
-        open(INDEX, "w", encoding="utf-8").write(html)
-        print("\nindex.html réécrit.")
+        open(FICHIER_DONNEES, "w", encoding="utf-8").write(html)
+        print("\ndonnees.js réécrit.")
     elif a.blanc:
-        print("\n--blanc : index.html laissé tel quel.")
+        print("\n--blanc : donnees.js laissé tel quel.")
 
     if ERREURS:
         print("\n%d avertissement(s) :" % len(ERREURS))
@@ -848,6 +849,6 @@ if __name__ == "__main__":
         # être relancé chaque saison par quelqu'un qui ne lira pas le code.
         print("\nÉchec inattendu : %s: %s" % (e.__class__.__name__, e),
               file=sys.stderr)
-        print("index.html n'a pas été modifié. Relancer avec --debug counters "
+        print("donnees.js n'a pas été modifié. Relancer avec --debug counters "
               "ou --debug maps pour voir ce que le parseur lit.", file=sys.stderr)
         sys.exit(3)

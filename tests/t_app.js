@@ -162,7 +162,7 @@ const check = (nom, cond, detail = '') => {
 
   console.log('\n== persistance du roster ==');
   const cle = await page.evaluate(() => {
-    roster = new Set(['mortis', 'piper']); sauver();
+    roster = new Set(['mortis', 'piper']); sauverRoster();
     return localStorage.getItem('manager:roster');
   });
   check('clé manager:roster inchangée', JSON.parse(cle).sort().join() === 'mortis,piper', cle);
@@ -207,7 +207,7 @@ const check = (nom, cond, detail = '') => {
   check('finit sur les initiales, pas sur du vide', /<em>MO<\/em>/.test(finale), finale);
 
   console.log('\n== parcours complet à l’écran ==');
-  await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; carteId = null; ennemis = []; allies = []; bans = []; roster = new Set(['mortis','piper','bo','emz']); vue = 'draft'; render(); });
+  await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; carteId = null; ennemis = []; allies = []; bans = []; roster = new Set(['mortis','piper','bo','emz']); ecran = 'draft'; render(); });
   await page.getByText('Choisir la carte').first().click();
   check('liste des cartes affichée', await page.getByText('Safe Zone').first().isVisible());
   await page.getByText('Safe Zone').first().click();

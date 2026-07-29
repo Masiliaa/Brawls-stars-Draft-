@@ -1,6 +1,6 @@
 # État des données et des sources
 
-Ce fichier dit, pour chaque bloc de `index.html`, d'où viennent les chiffres
+Ce fichier dit, pour chaque bloc de `donnees.js`, d'où viennent les chiffres
 et à quel point ils sont vérifiés. Il sert de garde-fou : tant qu'une source
 n'est pas confirmée, le bloc correspondant reste vide et le pied de page de
 l'app le dit à l'utilisateur.
@@ -69,7 +69,7 @@ python3 refresh.py --tout          # tâches 1 à 5
 python3 refresh.py --counters      # table de matchups seule
 python3 refresh.py --cartes        # pool de cartes + classements
 python3 refresh.py --assets        # images en local, bascule ASSETS_LOCAUX
-python3 refresh.py --blanc         # tout scraper sans écrire index.html
+python3 refresh.py --blanc         # tout scraper sans écrire donnees.js
 python3 refresh.py --debug counters # montre ce que le parseur lit
 ```
 
@@ -78,7 +78,7 @@ Bibliothèque standard uniquement — pas de `pip install`. Le script respecte
 réponses en cache dans `.cache/` (`--ttl`, 7 jours).
 
 **Codes de sortie** : `0` rien à signaler · `2` avertissements, blocs
-concernés laissés en l'état · `3` échec inattendu, `index.html` non modifié.
+concernés laissés en l'état · `3` échec inattendu, `donnees.js` non modifié.
 
 ### Si le parseur ne trouve rien
 
@@ -119,18 +119,48 @@ python3 tests/t_refresh.py                              # parseur, rendu, rééc
 Le second exige `npm i playwright` et un Chromium — `CHROME=/chemin/vers/chrome`
 si Playwright ne trouve pas le sien, `PORT=...` pour changer de port.
 
-77 contrôles au total (36 + 41) : parseur HTML et aller-retour de réécriture
+79 contrôles au total (36 + 43) : parseur HTML et aller-retour de réécriture
 des blocs côté Python ; côté navigateur, absence d'erreur JS, tri des
 conseils, exclusion des bans et des picks, repli du cycle de familles, bonus
 et malus de matchup, plafond de synergie, formulations du pied de page,
 chaîne de repli des images jusqu'aux initiales, persistance du roster et
 parcours complet à l'écran.
 
+Ils ont servi de filet lors du découpage en fichiers : le comportement est
+resté identique d'un bout à l'autre de la réorganisation.
+
+## Comment le code est organisé
+
+Chaque fichier répond à une seule question. Ils se chargent dans cet ordre,
+déclaré en bas de `index.html`.
+
+| Fichier | À quoi il sert | Lignes |
+|---|---|---|
+| `index.html` | la page, presque vide : elle ne fait que charger le reste | 43 |
+| `style.css` | toute l'apparence | 77 |
+| `outils.js` | petites fonctions de base (nettoyer un nom, échapper du texte) | 51 |
+| `donnees.js` | **d'où viennent les chiffres** — seul fichier réécrit par `refresh.py` | 84 |
+| `etat.js` | ce que l'app retient : carte choisie, picks, brawlers cochés | 112 |
+| `moteur.js` | **comment le brawler conseillé est calculé** | 313 |
+| `vues.js` | comment tout ça est affiché | 305 |
+| `app.js` | ce qui se passe quand on touche l'écran | 114 |
+
+Ce sont des scripts classiques, pas des modules : aucun outil de
+construction, et le tout fonctionne aussi en ouvrant le fichier directement.
+
+**Par où commencer selon ce que tu cherches :**
+
+- changer un chiffre → `donnees.js`
+- comprendre pourquoi tel brawler est conseillé → `moteur.js`, les quatre
+  fonctions `pointsDe…` / `pointsContre…` / `pointsAvec…`
+- changer un texte ou une couleur à l'écran → `vues.js`, puis `style.css`
+- changer ce que fait un bouton → `app.js`, dictionnaire `ACTIONS`
+
 ## Ce qui ne doit pas changer
 
 - La clé `localStorage` reste `manager:roster` — un roster existant est déjà
   enregistré chez l'utilisateur.
-- Un seul fichier hébergeable : `index.html`, plus `assets/` si les images
-  sont rapatriées. `refresh.py`, `tests/` et `data/` sont des outils de
-  développement, ils ne sont pas déployés.
+- Ce qui est déployé : `index.html`, `style.css`, les six fichiers `.js`, et
+  `assets/` si les images sont rapatriées. `refresh.py`, `tests/` et `data/`
+  sont des outils de développement, ils ne sont pas nécessaires en ligne.
 - Le pied de page ne doit jamais présenter une heuristique comme une mesure.
