@@ -226,6 +226,30 @@ const check = (nom, cond, detail = '') => {
       vu.texte.includes(TEMOINS_ANALYSE[l].toLowerCase()), TEMOINS_ANALYSE[l]);
   }
 
+  console.log('\n== ligne de situation du draft, dans chaque langue ==');
+  const SITUATION = {
+    fr: { expose: 'picks adverses après le tien', dernier: 'Dernier pick' },
+    en: { expose: 'enemy picks after yours', dernier: 'Last pick' },
+    es: { expose: 'picks rivales después del tuyo', dernier: 'Último pick' }
+  };
+  for (const l of ['fr', 'en', 'es']) {
+    const vu = await page.evaluate(lg => {
+      definirLangue(lg); definirMode('rapide'); menuOuvert = null;
+      carteId = 'safe-zone'; roster = new Set(['bull', 'colt', 'bo', 'emz']);
+      allies = []; bans = [];
+      ennemis = []; ecran = 'draft'; render();
+      const premier = document.querySelector('.situation').innerText;
+      ennemis = ['barley', 'shelly', 'piper']; render();
+      const dernier = document.querySelector('.situation').innerText;
+      ennemis = [];
+      return { premier, dernier };
+    }, l);
+    check(l + ' : premier pick annoncé',
+      contient(vu.premier, SITUATION[l].expose), vu.premier);
+    check(l + ' : dernier pick annoncé',
+      contient(vu.dernier, SITUATION[l].dernier), vu.dernier);
+  }
+
   console.log('\n== la barre du haut tient dans tous les écrans ==');
   // « Mes persos » / « My brawlers » / « Mis brawlers » n'ont pas la même
   // largeur : la barre doit tenir même sur le plus étroit des iPhone.

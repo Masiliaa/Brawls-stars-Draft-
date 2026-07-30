@@ -150,6 +150,14 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .analyse .calcul .plus{color:#7ee0a8}
 .analyse .calcul .moins{color:#ff8b76}
 
+.situation{margin:0 0 12px;font-size:11.5px;font-weight:600;color:var(--doux);
+  letter-spacing:.01em;display:flex;align-items:center;gap:7px}
+.situation::before{content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--doux);flex:none}
+/* Dernier pick : plus rien ne peut te punir, on le signale en couleur. */
+.situation.libre{color:var(--vif)}
+.situation.libre::before{background:var(--vif)}
+
 .b.declenche{color:var(--doux);gap:5px}
 /* Petit chevron : signale qu'un choix s'ouvre, au lieu d'une bascule aveugle. */
 .b.declenche::after{content:"";width:0;height:0;

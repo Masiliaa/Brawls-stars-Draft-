@@ -254,6 +254,17 @@ function boutonCarte(carte, couleur) {
        + '<span class="action">' + echapper(t("changer")) + "</span></button>";
 }
 
+/* Où en est le draft : combien de picks adverses viendront encore après le
+   tien. L'app le déduit de l'ordre fixe du classé ; l'afficher évite que le
+   joueur se demande pourquoi les conseils changent de ton. */
+function ligneSituation() {
+  var restantes = reponsesRestantes();
+  var cle = !restantes ? "pickDernier"
+          : (restantes === 1 ? "pickExpose1" : "pickExposeN");
+  return '<p class="situation' + (restantes ? "" : " libre") + '">'
+       + echapper(t(cle, { n: restantes })) + "</p>";
+}
+
 function encadre(message, action, libelle) {
   return '<div class="box"><p>' + echapper(message) + "</p>"
        + '<button class="b" data-act="' + action + '">' + echapper(libelle) + "</button></div>";
@@ -291,6 +302,7 @@ function ligneAnalyse(x, rang) {
     [t("libTier"), x.detail.tier],
     [t("libCarte"), x.detail.carte],
     [t("libEnnemis"), x.detail.ennemis],
+    [t("libRisque"), x.detail.risque],
     [t("libAllies"), x.detail.allies]
   ].filter(function (p) { return p[1]; });
 
@@ -348,6 +360,7 @@ function ecranDraft() {
     return html + encadre(t("inviteRoster"), "roster", t("cocherMesBrawlers")) + noteHTML();
   }
 
+  html += ligneSituation();
   html += (modeAffichage === "analyse")
         ? blocAnalyse(carte)
         : blocConseils(conseils(), couleur);
