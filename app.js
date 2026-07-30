@@ -34,11 +34,13 @@ conteneur.addEventListener("input", function (e) {
 
 var ACTIONS = {
 
-  /* Fait défiler les langues : français → anglais → espagnol → français. */
-  langue: function () { definirLangue(langueSuivante()); },
+  /* Ouvre ou referme un menu de la barre du haut. */
+  ouvrirLangue: function () { menuOuvert = (menuOuvert === "Langue") ? null : "Langue"; },
+  ouvrirMode: function () { menuOuvert = (menuOuvert === "Mode") ? null : "Mode"; },
 
-  /* Bascule entre lecture rapide et analyse détaillée. */
-  mode: function () { definirMode(modeSuivant()); },
+  /* Choix fait dans un menu : on applique et le menu se referme tout seul. */
+  langue: function (v) { definirLangue(v); },
+  mode: function (v) { definirMode(v); },
 
   /* — Navigation — */
   roster: function () { ecran = "roster"; recherche = ""; },
@@ -99,15 +101,34 @@ var ACTIONS = {
   }
 };
 
+var OUVRENT_UN_MENU = ["ouvrirLangue", "ouvrirMode"];
+
 conteneur.addEventListener("click", function (e) {
   var bouton = e.target.closest("[data-act]");
-  if (!bouton) return;
 
-  var action = ACTIONS[bouton.getAttribute("data-act")];
+  /* Cliquer à côté referme le menu ouvert, comme partout ailleurs. */
+  if (!bouton) {
+    if (menuOuvert) { menuOuvert = null; render(); }
+    return;
+  }
+
+  var nom = bouton.getAttribute("data-act");
+  var action = ACTIONS[nom];
   if (!action) return;
+
+  /* Toute action autre que l'ouverture d'un menu le referme. */
+  if (OUVRENT_UN_MENU.indexOf(nom) < 0) menuOuvert = null;
 
   action(bouton.getAttribute("data-v"));
   render();
+});
+
+/* Échap referme le menu : réflexe attendu dès qu'on est au clavier. */
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && menuOuvert) {
+    menuOuvert = null;
+    render();
+  }
 });
 
 

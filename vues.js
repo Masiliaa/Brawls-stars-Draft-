@@ -91,20 +91,56 @@ function vignette(carte, largeur) {
 
 /* ============ Morceaux réutilisés ============ */
 
+/* Un bouton qui ouvre une liste de choix, plutôt qu'un bouton qui bascule
+   à l'aveugle : on voit les options avant de décider, et on peut aller
+   directement à celle qu'on veut. */
+function menuDeroulant(nom, libelleBouton, titre, action, options) {
+  var ouvert = menuOuvert === nom;
+
+  var html = '<div class="choix">'
+           + '<button class="b alt sm declenche" data-act="ouvrir' + nom + '"'
+           + ' aria-haspopup="true" aria-expanded="' + ouvert + '"'
+           + ' title="' + echapper(titre) + '">'
+           + echapper(libelleBouton) + "</button>";
+
+  if (ouvert) {
+    html += '<div class="menu" role="menu">';
+    options.forEach(function (o) {
+      html += '<button role="menuitemradio" aria-checked="' + o.actif + '"'
+            + ' class="' + (o.actif ? "actif" : "") + '"'
+            + ' data-act="' + action + '" data-v="' + o.valeur + '">'
+            + '<span class="coche">' + (o.actif ? "✓" : "") + "</span>"
+            + echapper(o.libelle) + "</button>";
+    });
+    html += "</div>";
+  }
+  return html + "</div>";
+}
+
 function barreHaut() {
   var versRoster = ecran !== "roster";
+
+  var menuMode = menuDeroulant(
+    "Mode",
+    t(modeAffichage === "rapide" ? "modeRapide" : "modeAnalyse"),
+    t("choisirMode"), "mode",
+    MODES_AFFICHAGE.map(function (m) {
+      return {
+        valeur: m, actif: m === modeAffichage,
+        libelle: t(m === "rapide" ? "modeRapide" : "modeAnalyse")
+      };
+    }));
+
+  var menuLangue = menuDeroulant(
+    "Langue", LANGUES[langue].etiquette, t("choisirLangue"), "langue",
+    ORDRE_LANGUES.map(function (l) {
+      return { valeur: l, actif: l === langue, libelle: LANGUES[l].nom };
+    }));
+
   return '<div class="bar"><div class="tt logo">Le Manager</div>'
-       + '<div class="actions">'
-       + '<button class="b alt sm mode" data-act="mode"'
-       + ' title="' + echapper(t("changerMode")) + '">'
-       + echapper(t(modeAffichage === "rapide" ? "modeRapide" : "modeAnalyse"))
-       + "</button>"
-       + '<button class="b alt sm lang" data-act="langue"'
-       + ' title="' + echapper(t("changerLangue")) + '"'
-       + ' aria-label="' + echapper(t("changerLangue")) + '">'
-       + LANGUES[langue].etiquette + "</button>"
+       + '<div class="actions">' + menuMode + menuLangue
        + '<button class="b alt sm" data-act="' + (versRoster ? "roster" : "draft") + '">'
-       + echapper(versRoster ? t("mesPersos") : t("retour"))
+       + echapper(versRoster ? t("mesBrawlers") : t("retour"))
        + "</button></div></div>";
 }
 
@@ -309,7 +345,7 @@ function ecranDraft() {
   }
 
   if (roster.size === 0) {
-    return html + encadre(t("inviteRoster"), "roster", t("cocherMesPersos")) + noteHTML();
+    return html + encadre(t("inviteRoster"), "roster", t("cocherMesBrawlers")) + noteHTML();
   }
 
   html += (modeAffichage === "analyse")

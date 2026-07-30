@@ -153,14 +153,26 @@ const check = (nom, cond, detail = '') => {
   await page.locator('[data-act="draft"]').click();
 
   check('démarre en mode Rapide',
-    (await page.locator('[data-act="mode"]').textContent()) === 'Rapide');
+    (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Rapide');
   check('le mode Rapide montre un seul grand nom',
     (await page.locator('.hero').count()) === 1 &&
     (await page.locator('.analyse').count()) === 0);
 
-  await page.locator('[data-act="mode"]').click();
-  check('un clic → Analyse',
-    (await page.locator('[data-act="mode"]').textContent()) === 'Analyse');
+  // Le bouton ouvre un menu ; rien ne change tant qu'on n'a pas choisi.
+  await page.locator('[data-act="ouvrirMode"]').click();
+  check('le menu s\'ouvre', await page.locator('.menu').isVisible());
+  check('les deux modes sont proposés',
+    (await page.locator('.menu [data-act="mode"]').count()) === 2);
+  check('le mode courant est coché',
+    (await page.locator('.menu [data-act="mode"].actif').getAttribute('data-v')) === 'rapide');
+  check('rien n\'a changé tant qu\'on ne choisit pas',
+    (await page.locator('.hero').count()) === 1);
+
+  await page.locator('.menu [data-act="mode"][data-v="analyse"]').click();
+  check('choisir Analyse l\'applique',
+    (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Analyse');
+  check('le menu se referme après le choix',
+    (await page.locator('.menu').count()) === 0);
   const fiches = await page.locator('.analyse').count();
   check('le mode Analyse détaille plusieurs brawlers', fiches > 4, fiches);
   check('plus de hero en mode Analyse', (await page.locator('.hero').count()) === 0);
@@ -171,38 +183,56 @@ const check = (nom, cond, detail = '') => {
 
   await page.reload({ waitUntil: 'networkidle' });
   check('le mode survit au rechargement',
-    (await page.locator('[data-act="mode"]').textContent()) === 'Analyse');
+    (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Analyse');
 
-  await page.locator('[data-act="mode"]').click();
+  // Un clic à côté doit refermer le menu sans rien changer.
+  await page.locator('[data-act="ouvrirMode"]').click();
+  await page.locator('.note').click();
+  check('cliquer à côté referme le menu',
+    (await page.locator('.menu').count()) === 0);
+  check('et ne change rien',
+    (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Analyse');
+
+  await page.locator('[data-act="ouvrirMode"]').click();
+  await page.keyboard.press('Escape');
+  check('Échap referme le menu', (await page.locator('.menu').count()) === 0);
+
+  await page.locator('[data-act="ouvrirMode"]').click();
+  await page.locator('.menu [data-act="mode"][data-v="rapide"]').click();
   check('retour au mode Rapide',
-    (await page.locator('[data-act="mode"]').textContent()) === 'Rapide');
+    (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Rapide');
 
   console.log('\n== changement de langue ==');
   await page.locator('[data-act="draft"], [data-act="roster"]').first().waitFor();
-  const codeDepart = await page.locator('[data-act="langue"]').textContent();
+  const codeDepart = await page.locator('[data-act="ouvrirLangue"]').textContent();
   check('démarre en français (locale fr-FR)', codeDepart === 'FR', codeDepart);
 
-  await page.locator('[data-act="langue"]').click();
-  check('un clic → anglais',
-    (await page.locator('[data-act="langue"]').textContent()) === 'EN');
-  check('les textes suivent',
-    await page.getByText('My brawlers').first().isVisible());
-  check('l’attribut lang de la page suit',
-    (await page.getAttribute('html', 'lang')) === 'en');
+  await page.locator('[data-act="ouvrirLangue"]').click();
+  check('les trois langues sont proposées',
+    (await page.locator('.menu [data-act="langue"]').count()) === 3);
+  check('elles sont nommées en toutes lettres',
+    (await page.locator('.menu [data-act="langue"]').allTextContents())
+      .join('|').includes('Español'));
 
-  await page.locator('[data-act="langue"]').click();
-  check('deux clics → espagnol',
-    (await page.locator('[data-act="langue"]').textContent()) === 'ES');
+  // On va directement à l'espagnol, sans passer par l'anglais.
+  await page.locator('.menu [data-act="langue"][data-v="es"]').click();
+  check('choix direct de l’espagnol',
+    (await page.locator('[data-act="ouvrirLangue"]').textContent()) === 'ES');
   check('les textes suivent',
     await page.getByText('Mis brawlers').first().isVisible());
+  check('l’attribut lang de la page suit',
+    (await page.getAttribute('html', 'lang')) === 'es');
 
   await page.reload({ waitUntil: 'networkidle' });
   check('la langue survit au rechargement',
-    (await page.locator('[data-act="langue"]').textContent()) === 'ES');
+    (await page.locator('[data-act="ouvrirLangue"]').textContent()) === 'ES');
 
-  await page.locator('[data-act="langue"]').click();
-  check('trois clics → retour au français',
-    (await page.locator('[data-act="langue"]').textContent()) === 'FR');
+  await page.locator('[data-act="ouvrirLangue"]').click();
+  await page.locator('.menu [data-act="langue"][data-v="fr"]').click();
+  check('retour direct au français',
+    (await page.locator('[data-act="ouvrirLangue"]').textContent()) === 'FR');
+  check('plus aucune trace de « persos »',
+    !(await page.locator('#app').innerText()).toLowerCase().includes('persos'));
 
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);

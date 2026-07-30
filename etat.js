@@ -32,10 +32,9 @@ function definirMode(m) {
   try { localStorage.setItem(CLE_MODE_AFFICHAGE, m); } catch (e) { /* ignoré */ }
 }
 
-function modeSuivant() {
-  var i = MODES_AFFICHAGE.indexOf(modeAffichage);
-  return MODES_AFFICHAGE[(i + 1) % MODES_AFFICHAGE.length];
-}
+/* Menu déroulant ouvert dans la barre du haut : null, "langue" ou "mode".
+   Un seul à la fois, et il se referme au moindre clic ailleurs. */
+var menuOuvert = null;
 var cibleAjout = null;     /* null | "ennemi" | "allie" | "ban" — quand on choisit un brawler */
 var carteId = null;        /* identifiant de la carte sélectionnée */
 var recherche = "";        /* texte tapé dans le champ de recherche */

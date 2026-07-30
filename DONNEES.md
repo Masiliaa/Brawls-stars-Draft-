@@ -167,13 +167,13 @@ Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**229 contrôles au total, tous verts.**
+**241 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
-| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, abandon si réseau mort), traduction des phrases de matchup | 60 |
+| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, brawlers hors tier lists, abandon si réseau mort), traduction des phrases de matchup | 63 |
 | `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images, cohérence du détail en mode Analyse | 53 |
-| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, bascule Rapide/Analyse, changement de langue | 59 |
+| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, menus Rapide/Analyse et langue (ouverture, choix direct, fermeture au clic à côté et par Échap) | 68 |
 | `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit y compris le mode Analyse, aucun débordement de la barre de 320 à 430 px | 57 |
 
 Ils ont servi de filet lors du découpage en fichiers : le comportement est
@@ -182,7 +182,7 @@ resté identique d'un bout à l'autre de la réorganisation.
 ## Deux modes d'affichage
 
 Le même calcul, lu de deux façons. Le bouton **Rapide / Analyse** en haut à
-droite bascule ; le choix est retenu sous `manager:mode`.
+droite ouvre un menu où l'on choisit ; le choix est retenu sous `manager:mode`.
 
 - **Rapide** — un nom en très gros, sa meilleure raison, trois suivants.
   Fait pour décider en une seconde, une main sur l'écran.
@@ -196,6 +196,19 @@ choisit ce qu'il en montre. Faire autrement ferait diverger les deux modes.
 
 Un contrôle vérifie en permanence que **la somme du détail égale le score**,
 pour chaque brawler : le mode Analyse ne peut donc pas mentir sur le calcul.
+
+## Menus de la barre du haut
+
+Les deux réglages (affichage, langue) passent par un **menu déroulant**, pas
+par un bouton qui bascule. Un bouton qui change tout au clic oblige à
+deviner ce qui va arriver et à passer par les options intermédiaires ; un
+menu montre les choix et permet d'aller droit au but.
+
+Le menu se ferme au choix, au clic à côté, ou avec Échap. Un seul ouvert à
+la fois, via la variable `menuOuvert`.
+
+**Vocabulaire** : on dit « brawler », pas « perso ». C'est le terme du jeu.
+Un contrôle vérifie qu'aucun « persos » ne réapparaît à l'écran.
 
 ## Style
 
@@ -219,7 +232,9 @@ vérifie et signale tout texte en dur oublié dans le code.
 
 - La langue de départ suit celle du téléphone ; si elle n'est pas gérée,
   l'app démarre en anglais.
-- Le bouton `FR` / `EN` / `ES` en haut à droite fait défiler les trois.
+- Le bouton `FR` / `EN` / `ES` ouvre un menu listant les trois langues en
+  toutes lettres, avec un ✓ sur celle en cours. On va directement à celle
+  qu'on veut, sans passer par les autres.
 - Le choix est retenu sous la clé `manager:langue`, **distincte de celle du
   roster** : changer de langue ne touche jamais aux brawlers cochés.
 

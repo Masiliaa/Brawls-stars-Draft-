@@ -213,7 +213,7 @@ const check = (nom, cond, detail = '') => {
   const TEMOINS_ANALYSE = { fr: 'score', en: 'score', es: 'puntuación' };
   for (const l of ['fr', 'en', 'es']) {
     const vu = await page.evaluate(lg => {
-      definirLangue(lg); definirMode('analyse');
+      definirLangue(lg); definirMode('analyse'); menuOuvert = null;
       carteId = 'safe-zone';
       roster = new Set(['bull', 'colt', 'bo', 'emz', 'mortis', 'shelly']);
       ennemis = []; allies = ['poco']; bans = [];

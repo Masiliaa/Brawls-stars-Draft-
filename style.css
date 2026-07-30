@@ -150,4 +150,22 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .analyse .calcul .plus{color:#7ee0a8}
 .analyse .calcul .moins{color:#ff8b76}
 
-.b.mode{min-width:auto;color:var(--doux)}
+.b.declenche{color:var(--doux);gap:5px}
+/* Petit chevron : signale qu'un choix s'ouvre, au lieu d'une bascule aveugle. */
+.b.declenche::after{content:"";width:0;height:0;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-top:4px solid currentColor;opacity:.7}
+
+.choix{position:relative;flex:0 0 auto}
+/* Le menu flotte au-dessus du reste : c'est le seul endroit de l'app où une
+   ombre est justifiée, elle dit « ce panneau est détaché de la page ». */
+.menu{position:absolute;top:calc(100% + 6px);right:0;z-index:30;min-width:158px;
+  background:var(--carte2);border:1px solid var(--trait);border-radius:12px;
+  padding:5px;display:flex;flex-direction:column;gap:2px;
+  box-shadow:0 14px 34px rgba(0,0,0,.6)}
+.menu button{display:flex;align-items:center;gap:8px;width:100%;min-height:42px;
+  background:transparent;border:none;border-radius:8px;padding:10px 11px;
+  font:inherit;font-size:14px;color:var(--doux);text-align:left;cursor:pointer}
+.menu button:active{background:var(--trait)}
+.menu button.actif{color:var(--texte);font-weight:600}
+.menu .coche{width:13px;flex:none;color:var(--vif);font-size:12px}

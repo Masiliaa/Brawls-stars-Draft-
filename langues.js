@@ -22,8 +22,10 @@ var LANGUES = {
     txt: {
       titre: "Le Manager — draft Brawl Stars",
       changerLangue: "Changer de langue",
+      choisirLangue: "Choisir la langue",
+      choisirMode: "Choisir l'affichage",
 
-      mesPersos: "Mes persos",
+      mesBrawlers: "Mes brawlers",
       retour: "Retour",
 
       rosterIntro1: "Coche les brawlers niveau 9 minimum que tu sais jouer. {n} coché.",
@@ -43,7 +45,7 @@ var LANGUES = {
       changer: "changer",
       inviteCarte: "Ouvre la carte annoncée au début du draft. Tu auras un nom tout de suite.",
       inviteRoster: "Coche d'abord tes brawlers, sinon impossible de te conseiller un perso jouable.",
-      cocherMesPersos: "Cocher mes persos",
+      cocherMesBrawlers: "Cocher mes brawlers",
       tousBannis: "Tous tes brawlers sont bannis ou déjà pris.",
       prends: "Prends",
       tier: "Tier {tier}",
@@ -112,8 +114,10 @@ var LANGUES = {
     txt: {
       titre: "Le Manager — Brawl Stars draft",
       changerLangue: "Change language",
+      choisirLangue: "Choose language",
+      choisirMode: "Choose display",
 
-      mesPersos: "My brawlers",
+      mesBrawlers: "My brawlers",
       retour: "Back",
 
       rosterIntro1: "Tick the brawlers at power 9 or above that you can play. {n} selected.",
@@ -133,7 +137,7 @@ var LANGUES = {
       changer: "change",
       inviteCarte: "Open the map announced at the start of the draft. You'll get a name straight away.",
       inviteRoster: "Tick your brawlers first, otherwise there's no way to suggest one you can actually play.",
-      cocherMesPersos: "Select my brawlers",
+      cocherMesBrawlers: "Select my brawlers",
       tousBannis: "All your brawlers are banned or already taken.",
       prends: "Pick",
       tier: "Tier {tier}",
@@ -202,8 +206,10 @@ var LANGUES = {
     txt: {
       titre: "Le Manager — draft de Brawl Stars",
       changerLangue: "Cambiar idioma",
+      choisirLangue: "Elegir idioma",
+      choisirMode: "Elegir visualización",
 
-      mesPersos: "Mis brawlers",
+      mesBrawlers: "Mis brawlers",
       retour: "Volver",
 
       rosterIntro1: "Marca los brawlers de nivel 9 o más que sabes jugar. {n} seleccionado.",
@@ -223,7 +229,7 @@ var LANGUES = {
       changer: "cambiar",
       inviteCarte: "Abre el mapa anunciado al empezar el draft. Tendrás un nombre enseguida.",
       inviteRoster: "Marca primero tus brawlers; si no, no hay forma de recomendarte uno que puedas jugar.",
-      cocherMesPersos: "Marcar mis brawlers",
+      cocherMesBrawlers: "Marcar mis brawlers",
       tousBannis: "Todos tus brawlers están baneados o ya elegidos.",
       prends: "Elige",
       tier: "Tier {tier}",
