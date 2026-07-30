@@ -250,6 +250,26 @@ const check = (nom, cond, detail = '') => {
       contient(vu.dernier, SITUATION[l].dernier), vu.dernier);
   }
 
+  console.log('\n== bans conseillés, dans chaque langue ==');
+  const BAN = { fr: 'À bannir en priorité', en: 'Ban these first', es: 'Banear primero' };
+  for (const l of ['fr', 'en', 'es']) {
+    const vu = await page.evaluate(lg => {
+      definirLangue(lg); definirMode('rapide'); menuOuvert = null;
+      carteId = 'safe-zone'; roster = new Set(['bull', 'colt', 'bo', 'emz']);
+      ennemis = []; allies = []; bans = [];
+      ecran = 'draft'; render();
+      const pendant = document.body.innerText;
+      const lignes = document.querySelectorAll('.conseil-ban').length;
+      ennemis = ['barley']; render();
+      const apres = document.querySelectorAll('.conseil-ban').length;
+      ennemis = [];
+      return { pendant, lignes, apres };
+    }, l);
+    check(l + ' : le titre des bans est traduit', contient(vu.pendant, BAN[l]), BAN[l]);
+    check(l + ' : 3 bans proposés', vu.lignes === 3, vu.lignes);
+    check(l + ' : ils disparaissent dès le premier pick', vu.apres === 0, vu.apres);
+  }
+
   console.log('\n== la barre du haut tient dans tous les écrans ==');
   // « Mes persos » / « My brawlers » / « Mis brawlers » n'ont pas la même
   // largeur : la barre doit tenir même sur le plus étroit des iPhone.

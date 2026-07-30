@@ -347,6 +347,28 @@ function blocAnalyse(carte) {
 }
 
 
+/* ============ Bans conseillés ============
+   Les bans se jouent avant les picks : dès qu'un pick est saisi, la phase
+   est passée et le bloc disparaît de lui-même. */
+
+function phaseDeBan() {
+  return !ennemis.length && !allies.length && bans.length < MAX_BANS;
+}
+
+function blocBans() {
+  var liste = bansConseilles(NB_BANS_CONSEILLES);
+  if (!liste.length) return "";
+
+  var html = '<div class="lab">' + echapper(t("aBannir")) + "</div>";
+  liste.forEach(function (x) {
+    html += '<div class="row conseil-ban">' + portrait(x.b, 34, false)
+          + '<span class="n">' + echapper(x.nom) + "</span>"
+          + '<span class="w">' + echapper(x.raison) + "</span></div>";
+  });
+  return html;
+}
+
+
 function ecranDraft() {
   var carte = carteActive();
   var couleur = carte ? MODES[carte.mode].c : "#FFC93C";
@@ -364,6 +386,7 @@ function ecranDraft() {
   html += (modeAffichage === "analyse")
         ? blocAnalyse(carte)
         : blocConseils(conseils(), couleur);
+  if (phaseDeBan()) html += blocBans();
   html += sectionPastilles(t("monEquipe"), allies, "allie", "rma", "addA", MAX_ALLIES);
   html += sectionPastilles(t("prisEnFace"), ennemis, "", "rme", "addE", MAX_ENNEMIS);
   html += sectionPastilles(t("bannis"), bans, "ban", "rmb", "addB", MAX_BANS);

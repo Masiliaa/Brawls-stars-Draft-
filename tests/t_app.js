@@ -213,6 +213,89 @@ const check = (nom, cond, detail = '') => {
   check('le même contre vaut plus en dernier pick qu’en pick avancé',
     fiab.trois > fiab.un, fiab);
 
+  console.log('\n== bans conseillés ==');
+  const ban = await page.evaluate(() => {
+    COUNTERS = {};
+    carteId = 'safe-zone';
+    // Roster large : les 4 premiers passent en picks conseilles et sortent
+    // donc des bans, mais il reste des brawlers du roster a tester.
+    roster = new Set(['mortis', 'piper', 'jacky', 'poco',
+                      'bull', 'colt', 'bo', 'emz', 'shelly', 'barley']);
+    ennemis = []; allies = []; bans = [];
+
+    const sansCounters = bansConseilles(NB_BANS_CONSEILLES);
+
+    // Chuck punit trois brawlers de mon roster : il doit remonter.
+    COUNTERS = { chuck: { perd: [], bat: [['mortis', ''], ['piper', ''], ['jacky', '']] } };
+    // Classement complet : la penalite « tu le joues aussi » fait justement
+    // sortir tes propres brawlers du haut du tableau.
+    const avecCounters = bansConseilles(999);
+
+    // Un brawler deja banni ou deja pris ne doit plus etre propose.
+    bans = [sansCounters[0].k];
+    ennemis = [sansCounters[1].k];
+    const apresExclusion = bansConseilles(999).map(x => x.k);
+
+    COUNTERS = {}; bans = []; ennemis = [];
+    return {
+      sansCounters: sansCounters.map(x => ({ k: x.k, tier: x.tier, raison: x.raison })),
+      chuck: avecCounters.find(x => x.k === 'chuck'),
+      rangChuck: avecCounters.findIndex(x => x.k === 'chuck'),
+      // Premier brawler du roster encore proposable au ban.
+      duRoster: avecCounters.find(x => roster.has(x.k)),
+      picks: conseils().map(x => x.k),
+      exclus: [sansCounters[0].k, sansCounters[1].k],
+      apresExclusion: apresExclusion
+    };
+  });
+
+  check('3 bans proposés', ban.sansCounters.length === 3, ban.sansCounters);
+  check('ce sont les plus forts sur la carte',
+    ban.sansCounters.every(x => x.tier === 'S' || x.tier === 'A'), ban.sansCounters);
+  check('chacun est justifié',
+    ban.sansCounters.every(x => x.raison && x.raison.length > 3), ban.sansCounters);
+  check('un banni ou un pick n’est plus proposé',
+    ban.exclus.every(k => !ban.apresExclusion.includes(k)),
+    { exclus: ban.exclus, proposes: ban.apresExclusion.slice(0, 5) });
+  check('celui qui punit ton roster est signalé',
+    ban.chuck && /3 de tes brawlers/.test(ban.chuck.raison), ban.chuck);
+  check('et il remonte dans le classement',
+    ban.rangChuck < 5, { rang: ban.rangChuck, score: ban.chuck && ban.chuck.score });
+  check('un brawler de ton roster est signalé comme tel',
+    ban.duRoster && ban.duRoster.raisons.join(' ').includes('tu le joues aussi'),
+    ban.duRoster);
+  check('les picks conseillés ne sont jamais proposés au ban',
+    ban.picks.every(k => !ban.apresExclusion.includes(k)),
+    { picks: ban.picks, bans: ban.apresExclusion.slice(0, 6) });
+
+  const phase = await page.evaluate(() => {
+    carteId = 'safe-zone'; roster = new Set(['mortis', 'piper']);
+    ennemis = []; allies = []; bans = [];
+    const avantPick = phaseDeBan();
+    ennemis = ['barley'];
+    const apresPick = phaseDeBan();
+    ennemis = []; bans = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const bansPleins = phaseDeBan();
+    bans = [];
+    return { avantPick, apresPick, bansPleins };
+  });
+  const contradiction = await page.evaluate(() => {
+    COUNTERS = {};
+    carteId = 'safe-zone';
+    roster = new Set(['mortis', 'piper', 'jacky', 'poco', 'bull', 'colt', 'bo', 'emz']);
+    ennemis = []; allies = []; bans = [];
+    const picks = conseils().map(x => x.k);
+    const bansProposes = bansConseilles(NB_BANS_CONSEILLES).map(x => x.k);
+    return { picks, bansProposes,
+             communs: picks.filter(k => bansProposes.includes(k)) };
+  });
+  check('l’app ne conseille jamais de bannir ce qu’elle conseille de prendre',
+    contradiction.communs.length === 0, contradiction);
+
+  check('la phase de ban est active avant tout pick', phase.avantPick === true);
+  check('elle se termine dès le premier pick saisi', phase.apresPick === false);
+  check('et quand les 6 bans sont connus', phase.bansPleins === false);
+
   console.log('\n== pied de page honnête ==');
   const note1 = await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; return noteHTML(); });
   check('dit que la table de matchups manque', /Table de matchups absente/.test(note1), note1);

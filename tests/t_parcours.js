@@ -79,7 +79,11 @@ const check = (nom, cond, detail = '') => {
   check('un brawler est conseillé', await page.locator('.hero .name').isVisible());
   check('le mode est affiché',
     (await page.locator('.b.full').first().textContent()).includes('Braquage'));
-  check('3 suggestions de repli', (await page.locator('.row').count()) === 3);
+  // Les bans conseillés partagent la classe .row : on ne compte que les picks.
+  check('3 suggestions de repli',
+    (await page.locator('.row:not(.conseil-ban)').count()) === 3);
+  check('et 3 bans conseillés pendant la phase de ban',
+    (await page.locator('.conseil-ban').count()) === 3);
 
   console.log('\n== ajouter des picks, jusqu\'aux limites ==');
   async function ajouter(bouton, combien) {

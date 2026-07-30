@@ -70,6 +70,15 @@ var FIABILITE_MATCHUP = [1, 0.8, 1, 1.3];
 var PT_EXPO = 10;    /* malus maximal pour un brawler très contrable */
 var VULN_REF = 8;    /* au-delà de 8 counters connus, vulnérabilité maximale */
 
+/* ---- Bans conseillés ----
+   Bannir sert à retirer du draft ce qui te ferait mal. Une bonne cible est
+   forte sur cette carte, punit ce que tu sais jouer, et n'est pas un de tes
+   propres choix — un ban retire le brawler pour les DEUX équipes. */
+var PT_BAN_MENACE = 9;   /* par brawler de ton roster que la cible bat */
+var VICTIMES_REF = 4;    /* au-delà, la menace ne croît plus */
+var PT_BAN_TIEN = 30;    /* malus : bannir un brawler que tu joues te prive aussi */
+var NB_BANS_CONSEILLES = 3;
+
 
 /* ============ Le cycle de familles ============
    Repli grossier utilisé uniquement quand un matchup est absent de
@@ -380,6 +389,87 @@ function evaluer(cle, carte) {
     detail: detail
   };
 }
+
+/* ============ Bans conseillés ============ */
+
+/* Combien de brawlers de TON roster cette cible bat, d'après COUNTERS.
+   La table est lue dans les deux sens, sans compter deux fois la même
+   victime. Renvoie 0 tant que COUNTERS est vide. */
+function brawlersPunis(cle) {
+  var punis = {};
+
+  var fiche = COUNTERS[cle];
+  if (fiche) {
+    (fiche.bat || []).forEach(function (e) {
+      if (roster.has(e[0])) punis[e[0]] = true;
+    });
+  }
+
+  roster.forEach(function (mien) {
+    var f = COUNTERS[mien];
+    if (!f) return;
+    (f.perd || []).forEach(function (e) {
+      if (e[0] === cle) punis[mien] = true;
+    });
+  });
+
+  return Object.keys(punis).length;
+}
+
+/* Les brawlers qu'il vaut le mieux retirer du draft.
+   Même barème que pour les picks — force sur la carte — augmenté de ce que
+   la cible punit chez toi, et diminué si tu la joues toi-même. */
+function bansConseilles(combien) {
+  var carte = carteActive();
+  if (!carte) return [];
+
+  var indisponibles = {};
+  ennemis.concat(bans).concat(allies).forEach(function (cle) {
+    indisponibles[cle] = true;
+  });
+
+  /* Ne jamais proposer de bannir ce qu'on vient de conseiller de prendre :
+     l'app se contredirait à deux lignes d'intervalle. */
+  conseils().forEach(function (x) { indisponibles[x.k] = true; });
+
+  var classement = [];
+  brawlers.forEach(function (b) {
+    if (indisponibles[b.k]) return;
+
+    var base = pointsDeTier(b.k, carte.mode);
+    var surCarte = pointsDeCarte(b.k, carte);
+    var score = base.points + surCarte.points;
+    var raisons = base.raisons.concat(surCarte.raisons);
+
+    var victimes = brawlersPunis(b.k);
+    if (victimes) {
+      score += PT_BAN_MENACE * Math.min(victimes, VICTIMES_REF);
+      raisons.push(raison(0, t("raisonBanMenace", { n: victimes })));
+    }
+
+    if (roster.has(b.k)) {
+      score -= PT_BAN_TIEN;
+      raisons.push(raison(5, t("raisonBanTien")));
+    }
+
+    if (!raisons.length) {
+      raisons.push(raison(4, t("raisonTier", {
+        tier: base.tier, mode: nomMode(carte.mode)
+      })));
+    }
+    raisons.sort(function (x, y) { return x.priorite - y.priorite; });
+
+    classement.push({
+      k: b.k, b: b, nom: b.nom, tier: base.tier, score: score,
+      raison: raisons[0].texte,
+      raisons: raisons.map(function (r) { return r.texte; })
+    });
+  });
+
+  classement.sort(function (x, y) { return y.score - x.score; });
+  return classement.slice(0, combien || NB_BANS_CONSEILLES);
+}
+
 
 /* Les meilleurs brawlers à prendre, dans l'ordre.
    Les brawlers déjà pris, bannis ou joués par l'équipe sont écartés.
