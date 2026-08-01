@@ -56,6 +56,8 @@ BASE_STATS = "https://brawlstats.net"
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
 API_BRAWLERS = "https://api.brawlapi.com/v1/brawlers"
 API_EVENTS = "https://api.brawlapi.com/v1/events"
+API_MAPS = "https://api.brawlapi.com/v1/maps"
+API_MODES = "https://api.brawlapi.com/v1/gamemodes"
 IMG_BRAWLER = "https://media.brawltime.ninja/brawlers/{slug}/avatar.png?size=160"
 IMG_CARTE = "https://media.brawltime.ninja/maps/{id}.png?size=200"
 # Adresse devinee, jamais confirmee : a n'essayer qu'en dernier, et a
@@ -1065,12 +1067,69 @@ def deboguer_events(net):
                      str(e.get("map") or "")[:34]))
 
 
+def deboguer_rotation(net):
+    """Cherche une source automatique pour la rotation classée.
+
+    /v1/events répond, mais ses listes « active » et « upcoming » sont vides.
+    Vide ne veut pas dire impossible : ça peut aussi vouloir dire qu'on
+    regarde au mauvais endroit. On interroge donc les autres points d'entrée,
+    et on affiche la réponse brute avant toute interprétation — c'est la
+    seule façon de distinguer « la donnée n'existe pas » de « notre lecture
+    la rate ».
+
+    Piste principale : /v1/maps expose « disabled » et « lastActive » par
+    carte. Les cartes actives récemment sont, par définition, la rotation.
+    """
+    for url in (API_EVENTS, API_MAPS, API_MODES):
+        print("\n--- " + url)
+        try:
+            brut = net.get(url)
+        except Exception as e:
+            print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+            continue
+        print("  %d octets reçus" % len(brut))
+        try:
+            data = json.loads(brut)
+        except ValueError:
+            print("  reponse non-JSON : " + brut[:120].replace("\n", " "))
+            continue
+
+        lot = data.get("list") if isinstance(data, dict) else None
+        if not isinstance(lot, list):
+            print("  brut : " + brut[:200].replace("\n", " "))
+            continue
+
+        print("  %d entrée(s), champs : %s"
+              % (len(lot), ", ".join(sorted(lot[0])[:12]) if lot else "—"))
+        if not lot or "lastActive" not in lot[0]:
+            continue
+
+        actives = [m for m in lot if not m.get("disabled")]
+        print("  %d non désactivée(s)" % len(actives))
+        # Une carte désactivée n'est pas en rotation, quelle que soit sa date.
+        recentes = sorted((m for m in actives if m.get("lastActive")),
+                          key=lambda m: m["lastActive"], reverse=True)
+        if not recentes:
+            print("  aucune date d'activité — piste sans issue")
+            continue
+        recent = recentes[0]["lastActive"]
+        # Une rotation dure une saison ; deux semaines suffisent à la cerner.
+        fenetre = [m for m in recentes if recent - m["lastActive"] < 14 * 86400]
+        print("  %d carte(s) actives dans les 14 jours precedant la plus "
+              "recente :" % len(fenetre))
+        for m in fenetre[:24]:
+            print("    %-26s %s" % (str(m.get("name"))[:26],
+                                    (m.get("gameMode") or {}).get("name", "?")))
+
+
 def deboguer(net, quoi):
     """Affiche ce que le parseur voit, pour ajuster vite si le site change."""
     if quoi == "carte":
         return deboguer_carte(net)
     if quoi == "events":
         return deboguer_events(net)
+    if quoi == "rotation":
+        return deboguer_rotation(net)
     url = {"counters": BASE_CALC + "/counters/mortis/",
            "maps": BASE_CALC + "/maps/"}.get(quoi)
     if not url:
@@ -1102,7 +1161,8 @@ def main():
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
-                         "'events' (rotation en cours), ou une adresse complète")
+                         "'events', 'rotation' (cherche une source pour le "
+                         "pool classe), ou une adresse complète")
     a = ap.parse_args()
 
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
