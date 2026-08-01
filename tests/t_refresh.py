@@ -66,9 +66,12 @@ check("Larry & Lawrie present", "Larry & Lawrie" in noms)
 check("pas de tier parasite", not any(n in ("S","A","B","C","D") for n in noms))
 
 ids = R.ids_cartes(html)
-check("16 ids de cartes", len(ids) == 16, len(ids))
 cartes = R.cartes_actuelles(html)
-check("16 cartes relues", len(cartes) == 16, len(cartes))
+# Le pool visé est de 18 cartes (6 modes x 3). On tolère 16 tant que les
+# deux manquantes ne sont pas retrouvées, mais on refuse qu'il déborde :
+# une carte en trop signalerait un mode mal reconnu par le scraper.
+check("pool de cartes entre 16 et 18", 16 <= len(cartes) <= 18, len(cartes))
+check("autant d'ids que de cartes", len(ids) == len(cartes), (len(ids), len(cartes)))
 check("Belle's Rock relue", any(c["nom"] == "Belle's Rock" for c in cartes))
 check("modes valides", all(c["mode"] in R.MODES for c in cartes))
 
@@ -99,17 +102,40 @@ check("MAPS bien clos", bm.rstrip().endswith("];"), bm[-30:])
 check("autres blocs intacts", R.lire_bloc(h4, "TIERS") == R.lire_bloc(html, "TIERS"))
 check("MODES intact", R.lire_bloc(h4, "MODES") == R.lire_bloc(html, "MODES"))
 
-maj, saison = R.maj_actuelle(html)
-check("MAJ relu : tiers", maj["tiers"] == ["29/07/2026", "Brawl Time Ninja"], maj)
-check("MAJ relu : matchups vide", maj["matchups"] is None, maj)
-check("saison relue", saison == "52", saison)
+# Le parseur se teste sur un bloc fabriqué ici, jamais sur l'état du jour
+# de donnees.js : sinon chaque « refresh.py » réussi ferait rougir la
+# suite, et un test qui punit le progrès finit par être ignoré.
+FAUX_MAJ = ('/* @DATA:MAJ */\n'
+            'var MAJ={tiers:["29/07/2026","Brawl Time Ninja"],\n'
+            '         cartes:null,\n'
+            '         matchups:["30/07/2026","brawlcalculator.com"],\n'
+            '         synergie:null},SAISON=52;\n'
+            '/* @END:MAJ */')
+mf, sf = R.maj_actuelle(FAUX_MAJ)
+check("MAJ : paire relue", mf["tiers"] == ["29/07/2026", "Brawl Time Ninja"], mf)
+check("MAJ : source relue", mf["matchups"] == ["30/07/2026", "brawlcalculator.com"], mf)
+check("MAJ : null devient None", mf["cartes"] is None and mf["synergie"] is None, mf)
+check("MAJ : saison relue", sf == "52", sf)
 
+# Sur le vrai fichier on ne vérifie que ce qui doit rester vrai quelles que
+# soient les données du moment.
+maj, saison = R.maj_actuelle(html)
+check("MAJ reel : les 4 cles",
+      set(maj) == {"tiers", "cartes", "matchups", "synergie"}, maj)
+check("MAJ reel : dates au format jj/mm/aaaa",
+      all(v is None or re.match(r"^\d{2}/\d{2}/\d{4}$", v[0]) for v in maj.values()),
+      maj)
+check("MAJ reel : jamais de source vide",
+      all(v is None or v[1].strip() for v in maj.values()), maj)
+check("saison numerique", saison.isdigit() and saison != "0", saison)
+
+tiers_avant = maj["tiers"]
 maj["matchups"] = ["01/09/2026", "brawlcalculator.com"]
 h5 = R.ecrire_bloc(h4, "MAJ", R.rendre_maj(maj, "53"))
 maj2, saison2 = R.maj_actuelle(h5)
 check("MAJ aller-retour", maj2 == maj, maj2)
 check("saison bumpee", saison2 == "53", saison2)
-check("tiers non redate", maj2["tiers"] == ["29/07/2026", "Brawl Time Ninja"], maj2)
+check("tiers non redate", maj2["tiers"] == tiers_avant, maj2)
 check("synergie reste null", "synergie:null" in R.lire_bloc(h5, "MAJ"),
       R.lire_bloc(h5, "MAJ"))
 

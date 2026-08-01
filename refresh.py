@@ -98,6 +98,32 @@ def souci(msg):
     print("  ⚠ " + msg, file=sys.stderr)
 
 
+def duree(secondes):
+    """« 45 s », « 2 min 10 s »."""
+    secondes = int(secondes)
+    if secondes < 60:
+        return "%d s" % secondes
+    return "%d min %02d s" % (secondes // 60, secondes % 60)
+
+
+def avancement(fait, total, depart, suffixe=""):
+    """Une ligne d'avancement pendant les longues boucles de téléchargement.
+
+    Sans ça, le script affiche un titre puis se tait plusieurs minutes, et
+    rien ne distingue « ça travaille » de « c'est planté ».
+
+    Le temps restant est extrapolé du rythme réellement observé depuis le
+    début de la boucle, pas d'une constante : il se corrige tout seul quand
+    les pages arrivent du cache et défilent d'un coup. C'est une estimation
+    et pas une mesure — d'où le « ~ », qui doit rester.
+    """
+    ecoule = time.time() - depart
+    reste = ""
+    if fait and ecoule > 2 and fait < total:
+        reste = " — reste ~" + duree(ecoule / fait * (total - fait))
+    note("%d/%d%s%s" % (fait, total, suffixe, reste))
+
+
 # ---------------------------------------------------------------------------
 # Réseau : cache disque, politesse, robots.txt
 # ---------------------------------------------------------------------------
@@ -383,7 +409,12 @@ def scraper_counters(net, tr):
     note("%d fiches repérées dans l'index" % len(fiches))
 
     table, vides = {}, []
+    depart = time.time()
     for i, (s, nom) in enumerate(sorted(fiches.items()), 1):
+        if i % 10 == 0:
+            avancement(i, len(fiches), depart,
+                       " — %d matchup(s)" % sum(len(v["perd"]) + len(v["bat"])
+                                                for v in table.values()))
         url = "%s/counters/%s/" % (BASE_CALC, s)
         try:
             page = net.get(url)
@@ -397,8 +428,8 @@ def scraper_counters(net, tr):
         if not perd and not bat:
             vides.append(s)
         table[clef(nom)] = {"perd": perd, "bat": bat}
-        if i % 10 == 0:
-            note("%d/%d…" % (i, len(fiches)))
+
+    avancement(len(fiches), len(fiches), depart)
 
     if vides:
         souci("%d fiches sans aucun matchup (ex. %s) — titres introuvables, "
@@ -464,7 +495,13 @@ def scraper_cartes(net, tr, anciennes):
     par_nom = {clef(c["nom"]): c for c in anciennes}
 
     cartes = []
-    for s, nom in sorted(liens.items()):
+    depart = time.time()
+    for i, (s, nom) in enumerate(sorted(liens.items()), 1):
+        # En tête de boucle : les « continue » plus bas sauteraient la ligne
+        # d'avancement si elle était à la fin.
+        if i % 20 == 0:
+            avancement(i, len(liens), depart,
+                       " — %d carte(s) retenue(s)" % len(cartes))
         url = "%s/maps/%s/" % (BASE_CALC, s)
         try:
             page = net.get(url)
@@ -495,6 +532,9 @@ def scraper_cartes(net, tr, anciennes):
             "mode": mode,
             "top": top[:8],
         })
+
+    avancement(len(liens), len(liens), depart,
+               " — %d carte(s) retenue(s)" % len(cartes))
 
     manquant_img = [c["nom"] for c in cartes if not c["img"]]
     if manquant_img:
