@@ -4,7 +4,7 @@
 
     python3 tests/t_refresh.py
 """
-import json, os, re, shutil, sys, tempfile
+import collections, json, os, re, shutil, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import refresh as R
@@ -116,6 +116,152 @@ check("mode reconnu depuis le titre",
 check("au plus 8 brawlers gardes", len(R.classement_depuis_page(
       R.aplatir("<h2>best picks</h2>" + "".join(
           '<a href="/b/%d/">B%d</a>' % (i, i) for i in range(12))))) == 8)
+
+print("\n== pool classe lu sur brawltime ==")
+# Adresses relevees le 02/08/2026 sur brawltime.ninja/tier-list/ranked.
+# Tout est dans le lien : le mode et le nom. Les titres de la page, eux,
+# alternent modes et cartes sans hierarchie exploitable.
+RANKED = """
+<html><body>
+<h2>Bounty</h2>
+<a href="/tier-list/mode/bounty">Bounty</a>
+<a href="/tier-list/mode/bounty/map/Dry-Season">Dry Season</a>
+<a href="/tier-list/mode/bounty/map/Hideout">Hideout</a>
+<a href="/tier-list/mode/bounty/map/Layer-Cake">Layer Cake</a>
+<h2>Heist</h2>
+<a href="/tier-list/mode/heist/map/Safe-Zone">Safe Zone</a>
+<a href="/tier-list/mode/heist/map/Safe-Zone">Safe Zone</a>
+<a href="/tier-list/mode/gemGrab/map/Hard-Rock-Mine">Hard Rock Mine</a>
+<a href="/team-builder">Open Team Builder</a>
+</body></html>
+"""
+pool = R.pool_depuis_liens(R.aplatir(RANKED))
+noms_pool = [c["nom"] for c in pool]
+check("les cartes sont lues dans les adresses",
+      noms_pool == ["Dry Season", "Hideout", "Layer Cake", "Safe Zone",
+                    "Hard Rock Mine"], noms_pool)
+check("le mode vient de l'adresse",
+      [c["mode"] for c in pool] == ["bounty"] * 3 + ["heist", "gemGrab"],
+      [c["mode"] for c in pool])
+check("les tirets redeviennent des espaces", "Dry Season" in noms_pool)
+check("un lien de mode sans carte est ignore", "Bounty" not in noms_pool)
+check("un doublon ne compte qu'une fois", noms_pool.count("Safe Zone") == 1)
+check("les liens hors sujet sont ignores", "Open Team Builder" not in noms_pool)
+check("page vide : aucun pool", R.pool_depuis_liens(R.aplatir("<p>x</p>")) == [])
+
+# Source de secours : une autre forme d'adresse, rangee par mode. Le filtre
+# reste le mode lui-meme, donc un lien quelconque ne peut pas passer.
+SECOURS = ('<a href="/rankeds/heist/safe-zone">Safe Zone</a>'
+           '<a href="/rankeds/knockout/belles-rock">Belle\'s Rock</a>'
+           '<a href="/rankeds/gemGrab/hard-rock-mine">Hard Rock Mine</a>'
+           '<a href="/blog/2026/nouveaute">Article</a>'
+           '<a href="/rankeds">Tous</a>')
+sec = R.pool_depuis_liens(R.aplatir(SECOURS))
+check("forme d'adresse courte reconnue",
+      [c["nom"] for c in sec] == ["Safe Zone", "Belles Rock", "Hard Rock Mine"],
+      [c["nom"] for c in sec])
+# L'apostrophe est perdue par l'adresse, mais clef() l'ignore : la carte est
+# quand meme reconnue, et le nom affiche viendra du titre de sa fiche.
+check("l'apostrophe perdue n'empeche pas la correspondance",
+      R.clef("Belles Rock") == R.clef("Belle's Rock"))
+check("modes lus sur la forme courte",
+      [c["mode"] for c in sec] == ["heist", "knockout", "gemGrab"],
+      [c["mode"] for c in sec])
+check("un article de blog n'est pas une carte",
+      "Article" not in [c["nom"] for c in sec])
+
+class NetSources:
+    """Premiere source muette, seconde qui repond."""
+    def __init__(self, page1, page2): self.p = {R.RANKED_NINJA: page1,
+                                                R.RANKED_TOP: page2}
+    def get(self, url, binaire=False):
+        p = self.p.get(url)
+        if p is None:
+            raise IOError("injoignable")
+        return p
+GROS = "".join('<a href="/rankeds/heist/carte-%d">C%d</a>' % (i, i)
+               for i in range(14))
+check("bascule sur la source de secours",
+      len(R.pool_classe(NetSources(None, GROS))) == 14)
+check("une source maigre ne suffit pas",
+      R.pool_classe(NetSources(SECOURS, None)) is None)
+check("la premiere source suffisante est gardee",
+      len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
+
+print("\n== scraper_cartes de bout en bout ==")
+# Le 02/08/2026, chaque morceau passait ses tests et l'enchainement a
+# pourtant produit 147 cartes nommees « Backyard Bowl Brawl Ball », sans
+# vignette et sans classement. Ce test rejoue tout le trajet.
+FICHE_TPL = """
+<html><body><h1>%s</h1>
+<h2>S tier - best picks</h2><a href="/brawlers/bolt/">Bolt</a>
+<h2>A tier - strong picks</h2><a href="/brawlers/sam/">Sam</a>
+<h2>Best bans</h2><a href="/brawlers/edgar/">Edgar</a>
+</body></html>
+"""
+# Un vrai pool : 6 modes x 3 cartes. Un pool trop maigre est refuse par
+# pool_classe(), et c'est voulu -- le test doit donc etre realiste.
+POOL_18 = [("bounty", "Dry Season"), ("bounty", "Hideout"), ("bounty", "Layer Cake"),
+           ("heist", "Safe Zone"), ("heist", "Hot Potato"), ("heist", "Bridge Too Far"),
+           ("knockout", "Belles Rock"), ("knockout", "Deep Diner"), ("knockout", "Flaring Phoenix"),
+           ("gemGrab", "Hard Rock Mine"), ("gemGrab", "Undermine"), ("gemGrab", "Double Swoosh"),
+           ("brawlBall", "Center Stage"), ("brawlBall", "Pinball Dreams"), ("brawlBall", "Sneaky Fields"),
+           ("hotZone", "Dueling Beetles"), ("hotZone", "Open Business"), ("hotZone", "Parallel Plays")]
+RANKED_18 = "".join(
+    '<a href="/tier-list/mode/%s/map/%s">%s</a>' % (m, n.replace(" ", "-"), n)
+    for m, n in POOL_18)
+# L'index de brawlcalculator accole le mode au nom, et liste aussi des
+# cartes hors rotation.
+INDEX_CALC = "".join(
+    '<a href="/maps/%s/">%s Extra</a>' % (n.lower().replace(" ", "-"), n)
+    for _, n in POOL_18) + '<a href="/maps/old-town/">Old Town Bounty</a>'
+class FauxReseau:
+    """Sert les quatre sources, et compte les pages reellement demandees."""
+    def __init__(self): self.vues = []
+    def get(self, url, binaire=False):
+        self.vues.append(url)
+        if url == R.RANKED_NINJA:
+            return RANKED_18
+        if url == R.API_MAPS:
+            return json.dumps({"list": [
+                {"id": 15000019, "name": "Safe Zone"},
+                {"id": 15000042, "name": "Dry Season"}]})
+        if url.endswith("/maps/"):
+            return INDEX_CALC
+        m = re.search(r"/maps/([^/]+)/$", url)
+        if m:
+            return FICHE_TPL % m.group(1).replace("-", " ").title()
+        raise AssertionError("URL inattendue : " + url)
+
+faux = FauxReseau()
+res = R.scraper_cartes(faux, None, [{"nom": "Vieille Carte", "mode": "heist",
+                                     "img": 1, "top": []}])
+par_nom_res = {c["nom"]: c for c in res}
+check("les 18 cartes du pool sont retenues", len(res) == 18, len(res))
+check("hors rotation ecarte", "Old Town" not in par_nom_res)
+check("3 cartes par mode",
+      sorted(collections.Counter(c["mode"] for c in res).values()) == [3] * 6,
+      collections.Counter(c["mode"] for c in res))
+check("aucune page hors pool telechargee",
+      not any("old-town" in u for u in faux.vues),
+      [u for u in faux.vues if "old-town" in u])
+check("le nom ne porte plus le mode", "Dry Season Bounty" not in par_nom_res)
+check("le mode vient de brawltime",
+      par_nom_res["Safe Zone"]["mode"] == "heist",
+      par_nom_res["Safe Zone"]["mode"])
+check("la vignette vient du catalogue",
+      par_nom_res["Safe Zone"]["img"] == 15000019,
+      par_nom_res["Safe Zone"]["img"])
+check("carte absente du catalogue : pas de vignette inventee",
+      par_nom_res["Hideout"]["img"] is None, par_nom_res["Hideout"]["img"])
+check("le classement est lu",
+      [x[0] for x in par_nom_res["Dry Season"]["top"]] == ["Bolt", "Sam"],
+      par_nom_res["Dry Season"]["top"])
+check("« Best bans » n'entre pas dans le classement",
+      all("Edgar" not in [x[0] for x in c["top"]] for c in res))
+check("l'identifiant est bien forme",
+      par_nom_res["Dry Season"]["id"] == "dry-season",
+      par_nom_res["Dry Season"]["id"])
 
 print("\n== restreindre au pool connu ==")
 # Le site liste 147 cartes, la rotation classee en compte 18, et l'API des

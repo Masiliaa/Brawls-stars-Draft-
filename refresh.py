@@ -61,6 +61,15 @@ BASE_STATS = "https://brawlstats.net"
 # permanente. On lit donc le résultat de leur travail au lieu de le refaire.
 BASE_NINJA = "https://brawltime.ninja"
 RANKED_NINJA = BASE_NINJA + "/tier-list/ranked"
+BASE_TOP = "https://topbrawl.com"
+RANKED_TOP = BASE_TOP + "/rankeds"
+
+# Deux sources plutôt qu'une : le pool est la seule donnée sans repli
+# possible — sans lui le script ne sait plus quelles cartes lire. Un site qui
+# se refait, et tout s'arrête. On essaie donc la seconde avant d'abandonner.
+SOURCES_POOL = (("brawltime.ninja", RANKED_NINJA),
+                ("topbrawl.com", RANKED_TOP))
+POOL_MIN = 12                # en dessous, ce n'est pas un pool mais un reste
 # L'API donne les vraies adresses d'image. Les deux motifs ci-dessous sont
 # reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
@@ -564,14 +573,90 @@ def mode_depuis_texte(texte):
     return None
 
 
+# brawltime : /tier-list/mode/bounty/map/Dry-Season
+RX_POOL_LONG = re.compile(r"/mode/([^/]+)/map/([^/?#]+)")
+# Forme courte, pour une source qui rangerait ses cartes par mode :
+# /rankeds/heist/safe-zone. Sans danger : le premier segment doit être un des
+# six modes connus, sinon le lien est écarté.
+RX_POOL_COURT = re.compile(r"/([A-Za-z][A-Za-z ]*)/([^/?#]+?)/?$")
+
+
+def pool_depuis_liens(blocs):
+    """Le pool classé, lu dans les adresses plutôt que dans la mise en page.
+
+    Chaque lien porte tout ce qu'il faut :
+        /tier-list/mode/bounty/map/Dry-Season
+    Le mode et le nom sont dans l'adresse. On ne lit donc ni les titres ni la
+    structure : une formulation change, une adresse beaucoup moins. C'est
+    aussi ce qui permet de lire une seconde source sans tout réécrire.
+    """
+    vus, pool = set(), []
+    for b in blocs:
+        if b["type"] != "lien" or not b["href"]:
+            continue
+        m = RX_POOL_LONG.search(b["href"]) or RX_POOL_COURT.search(b["href"])
+        if not m:
+            continue
+        # Le filtre, c'est le mode : seuls les six modes connus passent. Un
+        # motif large ne coûte donc rien, il ne peut pas inventer de carte.
+        mode = mode_depuis_texte(m.group(1))
+        nom = urllib.parse.unquote(m.group(2)).replace("-", " ").strip()
+        # Une adresse en minuscules ne porte pas la casse du nom. On la
+        # restitue, sans toucher à un nom déjà capitalisé : « Belle's Rock »
+        # deviendrait « Belle'S Rock ». Ce nom ne sert de toute façon qu'à
+        # reconnaître la carte — l'affiché vient du titre de sa fiche.
+        if nom.islower():
+            nom = nom.title()
+        if not mode or not clef(nom) or clef(nom) in vus:
+            continue
+        vus.add(clef(nom))
+        pool.append({"mode": mode, "nom": nom})
+    return pool
+
+
+def pool_classe(net):
+    """Les cartes en rotation, chez la première source qui répond.
+
+    On s'arrête à la première qui donne un pool crédible : inutile de
+    solliciter la seconde quand la première a fait le travail.
+    """
+    for nom, url in SOURCES_POOL:
+        try:
+            pool = pool_depuis_liens(aplatir(net.get(url)))
+        except Exception as e:
+            souci("%s injoignable (%s) — on essaie la source suivante" % (nom, e))
+            continue
+        if len(pool) >= POOL_MIN:
+            note("rotation classée : %d cartes lues sur %s" % (len(pool), nom))
+            return pool
+        souci("%s : %d carte(s) lue(s), trop peu pour un pool — page refaite ?"
+              % (nom, len(pool)))
+    souci("aucune source n'a donné le pool classé")
+    return None
+
+
+def ids_cartes_api(net):
+    """{clef du nom: identifiant d'image}, d'après le catalogue de brawlapi.
+
+    Sans ça, une carte qui entre en rotation arrive sans vignette et il faut
+    relever son identifiant à la main. Le catalogue les publie tous.
+    """
+    try:
+        lot = json.loads(net.get(API_MAPS)).get("list") or []
+    except Exception as e:
+        souci("catalogue des cartes injoignable (%s) : les nouvelles cartes "
+              "arriveront sans vignette" % e)
+        return {}
+    return {clef(m["name"]): m["id"] for m in lot
+            if m.get("name") and m.get("id")}
+
+
 def restreindre_au_pool(liens, anciennes):
     """Ne garder que les cartes du pool déjà connu.
 
     Le site liste toutes les cartes jamais publiées — 147 au 02/08/2026 —
-    alors que la rotation classée en compte 18. Aucune source automatique ne
-    dit lesquelles : l'API des événements de brawlapi répond bien, mais ses
-    listes « active » et « upcoming » sont vides. Le pool reste donc tenu à
-    la main dans donnees.js, et le script se contente de le rafraîchir.
+    alors que la rotation classée en compte 18. La liste de référence vient
+    donc d'ailleurs — de brawltime, ou à défaut du pool déjà enregistré.
 
     Le libellé de l'index accole le mode au nom (« Center Stage Brawl
     Ball »), d'où la comparaison par préfixe. Elle est volontairement large :
@@ -587,7 +672,25 @@ def restreindre_au_pool(liens, anciennes):
 
 
 def scraper_cartes(net, tr, anciennes):
-    print("\n[4+5] Pool de cartes — brawlcalculator.com")
+    """Deux sources, chacune pour ce qu'elle sait :
+
+    brawltime dit QUELLES cartes sont en rotation classée, brawlcalculator
+    dit QUI jouer dessus. Si brawltime devient illisible, on retombe sur le
+    pool déjà enregistré — vieux d'une saison peut-être, mais jamais faux au
+    point d'inventer des cartes.
+    """
+    print("\n[4+5] Pool de cartes")
+    pool = pool_classe(net)
+    if pool:
+        reference = pool
+    else:
+        souci("pool classé illisible : on garde les %d cartes déjà "
+              "enregistrées, qui peuvent dater d'une saison précédente"
+              % len(anciennes))
+        reference = anciennes
+    modes_connus = {clef(c["nom"]): c["mode"] for c in reference if c.get("mode")}
+    ids_api = ids_cartes_api(net)
+
     try:
         index = net.get(BASE_CALC + "/maps/")
     except Exception as e:
@@ -604,10 +707,9 @@ def scraper_cartes(net, tr, anciennes):
         souci("aucun lien /maps/ trouvé — structure changée, voir --debug maps")
         return None
     note("%d cartes repérées" % len(liens))
-    liens, connus = restreindre_au_pool(liens, anciennes)
+    liens, connus = restreindre_au_pool(liens, reference)
     if connus:
-        note("%d à examiner, le pool connu en compte %d"
-             % (len(liens), len(connus)))
+        note("%d à examiner pour un pool de %d" % (len(liens), len(connus)))
 
     # index des anciennes entrées, pour retrouver l'identifiant d'image
     par_nom = {clef(c["nom"]): c for c in anciennes}
@@ -628,15 +730,16 @@ def scraper_cartes(net, tr, anciennes):
             continue
         pb = aplatir(page)
         texte_page = " ".join(b["texte"] for b in pb[:40])
-        # Le mode se lit sur le libellé de l'index, qui le contient ; le nom
-        # se lit sur le titre de la fiche, qui ne le contient pas.
-        mode = mode_depuis_texte(nom + " " + texte_page)
-        if not mode:
-            continue
         nom = nom_depuis_page(pb, nom)
         # Le préfixe pouvait retenir une carte homonyme ; le titre de la
         # fiche tranche.
         if connus and clef(nom) not in connus:
+            continue
+        # Le mode vient de la source qui le donne explicitement dans son
+        # adresse ; la lecture du texte n'est qu'un repli.
+        mode = (modes_connus.get(clef(nom))
+                or mode_depuis_texte(nom + " " + texte_page))
+        if not mode:
             continue
 
         top = classement_depuis_page(pb)
@@ -646,7 +749,9 @@ def scraper_cartes(net, tr, anciennes):
         ancienne = par_nom.get(clef(nom))
         cartes.append({
             "id": re.sub(r"[^a-z0-9]+", "-", nom.lower()).strip("-"),
-            "img": ancienne["img"] if ancienne else None,
+            # Le catalogue de brawlapi d'abord : c'est lui qui permet à une
+            # carte entrant en rotation d'avoir sa vignette sans intervention.
+            "img": ids_api.get(clef(nom)) or (ancienne["img"] if ancienne else None),
             "nom": nom,
             "mode": mode,
             "top": top,
@@ -659,11 +764,12 @@ def scraper_cartes(net, tr, anciennes):
     # détail : elle est peut-être sortie de la rotation, et personne d'autre
     # ne le dira.
     trouvees = {clef(c["nom"]) for c in cartes}
-    perdues = sorted(clef(c["nom"]) for c in anciennes
+    perdues = sorted(c["nom"] for c in reference
                      if clef(c["nom"]) not in trouvees)
     if perdues:
-        souci("introuvable(s) sur le site : %s — carte(s) sortie(s) de la "
-              "rotation, renommée(s), ou fiche illisible" % ", ".join(perdues))
+        souci("en rotation mais absente(s) de brawlcalculator : %s — "
+              "carte(s) trop récente(s), renommée(s), ou fiche illisible"
+              % ", ".join(perdues))
 
     manquant_img = [c["nom"] for c in cartes if not c["img"]]
     if manquant_img:
@@ -1205,9 +1311,9 @@ def deboguer(net, quoi):
     if quoi == "ranked":
         return deboguer_ranked(net)
     if quoi == "ninja":
-        # Adresse relevee a la main sur le site, pas devinee : les trois
+        # Adresses relevees a la main sur les sites, pas devinees : les trois
         # sondes precedentes ont echoue faute d'avoir su ou aller.
-        return deboguer_ranked(net, (RANKED_NINJA,))
+        return deboguer_ranked(net, (RANKED_NINJA, RANKED_TOP))
     if quoi == "events":
         return deboguer_events(net)
     if quoi == "rotation":
