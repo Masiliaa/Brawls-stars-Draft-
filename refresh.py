@@ -909,12 +909,53 @@ def controler_counters(table, noms):
         print("    %-14s battu par : %-34s bat : %s" % (k, p, b))
 
 
+def deboguer_carte(net):
+    """Diagnostic d'une fiche de carte, tenant sur un seul écran.
+
+    L'index des cartes peut très bien répondre pendant que les fiches, elles,
+    ne se lisent plus : c'est exactement ce qui est arrivé le 01/08/2026, avec
+    404 liens trouvés et 2 cartes exploitables. On va donc chercher une vraie
+    fiche, et on n'affiche que ce dont dépend la lecture — les titres et le
+    mode reconnu. Un vidage de 200 lignes serait plus complet, mais on ne
+    pourrait ni le lire ni le montrer, donc il ne servirait à rien.
+    """
+    hrefs = [b["href"] for b in aplatir(net.get(BASE_CALC + "/maps/"))
+             if b["type"] == "lien"
+             and re.search(r"/maps/[^/?#]+/?$", b["href"] or "")]
+    if not hrefs:
+        raise SystemExit("aucun lien /maps/ sur l'index — voir --debug maps")
+    url = urllib.parse.urljoin(BASE_CALC + "/maps/", hrefs[0])
+    print("Fiche de carte : " + url)
+
+    blocs = aplatir(net.get(url))
+    titres = [b["texte"] for b in blocs if b["type"] == "titre" and b["texte"]]
+    print("\n  %d titre(s) sur la page :" % len(titres))
+    for t in titres[:20]:
+        print("    " + t[:68])
+
+    mode = mode_depuis_texte(" ".join(b["texte"] for b in blocs[:40]))
+    print("\n  mode reconnu : %s"
+          % (mode or "AUCUN  <-- le scraper abandonne la carte ici"))
+
+    secs = sections(blocs, r"(best|top) brawlers?|ranked picks?|tier list")
+    print("  sections « meilleurs brawlers » : %d%s"
+          % (len(secs), "" if secs else "  <-- aucun titre ne correspond"))
+
+    liens = [b["texte"] for b in blocs if b["type"] == "lien" and b["texte"]]
+    print("  %d lien(s), dont : %s" % (len(liens), ", ".join(liens[:8])))
+
+
 def deboguer(net, quoi):
     """Affiche ce que le parseur voit, pour ajuster vite si le site change."""
+    if quoi == "carte":
+        return deboguer_carte(net)
     url = {"counters": BASE_CALC + "/counters/mortis/",
            "maps": BASE_CALC + "/maps/"}.get(quoi)
     if not url:
-        raise SystemExit("--debug attend 'counters' ou 'maps'")
+        if not str(quoi).startswith("http"):
+            raise SystemExit("--debug attend 'counters', 'maps', 'carte', "
+                             "ou une adresse complète (https://…)")
+        url = quoi
     print("Page : " + url)
     for b in aplatir(net.get(url))[:120]:
         print("  %-6s %-28s %s" % (b["type"], (b["texte"] or "")[:28],
@@ -937,7 +978,9 @@ def main():
     ap.add_argument("--ttl", type=int, default=7, help="âge max du cache, en jours")
     ap.add_argument("--sans-cache", action="store_true")
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
-    ap.add_argument("--debug", metavar="PAGE", help="'counters' ou 'maps'")
+    ap.add_argument("--debug", metavar="PAGE",
+                    help="'counters', 'maps', 'carte' (une fiche de carte), "
+                         "ou une adresse complète")
     a = ap.parse_args()
 
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
