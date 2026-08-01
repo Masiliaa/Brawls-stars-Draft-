@@ -493,6 +493,38 @@ def extraire_matchups(blocs, motif_titre, tr):
 # Tâches 4 et 5 — pool de cartes et classements par carte
 # ---------------------------------------------------------------------------
 
+# Titres qui introduisent un classement de brawlers sur une fiche de carte.
+# Au 01/08/2026 brawlcalculator titre « S tier — best picks », « A tier —
+# strong picks », « B tier — solid picks ». Les formulations précédentes sont
+# gardées : elles ne coûtent rien et le site peut y revenir.
+#
+# « Best bans » ne doit surtout PAS correspondre : c'est une autre liste, et
+# la confondre ferait conseiller de prendre les brawlers à bannir.
+MOTIF_CLASSEMENT = (r"\b(?:best|top|strong|solid)\s+(?:picks?|brawlers?)\b"
+                    r"|\branked\s+picks?\b|\btier\s+list\b")
+
+TOP_PAR_CARTE = 8            # BONUS_CARTE de moteur.js en compte 8
+
+
+def classement_depuis_page(blocs):
+    """Les brawlers classés d'une fiche de carte, du meilleur au moins bon.
+
+    Les sections sont lues dans l'ordre du document, donc S puis A puis B :
+    le rang est porté par la position, pas par un score. Un même brawler cité
+    dans deux sections n'est gardé qu'à sa meilleure place.
+    """
+    top = []
+    vus = set()
+    for sec in sections(blocs, MOTIF_CLASSEMENT):
+        for b in sec:
+            if b["type"] == "lien" and b["texte"]:
+                k = clef(b["texte"])
+                if k and k not in vus:
+                    vus.add(k)
+                    top.append([b["texte"], None])
+    return top[:TOP_PAR_CARTE]
+
+
 def mode_depuis_texte(texte):
     t = (texte or "").lower()
     for cle, (_, motifs) in MODES.items():
@@ -544,13 +576,7 @@ def scraper_cartes(net, tr, anciennes):
         if not mode:
             continue
 
-        top = []
-        for sec in sections(pb, r"(best|top) brawlers?|ranked picks?|tier list"):
-            for b in sec:
-                if b["type"] == "lien" and b["texte"]:
-                    k = clef(b["texte"])
-                    if k and k not in [clef(x[0]) for x in top]:
-                        top.append([b["texte"], None])
+        top = classement_depuis_page(pb)
         if not top:
             continue
 
@@ -560,7 +586,7 @@ def scraper_cartes(net, tr, anciennes):
             "img": ancienne["img"] if ancienne else None,
             "nom": nom,
             "mode": mode,
-            "top": top[:8],
+            "top": top,
         })
 
     avancement(len(liens), len(liens), depart,
@@ -937,9 +963,12 @@ def deboguer_carte(net):
     print("\n  mode reconnu : %s"
           % (mode or "AUCUN  <-- le scraper abandonne la carte ici"))
 
-    secs = sections(blocs, r"(best|top) brawlers?|ranked picks?|tier list")
+    secs = sections(blocs, MOTIF_CLASSEMENT)
     print("  sections « meilleurs brawlers » : %d%s"
           % (len(secs), "" if secs else "  <-- aucun titre ne correspond"))
+    top = classement_depuis_page(blocs)
+    print("  classement lu (%d) : %s"
+          % (len(top), ", ".join(x[0] for x in top) or "AUCUN"))
 
     liens = [b["texte"] for b in blocs if b["type"] == "lien" and b["texte"]]
     print("  %d lien(s), dont : %s" % (len(liens), ", ".join(liens[:8])))

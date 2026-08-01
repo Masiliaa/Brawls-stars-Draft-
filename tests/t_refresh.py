@@ -75,6 +75,41 @@ check("autant d'ids que de cartes", len(ids) == len(cartes), (len(ids), len(cart
 check("Belle's Rock relue", any(c["nom"] == "Belle's Rock" for c in cartes))
 check("modes valides", all(c["mode"] in R.MODES for c in cartes))
 
+print("\n== classement d'une fiche de carte ==")
+# Structure relevee sur brawlcalculator.com/maps/backyard-bowl/ le
+# 01/08/2026. L'ancien motif cherchait « best brawlers » / « ranked picks »
+# / « tier list » : aucun des trois n'est present, donc zero brawler lu sur
+# 404 pages. Les tirets sont des cadratins, comme sur le site.
+FICHE = """
+<html><body>
+<h1>Backyard Bowl</h1>
+<h2>S tier — best picks</h2>
+<a href="/brawlers/bolt/">Bolt</a><a href="/brawlers/sam/">Sam</a>
+<h2>A tier — strong picks</h2>
+<a href="/brawlers/finx/">Finx</a><a href="/brawlers/bolt/">Bolt</a>
+<h2>B tier — solid picks</h2>
+<a href="/brawlers/poco/">Poco</a>
+<h2>Best bans</h2>
+<a href="/brawlers/edgar/">Edgar</a>
+</body></html>
+"""
+fb = R.aplatir(FICHE)
+top = R.classement_depuis_page(fb)
+noms_top = [x[0] for x in top]
+check("3 sections de classement reconnues",
+      len(R.sections(fb, R.MOTIF_CLASSEMENT)) == 3,
+      len(R.sections(fb, R.MOTIF_CLASSEMENT)))
+check("les brawlers sont lus", noms_top == ["Bolt", "Sam", "Finx", "Poco"], noms_top)
+check("l'ordre S puis A puis B est garde", noms_top[0] == "Bolt" and noms_top[-1] == "Poco")
+check("un doublon garde sa meilleure place", noms_top.count("Bolt") == 1, noms_top)
+check("« Best bans » n'est PAS un classement", "Edgar" not in noms_top, noms_top)
+check("mode reconnu depuis le titre",
+      R.mode_depuis_texte("Backyard Bowl brawl ball") == "brawlBall",
+      R.mode_depuis_texte("Backyard Bowl brawl ball"))
+check("au plus 8 brawlers gardes", len(R.classement_depuis_page(
+      R.aplatir("<h2>best picks</h2>" + "".join(
+          '<a href="/b/%d/">B%d</a>' % (i, i) for i in range(12))))) == 8)
+
 print("\n== garde-fous : ne jamais ecraser par pire ==")
 # Le 01/08/2026, brawlcalculator a change de mise en page : le scraper a
 # ramene 2 cartes sur 404 pages et donnees.js a ete reecrit avec 2 cartes
