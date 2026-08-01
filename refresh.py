@@ -1105,27 +1105,68 @@ def deboguer_rotation(net):
             continue
 
         actives = [m for m in lot if not m.get("disabled")]
-        print("  %d non désactivée(s)" % len(actives))
-        # Une carte désactivée n'est pas en rotation, quelle que soit sa date.
-        recentes = sorted((m for m in actives if m.get("lastActive")),
-                          key=lambda m: m["lastActive"], reverse=True)
-        if not recentes:
-            print("  aucune date d'activité — piste sans issue")
+        avec_date = [m for m in lot if m.get("lastActive")]
+        print("  %d non désactivée(s), %d avec lastActive non vide"
+              % (len(actives), len(avec_date)))
+        # Valeurs brutes : « le champ est vide » et « je le lis mal » ne se
+        # distinguent qu'en regardant ce qu'il contient vraiment.
+        for m in lot[:3]:
+            print("    %-24s disabled=%-6s new=%-6s lastActive=%r"
+                  % (str(m.get("name"))[:24], m.get("disabled"),
+                     m.get("new"), m.get("lastActive")))
+        if not avec_date:
+            print("    -> le champ existe mais reste vide : piste sans issue")
             continue
+        recentes = sorted(avec_date, key=lambda m: m["lastActive"], reverse=True)
         recent = recentes[0]["lastActive"]
         # Une rotation dure une saison ; deux semaines suffisent à la cerner.
-        fenetre = [m for m in recentes if recent - m["lastActive"] < 14 * 86400]
-        print("  %d carte(s) actives dans les 14 jours precedant la plus "
-              "recente :" % len(fenetre))
-        for m in fenetre[:24]:
+        fenetre = [m for m in recentes
+                   if not m.get("disabled") and recent - m["lastActive"] < 14 * 86400]
+        print("  %d carte(s) active(s) dans les 14 derniers jours :" % len(fenetre))
+        for m in fenetre[:22]:
             print("    %-26s %s" % (str(m.get("name"))[:26],
                                     (m.get("gameMode") or {}).get("name", "?")))
+
+
+def deboguer_ranked(net):
+    """Le site annonce-t-il lui-même la rotation classée ?
+
+    L'API publie le catalogue complet — 404 cartes non désactivées, soit
+    exactement ce que liste brawlcalculator. Ni l'une ni l'autre ne distingue
+    donc le pool classé. Mais un site dédié au draft classé a de bonnes
+    raisons d'avoir une page pour la rotation en cours : on cherche le lien
+    plutôt que de le supposer.
+    """
+    for url in (BASE_CALC + "/", BASE_CALC + "/maps/"):
+        print("\n--- " + url)
+        try:
+            blocs = aplatir(net.get(url))
+        except Exception as e:
+            print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+            continue
+        titres = [b["texte"].strip() for b in blocs
+                  if b["type"] == "titre" and (b["texte"] or "").strip()]
+        print("  %d titre(s) :" % len(titres))
+        for t in titres[:12]:
+            print("    " + t[:64])
+        motif = r"rank|compet|rotation|current|season|active|pool"
+        pistes = []
+        for b in blocs:
+            if b["type"] != "lien":
+                continue
+            cible = (b["href"] or "") + " " + (b["texte"] or "")
+            if re.search(motif, cible, re.I) and b["href"] not in pistes:
+                pistes.append(b["href"])
+        print("  liens « ranked / rotation » : %s"
+              % (", ".join(p[:40] for p in pistes[:6]) or "aucun"))
 
 
 def deboguer(net, quoi):
     """Affiche ce que le parseur voit, pour ajuster vite si le site change."""
     if quoi == "carte":
         return deboguer_carte(net)
+    if quoi == "ranked":
+        return deboguer_ranked(net)
     if quoi == "events":
         return deboguer_events(net)
     if quoi == "rotation":
@@ -1161,8 +1202,8 @@ def main():
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
-                         "'events', 'rotation' (cherche une source pour le "
-                         "pool classe), ou une adresse complète")
+                         "'events', 'rotation' (API), 'ranked' (le site "
+                         "annonce-t-il le pool), ou une adresse complète")
     a = ap.parse_args()
 
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
