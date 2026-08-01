@@ -51,6 +51,8 @@ UA = ("LeManager/1.0 (outil personnel de draft Brawl Stars ; "
 
 BASE_CALC = "https://brawlcalculator.com"
 BASE_STATS = "https://brawlstats.net"
+# Source d'origine des 16 cartes classées, d'après le bloc MAJ de donnees.js.
+BASE_NINJA = "https://brawltime.ninja"
 # L'API donne les vraies adresses d'image. Les deux motifs ci-dessous sont
 # reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
@@ -1128,16 +1130,19 @@ def deboguer_rotation(net):
                                     (m.get("gameMode") or {}).get("name", "?")))
 
 
-def deboguer_ranked(net):
-    """Le site annonce-t-il lui-même la rotation classée ?
+def deboguer_ranked(net, pages=None):
+    """Un site annonce-t-il la rotation classée ?
 
     L'API publie le catalogue complet — 404 cartes non désactivées, soit
     exactement ce que liste brawlcalculator. Ni l'une ni l'autre ne distingue
-    donc le pool classé. Mais un site dédié au draft classé a de bonnes
-    raisons d'avoir une page pour la rotation en cours : on cherche le lien
-    plutôt que de le supposer.
+    le pool classé, et brawlcalculator n'a pas de page pour ça (mesuré le
+    02/08/2026 : les seuls liens attrapés étaient l'index et une carte
+    nommée « Dry Season »).
+
+    On explore donc les liens plutôt que de deviner des adresses : c'est la
+    différence entre découvrir un chemin et en inventer un.
     """
-    for url in (BASE_CALC + "/", BASE_CALC + "/maps/"):
+    for url in (pages or (BASE_CALC + "/", BASE_CALC + "/maps/")):
         print("\n--- " + url)
         try:
             blocs = aplatir(net.get(url))
@@ -1167,6 +1172,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "ninja":
+        return deboguer_ranked(net, (BASE_NINJA + "/", BASE_NINJA + "/maps"))
     if quoi == "events":
         return deboguer_events(net)
     if quoi == "rotation":
@@ -1202,8 +1209,8 @@ def main():
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
-                         "'events', 'rotation' (API), 'ranked' (le site "
-                         "annonce-t-il le pool), ou une adresse complète")
+                         "'events', 'rotation' (API), 'ranked', 'ninja' "
+                         "(cherche le pool classe), ou une adresse complète")
     a = ap.parse_args()
 
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
