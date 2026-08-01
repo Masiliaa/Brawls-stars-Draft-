@@ -13,3 +13,6 @@ data/a_traduire.json
 # Les images téléchargées par « refresh.py --assets » doivent être
 # committées, sinon elles ne partent jamais sur GitHub et le site en ligne
 # continue d'afficher les initiales à la place des portraits.
+
+# Fichier cree par le Finder de macOS, sans interet pour le projet
+.DS_Store
