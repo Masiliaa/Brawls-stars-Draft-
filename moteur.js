@@ -3,17 +3,18 @@
    Aucun HTML ici, aucun accès à la page : uniquement du calcul.
 
    Le principe : chaque brawler du roster reçoit un score, et on garde les
-   4 meilleurs. Le score part du tier du brawler sur le mode joué, puis
-   quatre règles indépendantes l'ajustent :
+   meilleurs. Le score part du tier du brawler sur le mode joué, puis des
+   règles indépendantes l'ajustent :
 
      1. la carte      il est bien classé sur cette carte précise
      2. les ennemis   il bat, ou se fait battre par, ce qui est pris en face
-     3. les alliés    il complète ou double les rôles de l'équipe
-     4. la synergie   ce duo gagne plus souvent ensemble
+     3. le risque     il est exposé tant que l'adversaire peut répondre
+     4. les alliés    il complète ou double les rôles de l'équipe
+     5. la synergie   ce duo gagne plus souvent ensemble
 
    Chaque règle est une fonction séparée qui renvoie { points, raisons }.
-   Pour changer le comportement de l'app, c'est une de ces quatre fonctions
-   qu'il faut lire — pas les 200 lignes d'un bloc.
+   Pour changer le comportement de l'app, c'est une de ces fonctions qu'il
+   faut lire — pas les 200 lignes d'un bloc.
 
    Chaque raison porte une PRIORITÉ : seule la meilleure est affichée sous
    le brawler. Plus le chiffre est bas, plus la raison est mise en avant.
@@ -44,6 +45,39 @@ var PT_SYN = 2, SYN_MAX = 10;
 
 var NB_CONSEILS = 4;    /* brawlers proposés en mode Rapide */
 var NB_ANALYSE = 10;    /* brawlers détaillés en mode Analyse */
+
+/* ---- Ordre de pick ----
+   En classé, l'ordre du draft est fixe : chaque pick adverse déjà connu est
+   un pick adverse qui ne viendra plus après le tien. Le nombre de réponses
+   encore possibles vaut donc exactement MAX_ENNEMIS moins les ennemis
+   saisis — aucun réglage à demander à l'utilisateur.
+
+   Deux conséquences opposées :
+
+   — Un contre est d'autant plus fiable qu'il reste peu de réponses. En
+     dernier pick, personne ne peut plus s'adapter : le matchup vaut plein
+     tarif. Plus tôt, l'adversaire garde la main.
+
+   — À l'inverse, un brawler facilement contrable est risqué tant que
+     l'adversaire peut encore répondre. Ce malus a besoin de COUNTERS pour
+     savoir combien de brawlers le battent ; sans la table, il reste à zéro
+     et le pied de page dit que les matchups manquent. */
+
+/* Coefficient appliqué au terme « ennemis », indexé par le nombre d'ennemis
+   déjà connus. À 0 ennemi le terme est nul de toute façon. */
+var FIABILITE_MATCHUP = [1, 0.8, 1, 1.3];
+
+var PT_EXPO = 10;    /* malus maximal pour un brawler très contrable */
+var VULN_REF = 8;    /* au-delà de 8 counters connus, vulnérabilité maximale */
+
+/* ---- Bans conseillés ----
+   Bannir sert à retirer du draft ce qui te ferait mal. Une bonne cible est
+   forte sur cette carte, punit ce que tu sais jouer, et n'est pas un de tes
+   propres choix — un ban retire le brawler pour les DEUX équipes. */
+var PT_BAN_MENACE = 9;   /* par brawler de ton roster que la cible bat */
+var VICTIMES_REF = 4;    /* au-delà, la menace ne croît plus */
+var PT_BAN_TIEN = 30;    /* malus : bannir un brawler que tu joues te prive aussi */
+var NB_BANS_CONSEILLES = 3;
 
 
 /* ============ Le cycle de familles ============
@@ -107,6 +141,11 @@ function cleSynergie(a, b) {
 
 function raison(priorite, texte) {
   return { priorite: priorite, texte: texte };
+}
+
+/* Nombre de picks adverses qui viendront encore après le tien. */
+function reponsesRestantes() {
+  return Math.max(0, MAX_ENNEMIS - ennemis.length);
 }
 
 
@@ -219,7 +258,38 @@ function pointsContreEnnemis(cle) {
     }
   }
 
-  return { points: points, raisons: raisons };
+  /* Un contre vaut d'autant plus que l'adversaire a moins de marge pour
+     s'adapter derrière. */
+  points *= FIABILITE_MATCHUP[Math.min(ennemis.length, 3)];
+
+  return { points: Math.round(points), raisons: raisons };
+}
+
+
+/* ============ Règle 2 bis — l'exposition au contre-pick ============ */
+
+/* Tant que l'adversaire peut encore répondre, sortir un brawler que beaucoup
+   de monde contre est un pari. En dernier pick, ce risque disparaît. */
+function pointsExposition(cle) {
+  var restantes = reponsesRestantes();
+
+  if (!restantes) {
+    /* Priorité basse : l'information est utile en mode Analyse, mais ne doit
+       pas voler la vedette à une vraie raison de prendre le brawler. */
+    return { points: 0, raisons: [raison(9, t("raisonDernierPick"))] };
+  }
+
+  var fiche = COUNTERS[cle];
+  var vulnerabilite = (fiche && fiche.perd) ? fiche.perd.length : 0;
+  if (!vulnerabilite) return { points: 0, raisons: [] };
+
+  var part = Math.min(vulnerabilite, VULN_REF) / VULN_REF;
+  var points = -Math.round(PT_EXPO * (restantes / MAX_ENNEMIS) * part);
+
+  return {
+    points: points,
+    raisons: points ? [raison(7, t("raisonExpose", { n: vulnerabilite }))] : []
+  };
 }
 
 
@@ -291,6 +361,7 @@ function evaluer(cle, carte) {
     tier: base,
     carte: pointsDeCarte(cle, carte),
     ennemis: pointsContreEnnemis(cle),
+    risque: pointsExposition(cle),
     allies: pointsAvecAllies(cle)
   };
 
@@ -318,6 +389,87 @@ function evaluer(cle, carte) {
     detail: detail
   };
 }
+
+/* ============ Bans conseillés ============ */
+
+/* Combien de brawlers de TON roster cette cible bat, d'après COUNTERS.
+   La table est lue dans les deux sens, sans compter deux fois la même
+   victime. Renvoie 0 tant que COUNTERS est vide. */
+function brawlersPunis(cle) {
+  var punis = {};
+
+  var fiche = COUNTERS[cle];
+  if (fiche) {
+    (fiche.bat || []).forEach(function (e) {
+      if (roster.has(e[0])) punis[e[0]] = true;
+    });
+  }
+
+  roster.forEach(function (mien) {
+    var f = COUNTERS[mien];
+    if (!f) return;
+    (f.perd || []).forEach(function (e) {
+      if (e[0] === cle) punis[mien] = true;
+    });
+  });
+
+  return Object.keys(punis).length;
+}
+
+/* Les brawlers qu'il vaut le mieux retirer du draft.
+   Même barème que pour les picks — force sur la carte — augmenté de ce que
+   la cible punit chez toi, et diminué si tu la joues toi-même. */
+function bansConseilles(combien) {
+  var carte = carteActive();
+  if (!carte) return [];
+
+  var indisponibles = {};
+  ennemis.concat(bans).concat(allies).forEach(function (cle) {
+    indisponibles[cle] = true;
+  });
+
+  /* Ne jamais proposer de bannir ce qu'on vient de conseiller de prendre :
+     l'app se contredirait à deux lignes d'intervalle. */
+  conseils().forEach(function (x) { indisponibles[x.k] = true; });
+
+  var classement = [];
+  brawlers.forEach(function (b) {
+    if (indisponibles[b.k]) return;
+
+    var base = pointsDeTier(b.k, carte.mode);
+    var surCarte = pointsDeCarte(b.k, carte);
+    var score = base.points + surCarte.points;
+    var raisons = base.raisons.concat(surCarte.raisons);
+
+    var victimes = brawlersPunis(b.k);
+    if (victimes) {
+      score += PT_BAN_MENACE * Math.min(victimes, VICTIMES_REF);
+      raisons.push(raison(0, t("raisonBanMenace", { n: victimes })));
+    }
+
+    if (roster.has(b.k)) {
+      score -= PT_BAN_TIEN;
+      raisons.push(raison(5, t("raisonBanTien")));
+    }
+
+    if (!raisons.length) {
+      raisons.push(raison(4, t("raisonTier", {
+        tier: base.tier, mode: nomMode(carte.mode)
+      })));
+    }
+    raisons.sort(function (x, y) { return x.priorite - y.priorite; });
+
+    classement.push({
+      k: b.k, b: b, nom: b.nom, tier: base.tier, score: score,
+      raison: raisons[0].texte,
+      raisons: raisons.map(function (r) { return r.texte; })
+    });
+  });
+
+  classement.sort(function (x, y) { return y.score - x.score; });
+  return classement.slice(0, combien || NB_BANS_CONSEILLES);
+}
+
 
 /* Les meilleurs brawlers à prendre, dans l'ordre.
    Les brawlers déjà pris, bannis ou joués par l'équipe sont écartés.

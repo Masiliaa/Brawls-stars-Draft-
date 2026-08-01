@@ -167,17 +167,64 @@ Les deux derniers exigent `npm i playwright` et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
 `PORT=...` pour changer de port.
 
-**241 contrôles au total, tous verts.**
+**276 contrôles au total, tous verts.**
 
 | Suite | Ce qu'elle vérifie | Nb |
 |---|---|---|
 | `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, brawlers hors tier lists, abandon si réseau mort), traduction des phrases de matchup | 63 |
-| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, formulations du pied de page, chaîne de repli des images, cohérence du détail en mode Analyse | 53 |
-| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, menus Rapide/Analyse et langue (ouverture, choix direct, fermeture au clic à côté et par Échap) | 68 |
-| `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit y compris le mode Analyse, aucun débordement de la barre de 320 à 430 px | 57 |
+| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, ordre de pick (exposition, fiabilité du contre), formulations du pied de page, chaîne de repli des images, cohérence du détail en mode Analyse | 72 |
+| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, bans conseillés, menus Rapide/Analyse et langue (ouverture, choix direct, fermeture au clic à côté et par Échap) | 69 |
+| `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit y compris le mode Analyse, la ligne de situation et les bans conseillés, aucun débordement de la barre de 320 à 430 px | 72 |
 
 Ils ont servi de filet lors du découpage en fichiers : le comportement est
 resté identique d'un bout à l'autre de la réorganisation.
+
+## Bans conseillés
+
+Une phase entière du draft était ignorée : l'app enregistrait les bans
+**subis** sans jamais dire quoi bannir.
+
+Un bon ban retire du draft ce qui te ferait mal. `bansConseilles()` note donc
+chaque brawler sur trois critères :
+
+- **sa force sur la carte** — même barème que pour les picks (tier + rang) ;
+- **ce qu'il punit chez toi** (`PT_BAN_MENACE`) — combien de brawlers de ton
+  roster il bat, d'après `COUNTERS`. Nul tant que la table est vide ;
+- **le fait que tu le joues** (`PT_BAN_TIEN`) — un ban retire le brawler pour
+  les **deux** équipes, donc bannir un de tes propres choix te prive aussi.
+
+Deux garde-fous :
+
+- Les brawlers déjà bannis ou déjà pris ne sont plus proposés.
+- **Les picks conseillés non plus.** Sans ça, l'app pouvait dire « prends
+  Bull » puis « bannis Bull » à deux lignes d'intervalle.
+
+Le bloc n'apparaît que pendant la phase de ban — aucun pick saisi et les
+6 bans pas encore connus. Dès le premier pick, il disparaît de lui-même.
+
+## Ordre de pick
+
+En classé, l'ordre du draft est fixe. Chaque pick adverse déjà saisi est donc
+un pick qui **ne viendra plus après le tien** : le nombre de réponses encore
+possibles vaut exactement `3 − ennemis saisis`.
+
+L'app le déduit seule — **aucun réglage à demander**, ce qui compte quand on
+a 25 secondes. La situation est affichée sous la carte (« 3 picks adverses
+après le tien » / « Dernier pick »), pour que le changement de ton des
+conseils ne paraisse pas arbitraire.
+
+Deux effets opposés, dans `moteur.js` :
+
+- **Fiabilité du contre** (`FIABILITE_MATCHUP`) — un contre vaut d'autant
+  plus que l'adversaire a moins de marge pour s'adapter. En dernier pick le
+  matchup est majoré ; plus tôt, il est minoré.
+- **Exposition** (`pointsExposition`) — un brawler que beaucoup de monde
+  contre est un pari tant que l'adversaire peut répondre. Ce malus **a besoin
+  de `COUNTERS`** pour compter les brawlers qui le battent : table vide, malus
+  nul. Il s'activera tout seul le jour où `refresh.py --counters` tournera.
+
+Sans cette règle, l'app pouvait conseiller un contre-pick parfait en
+**premier** pick — c'est-à-dire au moment où il sera puni.
 
 ## Deux modes d'affichage
 
