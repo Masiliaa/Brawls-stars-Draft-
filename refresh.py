@@ -74,6 +74,8 @@ MODES = {
 CARTES_PAR_MODE = 3          # le pool classé en compte 3 par mode, soit 18
 SEUIL_USERATE = 0.3          # en dessous, c'est du bruit statistique
 COUVERTURE_MIN = 100         # sur 105 brawlers, critère du brief
+PART_VIDES_MAX = 0.25        # au-delà, ce n'est plus une donnée maigre mais
+                             # un parseur cassé : on refuse d'écrire
 ABANDON_APRES = 10           # images ratées d'affilée avant de conclure au réseau coupé
 
 ERREURS = []
@@ -122,6 +124,25 @@ def avancement(fait, total, depart, suffixe=""):
     if fait and ecoule > 2 and fait < total:
         reste = " — reste ~" + duree(ecoule / fait * (total - fait))
     note("%d/%d%s%s" % (fait, total, suffixe, reste))
+
+
+# --- Garde-fous : ne jamais remplacer une donnée correcte par une pire -----
+#
+# Quand un site change de mise en page, il ne renvoie pas d'erreur : il
+# renvoie une page que le parseur ne reconnaît plus, donc une poignée de
+# résultats au lieu de zéro. Sans ces deux tests, donnees.js est écrasé par
+# le peu récolté et le travail des relevés précédents est perdu.
+# En cas de doute on garde l'existant : une donnée un peu vieille vaut
+# toujours mieux qu'une donnée amputée.
+
+def pool_appauvri(nouvelles, anciennes):
+    """Le relevé ramène-t-il moins que ce qui est déjà en place ?"""
+    return bool(anciennes) and len(nouvelles) < len(anciennes)
+
+
+def parseur_casse(nb_vides, total):
+    """Une part anormale de pages n'a-t-elle rien donné ?"""
+    return bool(total) and nb_vides > PART_VIDES_MAX * total
 
 
 # ---------------------------------------------------------------------------
@@ -434,6 +455,15 @@ def scraper_counters(net, tr):
     if vides:
         souci("%d fiches sans aucun matchup (ex. %s) — titres introuvables, "
               "la mise en page a peut-être changé" % (len(vides), ", ".join(vides[:5])))
+    # Même raisonnement que pour les cartes : quand la majorité des fiches
+    # ne donne rien, ce n'est pas la donnée qui est maigre, c'est le parseur
+    # qui ne reconnaît plus la page. Écrire ce résultat effacerait une table
+    # correcte au profit d'une table vide.
+    if parseur_casse(len(vides), len(fiches)):
+        souci("%d fiches vides sur %d : COUNTERS reste inchangé plutôt que "
+              "d'être écrasé par un relevé incomplet — voir --debug counters"
+              % (len(vides), len(fiches)))
+        return None
     note("%d brawlers dans la table" % len(table))
     return table
 
@@ -930,7 +960,14 @@ def main():
     touche = False
 
     if a.cartes:
-        cartes = scraper_cartes(net, tr, cartes_actuelles(html))
+        anciennes = cartes_actuelles(html)
+        cartes = scraper_cartes(net, tr, anciennes)
+        if cartes and pool_appauvri(cartes, anciennes):
+            souci("%d carte(s) récupérée(s) contre %d déjà en place : le pool "
+                  "serait appauvri, MAPS reste inchangé. La mise en page du "
+                  "site a probablement changé — voir --debug maps"
+                  % (len(cartes), len(anciennes)))
+            cartes = None
         if cartes:
             cartes = appliquer_userates(cartes, a.userates)
             ordre = list(MODES)

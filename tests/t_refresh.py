@@ -75,6 +75,21 @@ check("autant d'ids que de cartes", len(ids) == len(cartes), (len(ids), len(cart
 check("Belle's Rock relue", any(c["nom"] == "Belle's Rock" for c in cartes))
 check("modes valides", all(c["mode"] in R.MODES for c in cartes))
 
+print("\n== garde-fous : ne jamais ecraser par pire ==")
+# Le 01/08/2026, brawlcalculator a change de mise en page : le scraper a
+# ramene 2 cartes sur 404 pages et donnees.js a ete reecrit avec 2 cartes
+# au lieu de 16. Ces controles existent pour que ca ne se reproduise pas.
+check("2 cartes contre 16 en place : refus", R.pool_appauvri([1, 2], list(range(16))))
+check("15 contre 16 : refus aussi", R.pool_appauvri(list(range(15)), list(range(16))))
+check("autant qu'avant : on ecrit", not R.pool_appauvri(list(range(16)), list(range(16))))
+check("plus qu'avant : on ecrit", not R.pool_appauvri(list(range(18)), list(range(16))))
+check("rien en place : on ecrit", not R.pool_appauvri([1], []))
+
+check("la moitie des fiches vides : refus", R.parseur_casse(50, 100))
+check("un quart pile : on ecrit", not R.parseur_casse(25, 100))
+check("quelques fiches vides : on ecrit", not R.parseur_casse(3, 100))
+check("aucune fiche : pas de division par zero", not R.parseur_casse(0, 0))
+
 print("\n== rendu + reecriture (aller-retour) ==")
 tmp = tempfile.mkdtemp()
 cible = os.path.join(tmp, "donnees.js")
