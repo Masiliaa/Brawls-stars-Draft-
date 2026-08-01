@@ -552,6 +552,28 @@ def mode_depuis_texte(texte):
     return None
 
 
+def restreindre_au_pool(liens, anciennes):
+    """Ne garder que les cartes du pool déjà connu.
+
+    Le site liste toutes les cartes jamais publiées — 147 au 02/08/2026 —
+    alors que la rotation classée en compte 18. Aucune source automatique ne
+    dit lesquelles : l'API des événements de brawlapi répond bien, mais ses
+    listes « active » et « upcoming » sont vides. Le pool reste donc tenu à
+    la main dans donnees.js, et le script se contente de le rafraîchir.
+
+    Le libellé de l'index accole le mode au nom (« Center Stage Brawl
+    Ball »), d'où la comparaison par préfixe. Elle est volontairement large :
+    une carte retenue à tort sera écartée plus tard, quand le titre de sa
+    fiche ne correspondra à aucun nom connu. Trop large ici coûte une requête,
+    trop étroit ferait disparaître une carte.
+    """
+    connus = {clef(c["nom"]) for c in anciennes}
+    if not connus:
+        return liens, connus
+    return ({s: nom for s, nom in liens.items()
+             if any(clef(nom).startswith(k) for k in connus)}, connus)
+
+
 def scraper_cartes(net, tr, anciennes):
     print("\n[4+5] Pool de cartes — brawlcalculator.com")
     try:
@@ -570,6 +592,10 @@ def scraper_cartes(net, tr, anciennes):
         souci("aucun lien /maps/ trouvé — structure changée, voir --debug maps")
         return None
     note("%d cartes repérées" % len(liens))
+    liens, connus = restreindre_au_pool(liens, anciennes)
+    if connus:
+        note("%d à examiner, le pool connu en compte %d"
+             % (len(liens), len(connus)))
 
     # index des anciennes entrées, pour retrouver l'identifiant d'image
     par_nom = {clef(c["nom"]): c for c in anciennes}
@@ -596,6 +622,10 @@ def scraper_cartes(net, tr, anciennes):
         if not mode:
             continue
         nom = nom_depuis_page(pb, nom)
+        # Le préfixe pouvait retenir une carte homonyme ; le titre de la
+        # fiche tranche.
+        if connus and clef(nom) not in connus:
+            continue
 
         top = classement_depuis_page(pb)
         if not top:
@@ -612,6 +642,16 @@ def scraper_cartes(net, tr, anciennes):
 
     avancement(len(liens), len(liens), depart,
                " — %d carte(s) retenue(s)" % len(cartes))
+
+    # Une carte du pool que le site ne connaît plus est un signal, pas un
+    # détail : elle est peut-être sortie de la rotation, et personne d'autre
+    # ne le dira.
+    trouvees = {clef(c["nom"]) for c in cartes}
+    perdues = sorted(clef(c["nom"]) for c in anciennes
+                     if clef(c["nom"]) not in trouvees)
+    if perdues:
+        souci("introuvable(s) sur le site : %s — carte(s) sortie(s) de la "
+              "rotation, renommée(s), ou fiche illisible" % ", ".join(perdues))
 
     manquant_img = [c["nom"] for c in cartes if not c["img"]]
     if manquant_img:

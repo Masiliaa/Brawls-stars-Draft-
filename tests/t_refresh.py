@@ -117,6 +117,27 @@ check("au plus 8 brawlers gardes", len(R.classement_depuis_page(
       R.aplatir("<h2>best picks</h2>" + "".join(
           '<a href="/b/%d/">B%d</a>' % (i, i) for i in range(12))))) == 8)
 
+print("\n== restreindre au pool connu ==")
+# Le site liste 147 cartes, la rotation classee en compte 18, et l'API des
+# evenements de brawlapi renvoie « active » et « upcoming » vides (mesure du
+# 02/08/2026). Le pool reste donc tenu a la main, et le script le rafraichit.
+INDEX = {"center-stage": "Center Stage Brawl Ball",
+         "backyard-bowl": "Backyard Bowl Brawl Ball",
+         "hot-potato": "Hot Potato Knockout",
+         "center": "Center Bounty"}
+POOL = [{"nom": "Center Stage"}, {"nom": "Hot Potato"}]
+gardes, connus = R.restreindre_au_pool(INDEX, POOL)
+check("les cartes du pool sont gardees",
+      set(gardes) == {"center-stage", "hot-potato"}, sorted(gardes))
+check("les autres sont ecartees", "backyard-bowl" not in gardes)
+check("les cles connues sont renvoyees", connus == {"centerstage", "hotpotato"}, connus)
+check("sans pool connu, on garde tout",
+      R.restreindre_au_pool(INDEX, [])[0] == INDEX)
+# « Center » est un prefixe de « Center Stage » : le filtre large le laisse
+# passer, et c'est le titre de la fiche qui doit trancher ensuite.
+gardes2, _ = R.restreindre_au_pool({"center": "Center Bounty"}, [{"nom": "Center Stage"}])
+check("un prefixe trompeur n'est pas retenu", not gardes2, gardes2)
+
 print("\n== garde-fous : ne jamais ecraser par pire ==")
 # Le 01/08/2026, brawlcalculator a change de mise en page : le scraper a
 # ramene 2 cartes sur 404 pages et donnees.js a ete reecrit avec 2 cartes
