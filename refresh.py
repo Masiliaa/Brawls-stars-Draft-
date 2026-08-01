@@ -507,6 +507,23 @@ MOTIF_CLASSEMENT = (r"\b(?:best|top|strong|solid)\s+(?:picks?|brawlers?)\b"
 TOP_PAR_CARTE = 8            # BONUS_CARTE de moteur.js en compte 8
 
 
+def nom_depuis_page(blocs, defaut):
+    """Le nom de la carte, pris sur son premier titre.
+
+    Le libellé de l'index accole le mode au nom — « Backyard Bowl Brawl
+    Ball » — alors que la fiche titre « Backyard Bowl ». Se fier à l'index
+    donne un nom qui ne correspond à aucune carte connue, et fait donc perdre
+    l'identifiant de vignette au passage.
+
+    Le libellé de l'index reste utile pour reconnaître le mode : il le
+    contient justement. On garde donc les deux, chacun pour son usage.
+    """
+    for b in blocs:
+        if b["type"] == "titre" and (b["texte"] or "").strip():
+            return b["texte"].strip()
+    return defaut
+
+
 def classement_depuis_page(blocs):
     """Les brawlers classés d'une fiche de carte, du meilleur au moins bon.
 
@@ -573,9 +590,12 @@ def scraper_cartes(net, tr, anciennes):
             continue
         pb = aplatir(page)
         texte_page = " ".join(b["texte"] for b in pb[:40])
+        # Le mode se lit sur le libellé de l'index, qui le contient ; le nom
+        # se lit sur le titre de la fiche, qui ne le contient pas.
         mode = mode_depuis_texte(nom + " " + texte_page)
         if not mode:
             continue
+        nom = nom_depuis_page(pb, nom)
 
         top = classement_depuis_page(pb)
         if not top:

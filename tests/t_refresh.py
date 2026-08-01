@@ -103,6 +103,13 @@ check("les brawlers sont lus", noms_top == ["Bolt", "Sam", "Finx", "Poco"], noms
 check("l'ordre S puis A puis B est garde", noms_top[0] == "Bolt" and noms_top[-1] == "Poco")
 check("un doublon garde sa meilleure place", noms_top.count("Bolt") == 1, noms_top)
 check("« Best bans » n'est PAS un classement", "Edgar" not in noms_top, noms_top)
+check("le nom vient du titre, pas de l'index",
+      R.nom_depuis_page(fb, "Backyard Bowl Brawl Ball") == "Backyard Bowl",
+      R.nom_depuis_page(fb, "Backyard Bowl Brawl Ball"))
+check("sans titre, on garde le libelle de l'index",
+      R.nom_depuis_page(R.aplatir("<p>rien</p>"), "Repli") == "Repli")
+check("le nom retrouve l'ancienne carte et sa vignette",
+      R.clef(R.nom_depuis_page(fb, "x")) == R.clef("Backyard Bowl"))
 check("mode reconnu depuis le titre",
       R.mode_depuis_texte("Backyard Bowl brawl ball") == "brawlBall",
       R.mode_depuis_texte("Backyard Bowl brawl ball"))
