@@ -52,7 +52,15 @@ UA = ("LeManager/1.0 (outil personnel de draft Brawl Stars ; "
 BASE_CALC = "https://brawlcalculator.com"
 BASE_STATS = "https://brawlstats.net"
 # Source d'origine des 16 cartes classées, d'après le bloc MAJ de donnees.js.
+#
+# Ces sites collectent en continu, via l'API officielle de Supercell, les
+# historiques de combat de milliers de joueurs, puis les agrègent. Le pool
+# classé n'y est déclaré nulle part : il ressort des données, ce sont les
+# cartes qui apparaissent réellement dans les matchs classés du moment.
+# Reproduire ça demanderait une clé API liée à une IP fixe et une collecte
+# permanente. On lit donc le résultat de leur travail au lieu de le refaire.
 BASE_NINJA = "https://brawltime.ninja"
+RANKED_NINJA = BASE_NINJA + "/tier-list/ranked"
 # L'API donne les vraies adresses d'image. Les deux motifs ci-dessous sont
 # reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
@@ -1170,16 +1178,24 @@ def deboguer_ranked(net, pages=None):
                            sorted(segments.items(), key=lambda kv: -kv[1])[:9])
                  or "aucun lien"))
 
-        # Une section « events » liste la rotation en cours : ses liens
-        # portent l'adresse exacte qu'on cherche.
-        for sec in sections(blocs, r"event|rotation|active|ranked|competitive"):
-            liens = [(b["texte"], b["href"]) for b in sec
-                     if b["type"] == "lien" and b["href"]]
+        # Chaque titre avec les liens qui le suivent. Filtrer sur des
+        # mots-clés ratait l'essentiel : sur la page du classé, les titres
+        # sont les modes — « Heist », « Knockout » — et aucun ne contient
+        # « ranked » ni « rotation ». La structure se montre, elle ne se
+        # devine pas.
+        courant, groupes = None, []
+        for b in blocs:
+            if b["type"] == "titre" and (b["texte"] or "").strip():
+                courant = (b["texte"].strip(), [])
+                groupes.append(courant)
+            elif courant and b["type"] == "lien" and b["texte"] and b["href"]:
+                courant[1].append((b["texte"], b["href"]))
+        for titre, liens in groupes[:9]:
             if not liens:
                 continue
-            print("  section rotation — %d lien(s) :" % len(liens))
-            for texte, href in liens[:8]:
-                print("    %-24s %s" % (str(texte)[:24], href[:46]))
+            print("  %s — %d lien(s)" % (titre[:38], len(liens)))
+            for texte, href in liens[:5]:
+                print("      %-22s %s" % (str(texte)[:22], href[:44]))
 
 
 def deboguer(net, quoi):
@@ -1189,9 +1205,9 @@ def deboguer(net, quoi):
     if quoi == "ranked":
         return deboguer_ranked(net)
     if quoi == "ninja":
-        # Pas de second chemin devine : « /maps » repondait 404. On lit
-        # l'accueil et on laisse le schema d'adresses indiquer la suite.
-        return deboguer_ranked(net, (BASE_NINJA + "/",))
+        # Adresse relevee a la main sur le site, pas devinee : les trois
+        # sondes precedentes ont echoue faute d'avoir su ou aller.
+        return deboguer_ranked(net, (RANKED_NINJA,))
     if quoi == "events":
         return deboguer_events(net)
     if quoi == "rotation":
