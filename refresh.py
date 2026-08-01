@@ -1154,16 +1154,32 @@ def deboguer_ranked(net, pages=None):
         print("  %d titre(s) :" % len(titres))
         for t in titres[:12]:
             print("    " + t[:64])
-        motif = r"rank|compet|rotation|current|season|active|pool"
-        pistes = []
+        # Le schéma d'adresses du site, en une ligne : le premier segment de
+        # chaque lien avec son nombre d'occurrences. C'est le plan du site,
+        # et ça évite de deviner des adresses qui répondent 404 — ce que
+        # « /maps » vient justement de faire sur brawltime.
+        segments = {}
         for b in blocs:
-            if b["type"] != "lien":
+            if b["type"] != "lien" or not b["href"]:
                 continue
-            cible = (b["href"] or "") + " " + (b["texte"] or "")
-            if re.search(motif, cible, re.I) and b["href"] not in pistes:
-                pistes.append(b["href"])
-        print("  liens « ranked / rotation » : %s"
-              % (", ".join(p[:40] for p in pistes[:6]) or "aucun"))
+            chemin = urllib.parse.urlparse(b["href"]).path.strip("/")
+            seg = chemin.split("/")[0] if chemin else "(racine)"
+            segments[seg] = segments.get(seg, 0) + 1
+        print("  schema d'adresses : %s"
+              % (", ".join("%s (%d)" % (s, n) for s, n in
+                           sorted(segments.items(), key=lambda kv: -kv[1])[:9])
+                 or "aucun lien"))
+
+        # Une section « events » liste la rotation en cours : ses liens
+        # portent l'adresse exacte qu'on cherche.
+        for sec in sections(blocs, r"event|rotation|active|ranked|competitive"):
+            liens = [(b["texte"], b["href"]) for b in sec
+                     if b["type"] == "lien" and b["href"]]
+            if not liens:
+                continue
+            print("  section rotation — %d lien(s) :" % len(liens))
+            for texte, href in liens[:8]:
+                print("    %-24s %s" % (str(texte)[:24], href[:46]))
 
 
 def deboguer(net, quoi):
@@ -1173,7 +1189,9 @@ def deboguer(net, quoi):
     if quoi == "ranked":
         return deboguer_ranked(net)
     if quoi == "ninja":
-        return deboguer_ranked(net, (BASE_NINJA + "/", BASE_NINJA + "/maps"))
+        # Pas de second chemin devine : « /maps » repondait 404. On lit
+        # l'accueil et on laisse le schema d'adresses indiquer la suite.
+        return deboguer_ranked(net, (BASE_NINJA + "/",))
     if quoi == "events":
         return deboguer_events(net)
     if quoi == "rotation":
