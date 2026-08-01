@@ -55,6 +55,7 @@ BASE_STATS = "https://brawlstats.net"
 # reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
 API_BRAWLERS = "https://api.brawlapi.com/v1/brawlers"
+API_EVENTS = "https://api.brawlapi.com/v1/events"
 IMG_BRAWLER = "https://media.brawltime.ninja/brawlers/{slug}/avatar.png?size=160"
 IMG_CARTE = "https://media.brawltime.ninja/maps/{id}.png?size=200"
 # Adresse devinee, jamais confirmee : a n'essayer qu'en dernier, et a
@@ -974,10 +975,42 @@ def deboguer_carte(net):
     print("  %d lien(s), dont : %s" % (len(liens), ", ".join(liens[:8])))
 
 
+def deboguer_events(net):
+    """Ce que l'API des événements sait de la rotation en cours.
+
+    Question ouverte : brawlcalculator liste 147 cartes, le pool classé en
+    compte 18. Personne ne sait aujourd'hui lesquelles, et une liste tenue à
+    la main périme à chaque saison. Si cette API expose le mode classé, la
+    rotation devient automatique ; sinon on saura que ce n'est pas la voie.
+    On mesure avant de choisir.
+    """
+    print("API : " + API_EVENTS)
+    try:
+        data = json.loads(net.get(API_EVENTS))
+    except Exception as e:
+        print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+        return
+
+    print("  clés à la racine : %s" % ", ".join(sorted(data)[:10]))
+    for cle in sorted(data):
+        lot = data[cle]
+        if not isinstance(lot, list):
+            continue
+        print("\n  %s — %d entrée(s)" % (cle, len(lot)))
+        for ev in lot[:12]:
+            e = ev.get("event") or {}
+            print("    %-18s %-24s %s"
+                  % (str(ev.get("slot", {}).get("name") or ev.get("slotId"))[:18],
+                     str((e.get("mode") or {}).get("name") or e.get("mode"))[:24],
+                     str(e.get("map") or "")[:34]))
+
+
 def deboguer(net, quoi):
     """Affiche ce que le parseur voit, pour ajuster vite si le site change."""
     if quoi == "carte":
         return deboguer_carte(net)
+    if quoi == "events":
+        return deboguer_events(net)
     url = {"counters": BASE_CALC + "/counters/mortis/",
            "maps": BASE_CALC + "/maps/"}.get(quoi)
     if not url:
@@ -1009,7 +1042,7 @@ def main():
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
-                         "ou une adresse complète")
+                         "'events' (rotation en cours), ou une adresse complète")
     a = ap.parse_args()
 
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
