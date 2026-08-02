@@ -1746,6 +1746,62 @@ def ancre_de_mode(mode):
     return re.sub(r"(?<!^)([A-Z])", r"-\1", mode).lower()
 
 
+SITE = "https://masiliaa.github.io/Brawls-stars-Draft-/"
+FICHIERS_SITE = ("index.html", "style.css", "outils.js", "langues.js",
+                 "donnees.js", "etat.js", "moteur.js", "vues.js", "app.js")
+
+
+def deboguer_site(net):
+    """Ce que le site publié affiche réellement, vu d'ailleurs.
+
+    Le réseau de la session qui écrit ce script est fermé : impossible d'y
+    ouvrir la page. Le robot, lui, a Internet. Il ouvre donc le site dans un
+    vrai navigateur et écrit dans son journal ce qu'un visiteur verrait.
+
+    C'est la seule façon de distinguer « le site est cassé » de « le
+    navigateur de l'utilisateur montre une vieille copie » — et ça évite de
+    lui demander une capture d'écran.
+    """
+    print("Site : " + SITE)
+    for f in FICHIERS_SITE:
+        try:
+            print("  %-12s %7d octets" % (f, len(net.get(SITE + f))))
+        except Exception as e:
+            print("  %-12s ÉCHEC : %s" % (f, e))
+
+    nav = net._navigateur()
+    if nav is None:
+        print("\n  navigateur indisponible : pas de rendu")
+        return
+
+    soucis = []
+
+    def au_message(m):
+        if m.type == "error":
+            soucis.append("console : " + m.text)
+
+    page = nav.new_page(user_agent=UA)
+    page.on("pageerror", lambda e: soucis.append("pageerror : %s" % e))
+    page.on("console", au_message)
+    try:
+        page.goto(SITE, wait_until="domcontentloaded", timeout=45000)
+        page.wait_for_timeout(3000)
+        print("\n  titre : %s" % page.title())
+        texte = page.evaluate("() => document.body.innerText")
+        lignes = [l.strip() for l in texte.splitlines() if l.strip()]
+        print("  %d caractère(s) visible(s), %d ligne(s)" % (len(texte), len(lignes)))
+        for l in lignes[:14]:
+            print("    " + l[:68])
+        for sel in (".logo", ".note", "[data-act]", ".box"):
+            print("  %-12s %d élément(s)" % (sel, page.locator(sel).count()))
+    finally:
+        page.close()
+
+    print("\n  %d erreur(s) JavaScript%s" % (len(soucis), " :" if soucis else ""))
+    for s in soucis[:8]:
+        print("    " + s[:110])
+
+
 def deboguer_onglets(net):
     """Ouvrir les onglets de mode fait-il apparaître les cartes manquantes ?
 
@@ -1910,6 +1966,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "site":
+        return deboguer_site(net)
     if quoi == "onglets":
         return deboguer_onglets(net)
     if quoi == "modes":
