@@ -77,4 +77,8 @@ jobs:
           # locaux à l'exécution.
           git add donnees.js
           git commit -m "Donnees rafraichies automatiquement"
-          git push
+          # Le relevé dure plusieurs minutes, pendant lesquelles la branche a
+          # pu avancer. Sans ce rebase, l'envoi est refusé et tout le travail
+          # est perdu pour une raison qui n'a rien à voir avec les données.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
