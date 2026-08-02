@@ -610,7 +610,10 @@ def pool_depuis_liens(blocs):
         if not mode or not clef(nom) or clef(nom) in vus:
             continue
         vus.add(clef(nom))
-        pool.append({"mode": mode, "nom": nom})
+        # On garde l'adresse telle quelle : la reconstruire à partir du nom
+        # est une source d'erreurs (casse, apostrophes, accents) alors que le
+        # site vient de nous la donner.
+        pool.append({"mode": mode, "nom": nom, "href": b["href"]})
     return pool
 
 
@@ -1244,6 +1247,51 @@ def deboguer_rotation(net):
                                     (m.get("gameMode") or {}).get("name", "?")))
 
 
+def deboguer_carte_ninja(net):
+    """Une fiche de carte chez brawltime donne-t-elle les taux de victoire ?
+
+    C'est cette source qui a produit les « 73,1 % » de donnees.js. Si sa
+    fiche porte le classement ET le pourcentage, on n'a plus besoin de
+    brawlcalculator pour les cartes — ni de changer ce que l'app affiche.
+    Le pourcentage venant alors de la même source et de la même date que le
+    rang, il redevient une mesure et pas un chiffre rapporté d'ailleurs.
+    """
+    pool = pool_classe(net)
+    if not pool:
+        print("  pool illisible : rien à sonder")
+        return
+    carte = pool[0]
+    url = urllib.parse.urljoin(RANKED_NINJA, carte["href"])
+    print("Fiche : %s  (%s, %s)" % (url, carte["nom"], carte["mode"]))
+
+    blocs = aplatir(net.get(url))
+    titres = [b["texte"].strip() for b in blocs
+              if b["type"] == "titre" and (b["texte"] or "").strip()]
+    print("  %d titre(s) : %s" % (len(titres), " | ".join(titres[:5])[:70]))
+
+    # Un lien de brawler suivi de son pourcentage : c'est exactement ce
+    # qu'il nous faut, et ça se voit sur les blocs qui suivent le lien.
+    montres = 0
+    for i, b in enumerate(blocs):
+        if b["type"] != "lien" or not b["texte"] or "brawler" not in (b["href"] or ""):
+            continue
+        suite = [x["texte"].strip() for x in blocs[i + 1:i + 6]
+                 if (x["texte"] or "").strip()]
+        print("    %-16s %s" % (b["texte"][:16], " | ".join(suite)[:54]))
+        montres += 1
+        if montres >= 8:
+            break
+    if not montres:
+        print("    aucun lien de brawler — page construite dans le navigateur ?")
+
+    pourcents = [b["texte"].strip() for b in blocs
+                 if re.search(r"\d+[.,]\d+\s*%", b["texte"] or "")]
+    print("  %d bloc(s) avec un pourcentage%s"
+          % (len(pourcents),
+             (" — ex. « %s »" % pourcents[0][:34]) if pourcents else
+             "  <-- pas de taux de victoire sur cette page"))
+
+
 def deboguer_ranked(net, pages=None):
     """Un site annonce-t-il la rotation classée ?
 
@@ -1310,6 +1358,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "carte-ninja":
+        return deboguer_carte_ninja(net)
     if quoi == "ninja":
         # Adresses relevees a la main sur les sites, pas devinees : les trois
         # sondes precedentes ont echoue faute d'avoir su ou aller.
@@ -1349,7 +1399,7 @@ def main():
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
-                         "'events', 'rotation' (API), 'ranked', 'ninja' "
+                         "'events', 'rotation', 'ranked', 'ninja', 'carte-ninja' "
                          "(cherche le pool classe), ou une adresse complète")
     a = ap.parse_args()
 
