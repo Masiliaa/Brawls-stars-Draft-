@@ -184,6 +184,7 @@ class Reseau:
         self.cache = cache
         self.dernier = {}
         self.robots = {}
+        self._pw = self._nav = None
         os.makedirs(CACHE, exist_ok=True)
 
     def _chemin_cache(self, url):
@@ -246,6 +247,69 @@ class Reseau:
         with open(chemin, "wb") as f:
             f.write(data)
         return data if binaire else data.decode("utf-8", "replace")
+
+    # --- Pages construites dans le navigateur ------------------------------
+    #
+    # Un site moderne n'envoie qu'un squelette et un programme JavaScript ;
+    # c'est le navigateur qui bâtit le reste. urlopen() ne voit donc qu'une
+    # partie du contenu — 8 cartes sur 18 sur brawltime le 02/08/2026.
+    # Ouvrir un vrai Chromium sans fenêtre donne exactement ce qu'un humain
+    # voit. C'est lent et lourd : réservé aux pages qui en ont besoin.
+
+    def _navigateur(self):
+        """Chromium, ouvert à la première demande et gardé ouvert ensuite.
+
+        Le relancer à chaque page coûterait quelques secondes par page pour
+        rien. Renvoie None si Playwright n'est pas installé : c'est un
+        supplément, jamais une condition de fonctionnement.
+        """
+        if self._nav is None:
+            try:
+                from playwright.sync_api import sync_playwright
+            except ImportError:
+                return None
+            self._pw = sync_playwright().start()
+            self._nav = self._pw.chromium.launch()
+        return self._nav
+
+    def get_rendu(self, url):
+        """La page une fois son JavaScript exécuté, ou None si impossible."""
+        # Cache séparé : ce n'est pas le même contenu que la page brute.
+        chemin = self._chemin_cache(url + "#rendu")
+        if self.cache and os.path.exists(chemin):
+            if time.time() - os.path.getmtime(chemin) < self.ttl:
+                return open(chemin, "rb").read().decode("utf-8", "replace")
+
+        nav = self._navigateur()
+        if nav is None:
+            return None
+        if not self.autorise(url):
+            raise PermissionError("robots.txt interdit %s" % url)
+
+        hote = urllib.parse.urlparse(url).netloc
+        attente = self.delai - (time.time() - self.dernier.get(hote, 0))
+        if attente > 0:
+            time.sleep(attente)
+        page = nav.new_page(user_agent=UA)
+        try:
+            page.goto(url, wait_until="networkidle", timeout=45000)
+            html = page.content()
+        finally:
+            page.close()
+            self.dernier[hote] = time.time()
+
+        with open(chemin, "wb") as f:
+            f.write(html.encode("utf-8"))
+        return html
+
+    def fermer(self):
+        """À appeler en fin de course : un Chromium oublié reste en mémoire."""
+        if self._nav is not None:
+            self._nav.close()
+            self._nav = None
+        if self._pw is not None:
+            self._pw.stop()
+            self._pw = None
 
 
 # ---------------------------------------------------------------------------
@@ -665,35 +729,62 @@ def pool_depuis_page(html):
     return pool
 
 
-def pool_classe(net):
-    """Les cartes en rotation, chez la première source qui répond.
+def acces_pool(net, url):
+    """Les façons d'obtenir une page, de la moins chère à la plus lourde.
 
-    On s'arrête à la première qui donne un pool crédible : inutile de
-    solliciter la seconde quand la première a fait le travail.
+    Un site qui bâtit ses pages dans le navigateur range en général les
+    mêmes données dans un fichier annexe à adresse prévisible. Quand il
+    existe, il vaut mieux que tout le reste : rien à installer, rien à
+    exécuter, et un format déjà structuré. On ne réveille Chromium que si
+    les deux voies gratuites ont échoué.
     """
+    nu = url.rstrip("/")
+    return (("données annexes", lambda: net.get(nu + "/_payload.json")),
+            ("page brute", lambda: net.get(url)),
+            ("navigateur", lambda: net.get_rendu(url)))
+
+
+def pool_classe(net):
+    """Les cartes en rotation classée, ou None si aucune source ne répond.
+
+    On escalade tant que le pool est incomplet, et on garde le meilleur
+    relevé rencontré : une page partielle vaut mieux que rien, et c'est
+    l'appelant qui décidera s'il s'en contente.
+    """
+    meilleur, provenance = [], ""
     for nom, url in SOURCES_POOL:
-        try:
-            pool = pool_depuis_page(net.get(url))
-        except Exception as e:
-            souci("%s injoignable (%s) — on essaie la source suivante" % (nom, e))
-            continue
-        if len(pool) >= POOL_MIN:
-            note("rotation classée : %d cartes lues sur %s" % (len(pool), nom))
-            # Incomplet n'est pas invalide : on s'en sert, mais on le dit.
-            # Une carte manquante ici, c'est une carte que l'app ne proposera
-            # pas — mieux vaut le savoir que le découvrir en draft.
-            if len(pool) < POOL_ATTENDU:
-                manque = [m for m in MODES
-                          if sum(1 for c in pool if c["mode"] == m) < CARTES_PAR_MODE]
-                souci("pool incomplet : %d cartes sur %d attendues, modes "
-                      "sous-fournis : %s"
-                      % (len(pool), POOL_ATTENDU,
-                         ", ".join(MODES[m][0] for m in manque)))
-            return pool
-        souci("%s : %d carte(s) lue(s), moins que le minimum de %d — page "
-              "refaite ? voir --debug pool" % (nom, len(pool), POOL_MIN))
-    souci("aucune source n'a donné le pool classé")
-    return None
+        for voie, recuperer in acces_pool(net, url):
+            try:
+                page = recuperer()
+            except Exception as e:
+                # Un fichier annexe absent répond 404 : c'est attendu, pas
+                # un incident. Seul l'échec de toutes les voies compte.
+                page = None
+                if voie == "page brute":
+                    souci("%s injoignable (%s)" % (nom, e))
+            if not page:
+                continue
+            pool = pool_depuis_page(page)
+            if len(pool) > len(meilleur):
+                meilleur, provenance = pool, "%s, %s" % (nom, voie)
+            if len(pool) >= POOL_ATTENDU:
+                note("rotation classée : %d cartes (%s)" % (len(pool), provenance))
+                return pool
+
+    if len(meilleur) < POOL_MIN:
+        souci("aucune source n'a donné le pool classé (le meilleur relevé "
+              "n'a que %d carte(s)) — voir --debug pool" % len(meilleur))
+        return None
+
+    note("rotation classée : %d cartes (%s)" % (len(meilleur), provenance))
+    # Incomplet n'est pas invalide : on s'en sert, mais on le dit. Une carte
+    # manquante ici, c'est une carte que l'app ne proposera pas — mieux vaut
+    # le savoir que le découvrir en draft.
+    manque = [m for m in MODES
+              if sum(1 for c in meilleur if c["mode"] == m) < CARTES_PAR_MODE]
+    souci("pool incomplet : %d cartes sur %d attendues, modes sous-fournis : %s"
+          % (len(meilleur), POOL_ATTENDU, ", ".join(MODES[m][0] for m in manque)))
+    return meilleur
 
 
 def ids_cartes_api(net):
@@ -1509,7 +1600,10 @@ def main():
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
 
     if a.debug:
-        deboguer(net, a.debug)
+        try:
+            deboguer(net, a.debug)
+        finally:
+            net.fermer()
         return 0
 
     if a.tout:
@@ -1567,6 +1661,8 @@ def main():
         touche = True
 
     tr.enregistrer()
+    # Chromium reste en mémoire tant qu'on ne le ferme pas.
+    net.fermer()
 
     # Seuls les blocs réellement rafraîchis sont redatés : le pied de page ne
     # doit jamais annoncer comme fraîche une donnée qui n'a pas été relevée.

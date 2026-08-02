@@ -195,6 +195,51 @@ check("le seuil reste plus bas que le pool attendu", R.POOL_MIN < R.POOL_ATTENDU
 check("la premiere source suffisante est gardee",
       len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
 
+print("\n== escalade : gratuit d'abord, navigateur en dernier ==")
+COMPLET = "".join('<a href="/tier-list/mode/heist/map/M-%d">M%d</a>' % (i, i)
+                  for i in range(R.POOL_ATTENDU))
+PARTIEL = "".join('<a href="/tier-list/mode/heist/map/M-%d">M%d</a>' % (i, i)
+                  for i in range(8))
+
+class NetEscalade:
+    """Chaque voie repond ce qu'on lui dit, et on note qui a ete sollicite."""
+    def __init__(self, annexe=None, brute=None, rendu=None):
+        self.annexe, self.brute, self.rendu = annexe, brute, rendu
+        self.vues = []
+    def get(self, url, binaire=False):
+        if url.endswith("/_payload.json"):
+            self.vues.append("annexe")
+            if self.annexe is None:
+                raise IOError("404")
+            return self.annexe
+        self.vues.append("brute")
+        if self.brute is None:
+            raise IOError("injoignable")
+        return self.brute
+    def get_rendu(self, url):
+        self.vues.append("rendu")
+        return self.rendu
+
+n1 = NetEscalade(annexe=COMPLET)
+check("le fichier annexe suffit : pas de navigateur",
+      len(R.pool_classe(n1)) == R.POOL_ATTENDU and "rendu" not in n1.vues, n1.vues)
+
+n2 = NetEscalade(brute=COMPLET)
+check("annexe absent : la page brute suffit",
+      len(R.pool_classe(n2)) == R.POOL_ATTENDU and "rendu" not in n2.vues, n2.vues)
+
+n3 = NetEscalade(brute=PARTIEL, rendu=COMPLET)
+check("page brute incomplete : on reveille le navigateur",
+      len(R.pool_classe(n3)) == R.POOL_ATTENDU and "rendu" in n3.vues, n3.vues)
+
+n4 = NetEscalade(brute=PARTIEL, rendu=None)
+res4 = R.pool_classe(n4)
+check("navigateur absent : on garde le meilleur releve",
+      res4 is not None and len(res4) == 8, res4 and len(res4))
+
+n5 = NetEscalade()
+check("rien nulle part : aucun pool", R.pool_classe(n5) is None)
+
 print("\n== donnees cachees dans une balise script ==")
 # Le 02/08/2026 brawltime rendait 8 cartes sur 18 : les 10 autres etaient
 # dans le bloc de donnees d'une balise <script>, que aplatir() ignore.
