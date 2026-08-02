@@ -195,6 +195,34 @@ check("le seuil reste plus bas que le pool attendu", R.POOL_MIN < R.POOL_ATTENDU
 check("la premiere source suffisante est gardee",
       len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
 
+print("\n== donnees cachees dans une balise script ==")
+# Le 02/08/2026 brawltime rendait 8 cartes sur 18 : les 10 autres etaient
+# dans le bloc de donnees d'une balise <script>, que aplatir() ignore.
+# Elles n'etaient pas ailleurs, elles etaient la.
+RENDU = "".join('<a href="/tier-list/mode/bounty/map/C-%d">C%d</a>' % (i, i)
+                for i in range(8))
+CACHE_JS = ('<script>window.__NUXT__={"maps":['
+            + ",".join('{"path":"\\u002Ftier-list\\u002Fmode\\u002Fheist'
+                       '\\u002Fmap\\u002FH-%d"}' % i for i in range(4))
+            + ',{"path":"\\/tier-list\\/mode\\/hotZone\\/map\\/Open-Business"}'
+            + ']}</script>')
+avant = R.pool_depuis_liens(R.aplatir(RENDU + CACHE_JS))
+apres = R.pool_depuis_page(RENDU + CACHE_JS)
+check("les liens seuls ne voient que le rendu", len(avant) == 8, len(avant))
+check("le texte brut recupere le reste", len(apres) == 13, len(apres))
+check("les barres obliques echappees sont rétablies",
+      any(c["nom"] == "Open Business" for c in apres),
+      [c["nom"] for c in apres])
+check("le mode reste le filtre",
+      set(c["mode"] for c in apres) == {"bounty", "heist", "hotZone"},
+      set(c["mode"] for c in apres))
+check("pool complet : on ne relit pas le brut",
+      len(R.pool_depuis_page("".join(
+          '<a href="/tier-list/mode/heist/map/M-%d">M%d</a>' % (i, i)
+          for i in range(R.POOL_ATTENDU)))) == R.POOL_ATTENDU)
+check("du script sans carte n'ajoute rien",
+      len(R.pool_depuis_page(RENDU + "<script>var x=1;</script>")) == 8)
+
 print("\n== scraper_cartes de bout en bout ==")
 # Le 02/08/2026, chaque morceau passait ses tests et l'enchainement a
 # pourtant produit 147 cartes nommees « Backyard Bowl Brawl Ball », sans

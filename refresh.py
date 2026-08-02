@@ -580,7 +580,11 @@ def mode_depuis_texte(texte):
 
 
 # brawltime : /tier-list/mode/bounty/map/Dry-Season
-RX_POOL_LONG = re.compile(r"/mode/([^/]+)/map/([^/?#]+)")
+#
+# Le nom s'arrête aussi sur un guillemet, un chevron, une contre-oblique ou
+# une espace : hors d'une balise, l'adresse est suivie du reste du document
+# (« Dry-Season">Dry Season< »), et un motif plus permissif l'avalerait.
+RX_POOL_LONG = re.compile(r"/mode/([^/]+)/map/([^/?#\"'<>\\\s]+)")
 # Forme courte, pour une source qui rangerait ses cartes par mode :
 # /rankeds/heist/safe-zone. Sans danger : le premier segment doit être un des
 # six modes connus, sinon le lien est écarté.
@@ -623,6 +627,44 @@ def pool_depuis_liens(blocs):
     return pool
 
 
+def pool_depuis_page(html):
+    """Le pool d'une page, par ses liens puis par son texte brut.
+
+    Les sites modernes n'envoient qu'une partie du HTML et laissent le
+    navigateur bâtir le reste à partir d'un bloc de données rangé dans une
+    balise <script>. aplatir() ignore les scripts — c'est voulu, ça évite de
+    prendre du code pour du contenu — donc la lecture par les liens ne voit
+    que la portion déjà rendue : 8 cartes sur 18 le 02/08/2026.
+
+    Le reste n'est pas ailleurs, il est là, dans le texte de la page. On
+    relit donc la source brute quand le compte n'y est pas. Les barres
+    obliques y sont souvent échappées (\\/mode\\/) : on les rétablit d'abord.
+
+    Le filtre reste le même — seuls les six modes connus passent — donc lire
+    du script ne peut pas faire entrer n'importe quoi.
+    """
+    pool = pool_depuis_liens(aplatir(html))
+    if len(pool) >= POOL_ATTENDU:
+        return pool
+
+    vus = {clef(c["nom"]) for c in pool}
+    # Deux façons d'échapper la barre oblique dans du JSON embarqué : « \/ »
+    # et « / ». Les deux se rencontrent sur la même page.
+    brut = html.replace("\\/", "/")
+    brut = re.sub(r"\\u002[fF]", "/", brut)
+    for m in RX_POOL_LONG.finditer(brut):
+        mode = mode_depuis_texte(m.group(1))
+        nom = urllib.parse.unquote(m.group(2)).replace("-", " ").strip()
+        if nom.islower():
+            nom = nom.title()
+        if not mode or not clef(nom) or clef(nom) in vus:
+            continue
+        vus.add(clef(nom))
+        pool.append({"mode": mode, "nom": nom,
+                     "href": m.group(0)})
+    return pool
+
+
 def pool_classe(net):
     """Les cartes en rotation, chez la première source qui répond.
 
@@ -631,7 +673,7 @@ def pool_classe(net):
     """
     for nom, url in SOURCES_POOL:
         try:
-            pool = pool_depuis_liens(aplatir(net.get(url)))
+            pool = pool_depuis_page(net.get(url))
         except Exception as e:
             souci("%s injoignable (%s) — on essaie la source suivante" % (nom, e))
             continue
@@ -1274,10 +1316,11 @@ def deboguer_pool(net):
     for nom, url in SOURCES_POOL:
         print("\n--- %s" % url)
         try:
-            blocs = aplatir(net.get(url))
+            page = net.get(url)
         except Exception as e:
             print("  injoignable : %s: %s" % (e.__class__.__name__, e))
             continue
+        blocs = aplatir(page)
 
         liens = [b["href"] for b in blocs if b["type"] == "lien" and b["href"]]
         avec_map = [h for h in liens if "/map" in h]
@@ -1286,7 +1329,7 @@ def deboguer_pool(net):
         print("  %d lien(s) au total, %d contenant « /map », %d de bonne forme"
               % (len(liens), len(avec_map), len(reconnus)))
 
-        pool = pool_depuis_liens(blocs)
+        pool = pool_depuis_page(page)
         par_mode = {}
         for c in pool:
             par_mode.setdefault(c["mode"], []).append(c["nom"])
