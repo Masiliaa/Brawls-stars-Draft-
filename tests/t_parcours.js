@@ -73,7 +73,13 @@ const check = (nom, cond, detail = '') => {
   console.log('\n== choisir une carte ==');
   await page.locator('[data-act="cartes"]').first().click();
   check('les 6 modes sont listés', (await page.locator('.lab').count()) === 6);
-  check('16 cartes proposées', (await page.locator('[data-act="carte"]').count()) === 16);
+  // Le pool suit la rotation classée : sa taille change d'une saison à
+  // l'autre. On vérifie que l'écran propose exactement les cartes chargées,
+  // pas un nombre fixé une fois pour toutes.
+  const nbCartes = await page.evaluate(() => MAPS.length);
+  check('toutes les cartes sont proposées',
+    (await page.locator('[data-act="carte"]').count()) === nbCartes, nbCartes);
+  check('pool de taille plausible', nbCartes >= 12 && nbCartes <= 36, nbCartes);
 
   await page.getByText('Safe Zone').first().click();
   check('un brawler est conseillé', await page.locator('.hero .name').isVisible());

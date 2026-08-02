@@ -759,6 +759,80 @@ def pool_depuis_liens(blocs):
     return pool
 
 
+# topbrawl range ses fiches par identifiant numérique de carte —
+# /rankeds/15000072 — et non par mode et nom. C'est le même identifiant que
+# celui déjà stocké dans donnees.js pour les vignettes, ce qui permet de
+# reconnaître une carte sans se fier à son nom.
+RX_TOP_ID = re.compile(r"/rankeds/(\d{4,})")
+# « Best Brawlers for Heist on Bridge Too Far »
+RX_TOP_TITRE = re.compile(r"best\s+brawlers?\s+for\s+(.+?)\s+on\s+(.+?)\s*$", re.I)
+
+
+def nombre(texte):
+    """« 63.83 », « 63,83 », « 24.30 % » → float. None si ce n'en est pas un."""
+    t = str(texte or "").replace(",", ".").replace("%", "").strip()
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def carte_topbrawl(blocs, noms_connus):
+    """Une fiche topbrawl : mode, nom de carte, et classement chiffré.
+
+    Le titre porte le mode et la carte. Le tableau, lui, se lit par
+    reconnaissance : un nom de brawler connu, suivi de ses nombres. On ne
+    dépend ainsi d'aucune structure de tableau — seulement du fait qu'un
+    brawler s'appelle par son nom, ce qui est autrement plus stable qu'une
+    mise en page.
+
+    Renvoie {mode, nom, top:[[nom, victoires, utilisation], …]} ou None.
+    """
+    textes = [b["texte"].strip() for b in blocs if (b["texte"] or "").strip()]
+
+    mode = nom_carte = None
+    for t in textes:
+        m = RX_TOP_TITRE.search(t)
+        if m:
+            mode = mode_depuis_texte(m.group(1))
+            nom_carte = m.group(2).strip()
+            break
+    if not mode or not nom_carte:
+        return None
+
+    # aplatir() regroupe les textes voisins : les valeurs d'un tableau
+    # arrivent dans une seule longue chaîne, pas bloc par bloc. On lit donc
+    # le texte joint, en cherchant « un brawler connu suivi de ses nombres ».
+    # Les noms les plus longs d'abord, sinon « Larry » masquerait
+    # « Larry & Lawrie ».
+    joint = " ".join(textes)
+    ordonnes = sorted(noms_connus, key=len, reverse=True)
+    motif = re.compile(
+        r"(" + "|".join(re.escape(n) for n in ordonnes) + r")"
+        r"\s+([\d]+[.,]?[\d]*)\s*%?\s+([\d]+[.,]?[\d]*)\s*%?", re.I)
+
+    # Le site écrit « 8-bit », le catalogue dit « 8-Bit ». On retient la
+    # forme du catalogue : c'est elle qui sert à retrouver le portrait.
+    canonique = {clef(n): n for n in noms_connus}
+
+    top, vus = [], set()
+    for m in motif.finditer(joint):
+        k = clef(m.group(1))
+        if k in vus:
+            continue
+        victoires, utilisation = nombre(m.group(2)), nombre(m.group(3))
+        if victoires is None or utilisation is None:
+            continue
+        vus.add(k)
+        # On garde les deux mesures séparées. Le troisième nombre affiché
+        # par le site est un score maison qui les mélange : le reprendre
+        # ferait passer un calcul d'autrui pour une mesure.
+        top.append([canonique.get(k, m.group(1)), victoires, utilisation])
+    if not top:
+        return None
+    return {"mode": mode, "nom": nom_carte, "top": top}
+
+
 def pool_depuis_page(html):
     """Le pool d'une page, par ses liens puis par son texte brut.
 
@@ -795,6 +869,63 @@ def pool_depuis_page(html):
         pool.append({"mode": mode, "nom": nom,
                      "href": m.group(0)})
     return pool
+
+
+def cartes_topbrawl(net, noms_connus, ids_api=None):
+    """Le pool classé complet, lu carte par carte sur topbrawl.
+
+    Une seule source pour tout : le pool, les modes, les noms, les taux de
+    victoire et les taux d'utilisation. C'est ce que le brief demandait
+    depuis le début — « stocker [nom, winrate, userate] » — et ce que les
+    détours par brawlcalculator et la page du classé de brawltime n'ont
+    jamais pu donner.
+    """
+    print("\n[4+5] Pool de cartes — topbrawl.com")
+    try:
+        index = net.get(RANKED_TOP)
+    except Exception as e:
+        souci("index de topbrawl inaccessible : %s" % e)
+        return None
+    ids = list(dict.fromkeys(RX_TOP_ID.findall(index)))
+    if not ids:
+        souci("aucune fiche /rankeds/<id> sur l'index — page refaite ?")
+        return None
+    note("%d carte(s) dans la rotation" % len(ids))
+
+    cartes, retires, depart = [], 0, time.time()
+    for i, ident in enumerate(ids, 1):
+        if i % 5 == 0:
+            avancement(i, len(ids), depart, " — %d lue(s)" % len(cartes))
+        url = "%s/rankeds/%s" % (BASE_TOP, ident)
+        try:
+            fiche = carte_topbrawl(aplatir(net.get(url)), noms_connus)
+        except Exception as e:
+            souci("%s : %s" % (url, e))
+            continue
+        if not fiche:
+            souci("%s : ni mode ni classement lisibles" % url)
+            continue
+        # Le filtre du brief : un brawler joué une fois sur mille n'est pas
+        # un bon choix, c'est du bruit statistique. Ici on peut enfin
+        # l'appliquer, puisque le taux d'utilisation est publié.
+        avant = len(fiche["top"])
+        fiche["top"] = [t for t in fiche["top"] if t[2] >= SEUIL_USERATE][:TOP_PAR_CARTE]
+        if not fiche["top"]:
+            souci("%s : tout le classement est sous %.1f %% d'utilisation"
+                  % (url, SEUIL_USERATE))
+            continue
+        retires += avant - len(fiche["top"])
+
+        fiche["id"] = re.sub(r"[^a-z0-9]+", "-", fiche["nom"].lower()).strip("-")
+        # L'identifiant de l'adresse est celui de la vignette : on le tient
+        # sans avoir à le chercher ailleurs.
+        fiche["img"] = int(ident)
+        cartes.append(fiche)
+    avancement(len(ids), len(ids), depart, " — %d lue(s)" % len(cartes))
+    if retires:
+        note("%d entrée(s) écartée(s) sous %.1f %% d'utilisation"
+             % (retires, SEUIL_USERATE))
+    return cartes or None
 
 
 def fusionner_pool(lu, connu):
@@ -961,6 +1092,16 @@ def scraper_cartes(net, tr, anciennes):
     pool déjà enregistré — vieux d'une saison peut-être, mais jamais faux au
     point d'inventer des cartes.
     """
+    # topbrawl donne tout d'un coup : pool, modes, noms, taux de victoire et
+    # taux d'utilisation. On ne se rabat sur le montage à deux sources que
+    # s'il devient illisible.
+    noms_connus = noms_depuis_tiers(open(FICHIER_DONNEES, encoding="utf-8").read())
+    cartes = cartes_topbrawl(net, noms_connus)
+    if cartes:
+        return cartes
+
+    souci("topbrawl illisible — repli sur brawltime + brawlcalculator, "
+          "sans taux d'utilisation")
     print("\n[4+5] Pool de cartes")
     pool = pool_classe(net)
     if pool:

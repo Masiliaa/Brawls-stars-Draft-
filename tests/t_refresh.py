@@ -67,10 +67,11 @@ check("pas de tier parasite", not any(n in ("S","A","B","C","D") for n in noms))
 
 ids = R.ids_cartes(html)
 cartes = R.cartes_actuelles(html)
-# Le pool visé est de 18 cartes (6 modes x 3). On tolère 16 tant que les
-# deux manquantes ne sont pas retrouvées, mais on refuse qu'il déborde :
-# une carte en trop signalerait un mode mal reconnu par le scraper.
-check("pool de cartes entre 16 et 18", 16 <= len(cartes) <= 18, len(cartes))
+# topbrawl publie 27 cartes en rotation, soit 4 a 5 par mode -- le « 3 par
+# mode » du brief etait une supposition. La borne haute reste la pour
+# attraper un scraper qui ramenerait tout le catalogue (404 cartes le
+# 01/08/2026), pas pour imposer une taille de pool.
+check("pool de cartes plausible", 16 <= len(cartes) <= 36, len(cartes))
 check("autant d'ids que de cartes", len(ids) == len(cartes), (len(ids), len(cartes)))
 check("Belle's Rock relue", any(c["nom"] == "Belle's Rock" for c in cartes))
 check("modes valides", all(c["mode"] in R.MODES for c in cartes))
@@ -204,6 +205,42 @@ check("un pool incomplet mais reel est accepte",
 check("le seuil reste plus bas que le pool attendu", R.POOL_MIN < R.POOL_ATTENDU)
 check("la premiere source suffisante est gardee",
       len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
+
+print("\n== fiche topbrawl : victoires ET utilisation ==")
+# Structure relevee sur topbrawl.com/rankeds/15000072 le 02/08/2026. Une
+# seule page porte le mode, le nom de la carte, le taux de victoire et le
+# taux d'utilisation -- ce que le brief demandait depuis le debut.
+FICHE_TOP = ("<h1>Best Brawlers for Heist on Bridge Too Far</h1>"
+             "<p>Stats based on 12,089 games. Updated at 02/08/2026.</p>"
+             "<span>Brawler</span><span>Wins %</span><span>Use %</span><span>Score</span>"
+             "<span>8-bit</span><span>63.83</span><span>24.30</span><span>12.66</span>"
+             "<span>Starr Nova</span><span>55.75</span><span>9.08</span><span>11.04</span>"
+             "<span>Mina</span><span>60.94</span><span>0.53</span><span>10.76</span>")
+NOMS_T = ["8-Bit", "Starr Nova", "Mina", "Larry", "Larry & Lawrie"]
+ft = R.carte_topbrawl(R.aplatir(FICHE_TOP), NOMS_T)
+check("le mode vient du titre", ft["mode"] == "heist", ft["mode"])
+check("le nom de carte vient du titre", ft["nom"] == "Bridge Too Far", ft["nom"])
+check("victoires et utilisation sont lues",
+      ft["top"][0] == ["8-Bit", 63.83, 24.30], ft["top"][0])
+check("le nom est ramene a celui du catalogue",
+      ft["top"][0][0] == "8-Bit", ft["top"][0][0])
+check("un nom en deux mots est lu entier",
+      ["Starr Nova", 55.75, 9.08] in ft["top"], ft["top"])
+check("le score maison n'est pas repris", len(ft["top"][0]) == 3, ft["top"][0])
+check("l'en-tete du tableau n'est pas pris pour un brawler",
+      all(x[0] != "Brawler" for x in ft["top"]))
+# Les noms longs passent avant les courts, sinon « Larry » masquerait
+# « Larry & Lawrie ».
+LL = R.carte_topbrawl(R.aplatir(
+    "<h1>Best Brawlers for Heist on X</h1>"
+    "<span>Larry &amp; Lawrie</span><span>51.0</span><span>4.0</span>"), NOMS_T)
+check("« Larry & Lawrie » n'est pas coupe en « Larry »",
+      LL["top"][0][0] == "Larry & Lawrie", LL["top"][0])
+check("une page sans titre exploitable renvoie None",
+      R.carte_topbrawl(R.aplatir("<p>rien</p>"), NOMS_T) is None)
+check("nombre() accepte la virgule", R.nombre("63,83") == 63.83)
+check("nombre() ignore le pourcent", R.nombre("24.30 %") == 24.3)
+check("nombre() refuse un texte", R.nombre("Brawler") is None)
 
 print("\n== ancres de mode ==")
 # Relevé sur une adresse du site : …/tier-list/ranked#brawl-ball. La cle
