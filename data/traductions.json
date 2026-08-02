@@ -198,5 +198,215 @@
  "Bombards Ruffs over walls, exploiting his low health and driving him away from the sandbags anchoring his position.": {
   "es": "Bombardea a Ruffs por encima de los muros, aprovechando su poca vida y alejándolo de los sacos de arena que anclan su posición.",
   "fr": "Bombarde Ruffs par-dessus les murs, exploitant ses faibles PV et l'éloignant des sacs de sable qui ancrent sa position."
+ },
+ "Bombards Ruffs over walls, exploiting his low health and forcing him away from the sandbags anchoring his position. Also weak to: Assassin": {
+  "fr": "Bombarde Ruffs par-dessus les murs, exploitant ses faibles PV et le forçant à quitter les sacs de sable qui ancrent sa position. Également faible face à : Assassin"
+ },
+ "Bombards her over walls beyond hairspray retaliation, forcing movement through lingering puddles while healing from every attack.": {
+  "fr": "La bombarde par-dessus les murs, hors de portée de sa riposte à la laque, la forçant à traverser des flaques persistantes pendant qu'il se soigne à chaque attaque."
+ },
+ "Bounces lasers into Meeple from beyond their range while Take Cover catches homing shots before they find a clean lane.": {
+  "fr": "Fait rebondir ses lasers sur Meeple hors de sa portée, pendant que Take Cover intercepte les tirs à tête chercheuse avant qu'ils ne trouvent un couloir dégagé."
+ },
+ "Breaches Mr P's porter screen with dashes, bypasses bouncing suitcases, and forces the controller into close combat.": {
+  "fr": "Perce l'écran de porteurs de Mr. P à coups de ruées, contourne les valises rebondissantes et force le contrôleur au corps à corps."
+ },
+ "Breaks Amber's continuous flame pressure with Scrapsucker , draining her ammunition and reclaiming enough to keep firing.": {
+  "fr": "Casse la pression continue des flammes d'Amber avec Scrapsucker, vidant ses munitions et en récupérant assez pour continuer à tirer."
+ },
+ "Breaks Bolt's acceleration cycle through slows and displacement before his crowd-control immunity comes online.": {
+  "fr": "Casse la montée en vitesse de Bolt par des ralentissements et des déplacements forcés, avant que son immunité aux contrôles ne s'active."
+ },
+ "Breaks Meeple's wall-centered positioning with Push It , then maintains pressure from beyond their effective range using health-scaled fire.": {
+  "fr": "Casse le placement de Meeple, adossé aux murs, avec Push It, puis maintient la pression hors de sa portée utile avec un tir calé sur ses PV."
+ },
+ "Breaks Mina's three-hit sequence with chained dashes, making her miss before the strongest final strike lands.": {
+  "fr": "Casse la séquence de trois coups de Mina en enchaînant les ruées, la faisant manquer avant que sa frappe finale, la plus forte, ne touche."
+ },
+ "Breaks Najia's single-ammo cycle with Grounded , blocking the reload needed for another snake or extended Super.": {
+  "fr": "Casse le cycle à munition unique de Najia avec Grounded, bloquant le rechargement nécessaire à un nouveau serpent ou à un Super prolongé."
+ },
+ "Breaks the walls protecting Penny and her cannon with mines, exposing both to sustained arrow pressure.": {
+  "fr": "Détruit à la mine les murs qui protègent Penny et son canon, exposant les deux à une pression continue de flèches."
+ },
+ "Breaks the walls sheltering Penny and her cannon with mines, exposing both to sustained long-range arrow pressure. Also weak to: Thrower": {
+  "fr": "Détruit à la mine les murs qui abritent Penny et son canon, exposant les deux à une pression continue de flèches à longue portée. Également faible face à : Lanceur"
+ },
+ "Breaks through Squeak's zoning with a jump behind him, then sustains through delayed blasts while landing rapid punches.": {
+  "fr": "Franchit le contrôle de zone de Squeak d'un saut dans son dos, puis tient sous les explosions à retardement en enchaînant des coups rapides."
+ },
+ "Builds focused damage on Sandy before his shorter-ranged pebble bursts can threaten retaliation.": {
+  "fr": "Accumule des dégâts concentrés sur Sandy avant que ses jets de cailloux, de plus courte portée, ne puissent riposter."
+ },
+ "Builds freeze during Ollie's approach, using Hypothermia to reduce his damage before stuns interrupt his Super dash.": {
+  "fr": "Accumule le gel pendant l'approche d'Ollie, Hypothermia réduisant ses dégâts avant que les étourdissements ne coupent sa ruée de Super."
+ },
+ "Builds freeze on Otis, using Hypothermia to reduce his damage before stuns interrupt his ink volleys.": {
+  "fr": "Accumule le gel sur Otis, Hypothermia réduisant ses dégâts avant que les étourdissements ne coupent ses volées d'encre."
+ },
+ "Builds freeze on Shade's short-range approach, interrupting its pressure before center hits can connect.": {
+  "fr": "Accumule le gel sur l'approche rapprochée de Shade, coupant sa pression avant que ses coups centraux ne portent."
+ },
+ "Burns Frank throughout his attack windup from beyond hammer range, maintaining continuous damage without entering his reach.": {
+  "fr": "Brûle Frank pendant toute la préparation de son coup, hors de portée du marteau, entretenant des dégâts continus sans entrer dans son allonge."
+ },
+ "Burns Sirius and his clustered Shadows in the same piercing flame stream, dismantling the protective swarm.": {
+  "fr": "Brûle Sirius et ses Shadows agglutinées dans le même jet de flammes perforant, démantelant l'essaim protecteur."
+ },
+ "Burns through Sirius's clustered Shadows with continuous piercing flames, damaging him and his protective swarm in the same stream.": {
+  "fr": "Traverse les Shadows agglutinées de Sirius d'un flot de flammes perforantes continu, le touchant lui et son essaim protecteur d'un même jet."
+ },
+ "Bursts Bea down at equal range with front-loaded damage before her lone ammo cycles a Supercharged reply.": {
+  "fr": "Explose Bea à portée égale avec des dégâts immédiats, avant que son unique munition ne lui rende un tir Supercharged."
+ },
+ "Bursts Belle down at equal range with heavier maximum-distance shots before her faster reload can matter.": {
+  "fr": "Explose Belle à portée égale avec des tirs plus lourds à distance maximale, avant que son rechargement plus rapide ne pèse."
+ },
+ "Bursts Carl at close range and knocks him out of his spinning Super, turning his dive into a losing trade.": {
+  "fr": "Explose Carl au corps à corps et le sort de son Super tournoyant, transformant son plongeon en échange perdant."
+ },
+ "Bursts Carl down at close range and stuns him out of his spinning Super, denying its sustained damage.": {
+  "fr": "Explose Carl au corps à corps et l'étourdit hors de son Super tournoyant, lui refusant ses dégâts continus."
+ },
+ "Bursts Chuck at predictable Post endpoints, turning defensive hits into tokens before upgraded volleys overwhelm his high health.": {
+  "fr": "Explose Chuck aux extrémités prévisibles de ses Posts, convertissant les coups défensifs en jetons avant que ses volées améliorées ne submergent ses PV élevés."
+ },
+ "Bursts Cordelius down in three shots during Shadow Realm duels, ending the fight before Cordelius's reload advantage matters.": {
+  "fr": "Explose Cordelius en trois tirs dans les duels du Shadow Realm, achevant le combat avant que son avantage de rechargement ne compte."
+ },
+ "Bursts Edgar at close range by concentrating every coin, overwhelming his punch healing before it can stabilize the duel.": {
+  "fr": "Explose Edgar au corps à corps en concentrant chaque pièce, submergeant les soins de ses coups avant qu'ils ne stabilisent le duel."
+ },
+ "Bursts Edgar at point-blank range because later bell sequences concentrate multiple projectiles where his short punches must connect.": {
+  "fr": "Explose Edgar à bout portant, ses séquences de cloches tardives concentrant plusieurs projectiles là où ses coups courts doivent porter."
+ },
+ "Bursts Edgar at point-blank range with concentrated shotgun pellets, denying him time to heal through repeated punches.": {
+  "fr": "Explose Edgar à bout portant avec une gerbe de plombs concentrée, sans lui laisser le temps de se soigner à coups répétés."
+ },
+ "Bursts Fang after his dive with escalating bell volleys, concentrating every projectile at point-blank range before Fang can disengage.": {
+  "fr": "Explose Fang après son plongeon avec des volées de cloches croissantes, concentrant chaque projectile à bout portant avant qu'il ne décroche."
+ },
+ "Bursts Fang at point-blank range and interrupts his follow-up kicks with Super knockback.": {
+  "fr": "Explose Fang à bout portant et coupe ses coups de pied de suivi par le recul de son Super."
+ },
+ "Bursts Fang at point-blank range, with Super knockback interrupting his follow-up before he can chain close-range kicks.": {
+  "fr": "Explose Fang à bout portant, le recul du Super coupant sa relance avant qu'il n'enchaîne ses coups de pied rapprochés."
+ },
+ "Bursts Frank during his stationary windups with multi-bell volleys at close range, where every bell connects.": {
+  "fr": "Explose Frank pendant ses préparations immobiles avec des volées de plusieurs cloches au corps à corps, où chacune porte."
+ },
+ "Bursts Kaze down at close range, then knocks her away before she can chain another strike.": {
+  "fr": "Explose Kaze au corps à corps, puis la repousse avant qu'elle n'enchaîne une nouvelle frappe."
+ },
+ "Bursts Kaze during close-range dives with multi-bell volleys, denying her time to chain strikes or retreat.": {
+  "fr": "Explose Kaze pendant ses plongeons rapprochés avec des volées de plusieurs cloches, sans lui laisser le temps d'enchaîner ni de reculer."
+ },
+ "Bursts Kenji at close range, where multiple bells overwhelm the healing from his attacks.": {
+  "fr": "Explose Kenji au corps à corps, où plusieurs cloches dépassent les soins que lui rendent ses attaques."
+ },
+ "Bursts Kit down at his preferred close range, where multiple bells converge before he can attach again.": {
+  "fr": "Explose Kit à la courte portée qu'il privilégie, où plusieurs cloches convergent avant qu'il ne s'accroche de nouveau."
+ },
+ "Bursts Kit down at point-blank range in split form, where both halves punish his forced close engagement.": {
+  "fr": "Explose Kit à bout portant en forme scindée, où les deux moitiés punissent son engagement rapproché forcé."
+ },
+ "Bursts Leon down at his preferred close range, where multiple bells converge before he can retreat invisibly.": {
+  "fr": "Explose Leon à la courte portée qu'il privilégie, où plusieurs cloches convergent avant qu'il ne se replie invisible."
+ },
+ "Bursts Lily down at point-blank range, where her shotgun and knockback Super punish every teleport engagement.": {
+  "fr": "Explose Lily à bout portant, où son fusil et le recul de son Super punissent chaque engagement par téléportation."
+ },
+ "Bursts Lou at close range after Vanish bypasses his firing lane, denying him time to build freeze.": {
+  "fr": "Explose Lou au corps à corps après que Vanish a contourné son couloir de tir, sans lui laisser le temps d'accumuler du gel."
+ },
+ "Bursts Mortis at shotgun range, then Shell Shock slows him before he can dash back out.": {
+  "fr": "Explose Mortis à portée de fusil, puis Shell Shock le ralentit avant qu'il ne reparte en ruée."
+ },
+ "Bursts Mortis at shotgun range, then Shell Shock slows his retreat before he can dash away.": {
+  "fr": "Explose Mortis à portée de fusil, puis Shell Shock ralentit sa retraite avant qu'il ne s'échappe en ruée."
+ },
+ "Bursts Nori at close range, then uses Shell Shock to stop him from disengaging.": {
+  "fr": "Explose Nori au corps à corps, puis emploie Shell Shock pour l'empêcher de décrocher."
+ },
+ "Bursts Nori at close range, while random crowd control can stun or slow him before he escapes.": {
+  "fr": "Explose Nori au corps à corps, pendant que ses effets de contrôle aléatoires peuvent l'étourdir ou le ralentir avant qu'il ne fuie."
+ },
+ "Bursts Nori down at close range, then slows him with Super shells so he cannot disengage from the fight.": {
+  "fr": "Explose Nori au corps à corps, puis le ralentit avec les obus de son Super pour qu'il ne puisse pas quitter le combat."
+ },
+ "Bursts Nori down at close range, then slows or stuns him when he tries to disengage.": {
+  "fr": "Explose Nori au corps à corps, puis le ralentit ou l'étourdit dès qu'il tente de décrocher."
+ },
+ "Bursts Nori down at close range, then slows or stuns his escape attempts.": {
+  "fr": "Explose Nori au corps à corps, puis ralentit ou étourdit ses tentatives de fuite."
+ },
+ "Bursts Rosa at point-blank range and cycles Super knockbacks, repeatedly interrupting her sustained punching pressure.": {
+  "fr": "Explose Rosa à bout portant et enchaîne les reculs de son Super, coupant sans cesse la pression continue de ses coups."
+ },
+ "Bursts Trunk down at point-blank range, exploiting the weaker center damage of Trunk’s circular attack.": {
+  "fr": "Explose Trunk à bout portant, exploitant les dégâts plus faibles au centre de son attaque circulaire."
+ },
+ "Bursts down Bibi's tank health at point-blank range, with Super knockback interrupting her delayed swing and resetting distance. Also weak to: Knockback": {
+  "fr": "Explose les PV de tank de Bibi à bout portant, le recul du Super coupant son coup différé et rétablissant la distance. Également faible face à : Recul"
+ },
+ "Bursts down Byron's low health at maximum range before his damage-over-time darts or self-healing can swing the duel. Also weak to: Sniper": {
+  "fr": "Explose les faibles PV de Byron à portée maximale, avant que ses fléchettes à dégâts continus ou ses soins ne renversent le duel. Également faible face à : Sniper"
+ },
+ "Bursts down Carl at close range and interrupts his spinning Super with a stun before its damage builds.": {
+  "fr": "Explose Carl au corps à corps et coupe son Super tournoyant d'un étourdissement avant que ses dégâts ne montent."
+ },
+ "Bursts down Dynamike at close range, where clustered bells land before his delayed explosives can detonate.": {
+  "fr": "Explose Dynamike au corps à corps, où les cloches groupées touchent avant que ses explosifs à retardement ne sautent."
+ },
+ "Bursts down Mortis during his close-range commitment, using sequenced bell damage before he can complete another dash.": {
+  "fr": "Explose Mortis pendant son engagement rapproché, enchaînant les dégâts de cloches avant qu'il ne termine une nouvelle ruée."
+ },
+ "Bursts down Ruffs at midrange while Piggy Bank removes the walls that amplify his bouncing laser pressure.": {
+  "fr": "Explose Ruffs à mi-distance pendant que Piggy Bank supprime les murs qui amplifient la pression de ses lasers rebondissants."
+ },
+ "Bursts down Sam at close range, where the wide coin attack and returning Super punish every approach.": {
+  "fr": "Explose Sam au corps à corps, où l'attaque large en pièces et le Super qui revient punissent chaque approche."
+ },
+ "Bursts down Sam at close range, where wide coin volleys and the returning Super punish every approach.": {
+  "fr": "Explose Sam au corps à corps, où les larges volées de pièces et le Super qui revient punissent chaque approche."
+ },
+ "Bursts down Trunk at point-blank range, where their circular attack deals weaker center damage.": {
+  "fr": "Explose Trunk à bout portant, là où son attaque circulaire inflige des dégâts plus faibles au centre."
+ },
+ "Bursts down low-health Ruffs at midrange, while Piggy Bank removes walls that amplify his bouncing laser pressure.": {
+  "fr": "Explose Ruffs et ses faibles PV à mi-distance, pendant que Piggy Bank supprime les murs qui amplifient la pression de ses lasers rebondissants."
+ },
+ "Bursts gold pouches through Eve's hatchling swarm, clearing the summons while the splash reaches her.": {
+  "fr": "Fait éclater ses bourses d'or à travers l'essaim de rejetons d'Eve, nettoyant les invocations pendant que les éclats l'atteignent."
+ },
+ "Bursts her at the short range her dash requires, where his multi-bell volleys connect before she can disengage.": {
+  "fr": "L'explose à la courte portée qu'exige sa ruée, où ses volées de plusieurs cloches portent avant qu'elle ne décroche."
+ },
+ "Bursts her dash-in with split-form blasts from both head and legs, punishing the short range her attack requires.": {
+  "fr": "Explose son entrée en ruée avec les tirs de sa forme scindée, tête et jambes, punissant la courte portée qu'exige son attaque."
+ },
+ "Bursts through Bull's tank health at close range, and obstacle destruction removes the cover Bull needs to approach.": {
+  "fr": "Perce les PV de tank de Bull au corps à corps, et la destruction des obstacles lui retire les abris dont il a besoin pour approcher."
+ },
+ "Bursts through Damian's tank health at close range, where later attack sequences concentrate multiple bells into him.": {
+  "fr": "Perce les PV de tank de Damian au corps à corps, où ses séquences d'attaque tardives concentrent plusieurs cloches sur lui."
+ },
+ "Bursts through his moderate health with later bell sequences before Griff's extended coin volley fully connects.": {
+  "fr": "Perce ses PV moyens avec les séquences de cloches tardives avant que la longue volée de pièces de Griff ne porte entièrement."
+ },
+ "Bursts through his tank health at point-blank range, then Super knockback pushes his punches out of reach.": {
+  "fr": "Perce ses PV de tank à bout portant, puis le recul du Super repousse ses coups hors d'allonge."
+ },
+ "Bypasses Bo's ranged control while invisible, then sustains the close approach with continuous healing during his Super.": {
+  "fr": "Contourne le contrôle à distance de Bo en invisibilité, puis tient l'approche rapprochée grâce aux soins continus de son Super."
+ },
+ "Bypasses Grom's delayed explosives by jumping, lands beside him, and overwhelms his unreliable point-blank defense.": {
+  "fr": "Contourne les explosifs à retardement de Grom d'un saut, atterrit à ses côtés et submerge sa défense à bout portant, peu fiable."
+ },
+ "Bypasses Larry's artillery range with a jump, then rapid lifestealing punches overwhelm him before delayed blasts detonate.": {
+  "fr": "Franchit d'un saut la portée d'artillerie de Larry, puis des coups rapides à vol de vie le submergent avant que les explosions différées ne sautent."
+ },
+ "Bypasses Meeple's range with Vanish , reappearing at point-blank range to burst before homing shots control her approach.": {
+  "fr": "Contourne la portée de Meeple avec Vanish, réapparaissant à bout portant pour l'exploser avant que ses tirs à tête chercheuse ne verrouillent l'approche."
  }
 }

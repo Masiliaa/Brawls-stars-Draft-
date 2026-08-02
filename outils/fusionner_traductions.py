@@ -3,7 +3,7 @@
 """Ajoute un lot de traductions à data/traductions.json, sans rien écraser.
 
     python3 outils/fusionner_traductions.py lot.json
-    python3 outils/fusionner_traductions.py --reste 60      (phrases à faire)
+    python3 outils/fusionner_traductions.py --reste 60 fr   (phrases à faire)
 
 Les 1129 phrases d'explication des matchups viennent de brawlcalculator, en
 anglais. Les traduire se fait par lots : ce script les accumule, vérifie
@@ -73,9 +73,13 @@ def main():
 
     if args and args[0] == "--reste":
         combien = int(args[1]) if len(args) > 1 else 40
+        # Une langue peut être traitée seule : le français d'abord, puisque
+        # c'est celle de l'utilisateur. Sans ce filtre, chaque phrase
+        # resterait « à faire » tant que l'espagnol manque.
+        voulues = tuple(args[2:]) or LANGUES
         table = charger()
         reste = sorted(p for p in connues
-                       if not all((table.get(p) or {}).get(c) for c in LANGUES))
+                       if not all((table.get(p) or {}).get(c) for c in voulues))
         print(json.dumps(reste[:combien], ensure_ascii=False, indent=1))
         print("\n# restant : %d phrase(s)" % len(reste), file=sys.stderr)
         return 0
