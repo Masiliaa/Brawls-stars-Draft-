@@ -69,7 +69,12 @@ RANKED_TOP = BASE_TOP + "/rankeds"
 # se refait, et tout s'arrête. On essaie donc la seconde avant d'abandonner.
 SOURCES_POOL = (("brawltime.ninja", RANKED_NINJA),
                 ("topbrawl.com", RANKED_TOP))
-POOL_MIN = 12                # en dessous, ce n'est pas un pool mais un reste
+# Seuil de crédibilité du pool. Volontairement bas : un relevé incomplet
+# reste exploitable, et ce n'est pas ici que donnees.js est protégé — c'est
+# pool_appauvri(), plus loin, qui refuse d'écrire moins que l'existant. Mis
+# à 12 au départ, ce seuil a rejeté un relevé de 8 cartes parfaitement
+# valides : une protection qui jette de la donnée saine est mal placée.
+POOL_MIN = 6
 # L'API donne les vraies adresses d'image. Les deux motifs ci-dessous sont
 # reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
@@ -94,6 +99,7 @@ MODES = {
     "hotZone": ("Zone réservée", ["hot zone", "hotzone"]),
 }
 CARTES_PAR_MODE = 3          # le pool classé en compte 3 par mode, soit 18
+POOL_ATTENDU = CARTES_PAR_MODE * len(MODES)      # 18
 SEUIL_USERATE = 0.3          # en dessous, c'est du bruit statistique
 COUVERTURE_MIN = 100         # sur 105 brawlers, critère du brief
 PART_VIDES_MAX = 0.25        # au-delà, ce n'est plus une donnée maigre mais
@@ -631,9 +637,19 @@ def pool_classe(net):
             continue
         if len(pool) >= POOL_MIN:
             note("rotation classée : %d cartes lues sur %s" % (len(pool), nom))
+            # Incomplet n'est pas invalide : on s'en sert, mais on le dit.
+            # Une carte manquante ici, c'est une carte que l'app ne proposera
+            # pas — mieux vaut le savoir que le découvrir en draft.
+            if len(pool) < POOL_ATTENDU:
+                manque = [m for m in MODES
+                          if sum(1 for c in pool if c["mode"] == m) < CARTES_PAR_MODE]
+                souci("pool incomplet : %d cartes sur %d attendues, modes "
+                      "sous-fournis : %s"
+                      % (len(pool), POOL_ATTENDU,
+                         ", ".join(MODES[m][0] for m in manque)))
             return pool
-        souci("%s : %d carte(s) lue(s), trop peu pour un pool — page refaite ?"
-              % (nom, len(pool)))
+        souci("%s : %d carte(s) lue(s), moins que le minimum de %d — page "
+              "refaite ? voir --debug pool" % (nom, len(pool), POOL_MIN))
     souci("aucune source n'a donné le pool classé")
     return None
 
@@ -1247,6 +1263,48 @@ def deboguer_rotation(net):
                                     (m.get("gameMode") or {}).get("name", "?")))
 
 
+def deboguer_pool(net):
+    """Pourquoi le pool lu n'a-t-il pas la taille attendue ?
+
+    Trois causes possibles, et elles ne se soignent pas pareil : la page ne
+    contient pas les liens (rendu dans le navigateur), les liens sont là mais
+    d'une autre forme (motif à corriger), ou le mode n'est pas reconnu
+    (MODES à compléter). On les distingue en comptant à chaque étape.
+    """
+    for nom, url in SOURCES_POOL:
+        print("\n--- %s" % url)
+        try:
+            blocs = aplatir(net.get(url))
+        except Exception as e:
+            print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+            continue
+
+        liens = [b["href"] for b in blocs if b["type"] == "lien" and b["href"]]
+        avec_map = [h for h in liens if "/map" in h]
+        reconnus = [h for h in liens
+                    if RX_POOL_LONG.search(h) or RX_POOL_COURT.search(h)]
+        print("  %d lien(s) au total, %d contenant « /map », %d de bonne forme"
+              % (len(liens), len(avec_map), len(reconnus)))
+
+        pool = pool_depuis_liens(blocs)
+        par_mode = {}
+        for c in pool:
+            par_mode.setdefault(c["mode"], []).append(c["nom"])
+        print("  %d carte(s) retenue(s) sur %d attendues" % (len(pool), POOL_ATTENDU))
+        for m in MODES:
+            noms = par_mode.get(m, [])
+            print("    %-18s %d : %s"
+                  % (MODES[m][0], len(noms), ", ".join(noms)[:44] or "—"))
+
+        # Les liens qui parlent de carte sans être retenus : c'est là que se
+        # cache la différence entre 8 et 18.
+        perdus = [h for h in avec_map if h not in reconnus]
+        if perdus:
+            print("  %d lien(s) « /map » non reconnu(s), ex. :" % len(perdus))
+            for h in perdus[:5]:
+                print("      " + h[:62])
+
+
 def deboguer_carte_ninja(net):
     """Une fiche de carte chez brawltime donne-t-elle les taux de victoire ?
 
@@ -1358,6 +1416,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "pool":
+        return deboguer_pool(net)
     if quoi == "carte-ninja":
         return deboguer_carte_ninja(net)
     if quoi == "ninja":
@@ -1399,7 +1459,7 @@ def main():
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
-                         "'events', 'rotation', 'ranked', 'ninja', 'carte-ninja' "
+                         "'events', 'rotation', 'ranked', 'ninja', 'carte-ninja', 'pool' "
                          "(cherche le pool classe), ou une adresse complète")
     a = ap.parse_args()
 

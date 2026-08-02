@@ -185,6 +185,13 @@ check("bascule sur la source de secours",
       len(R.pool_classe(NetSources(None, GROS))) == 14)
 check("une source maigre ne suffit pas",
       R.pool_classe(NetSources(SECOURS, None)) is None)
+# Le 02/08/2026, un seuil a 12 a rejete un releve de 8 cartes valides. Un
+# pool incomplet reste exploitable : c'est pool_appauvri() qui protege
+# donnees.js, pas ce seuil.
+HUIT = "".join('<a href="/rankeds/heist/carte-%d">C%d</a>' % (i, i) for i in range(8))
+check("un pool incomplet mais reel est accepte",
+      len(R.pool_classe(NetSources(HUIT, None)) or []) == 8)
+check("le seuil reste plus bas que le pool attendu", R.POOL_MIN < R.POOL_ATTENDU)
 check("la premiere source suffisante est gardee",
       len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
 
