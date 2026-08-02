@@ -231,6 +231,21 @@ NOMS_T = ["8-Bit", "Starr Nova", "Mina", "Larry", "Larry & Lawrie"]
 ft = R.carte_topbrawl(R.aplatir(FICHE_TOP), NOMS_T)
 check("le mode vient du titre", ft["mode"] == "heist", ft["mode"])
 check("le nom de carte vient du titre", ft["nom"] == "Bridge Too Far", ft["nom"])
+# Le titre d'onglet porte le nom du site en suffixe. Le garder a produit
+# « Bridge Too Far - Brawl Stars » dans donnees.js le 02/08/2026.
+SUFFIXE = R.carte_topbrawl(R.aplatir(
+    "<h1>Best Brawlers for Heist on Kaboom Canyon - Brawl Stars</h1>"
+    "<span>8-bit</span><span>63.83</span><span>24.30</span>"), NOMS_T)
+check("le nom du site est retire du titre",
+      SUFFIXE["nom"] == "Kaboom Canyon", SUFFIXE["nom"])
+# Le titre d'onglet peut se retrouver colle au reste du document ; le titre
+# visible de la page, lui, est isole. On prefere donc le second.
+PREF = R.carte_topbrawl(R.aplatir(
+    "<title>Best Brawlers for Heist on X - Brawl Stars</title>"
+    "<h1>Best Brawlers for Heist on Kaboom Canyon</h1>"
+    "<span>8-bit</span><span>63.83</span><span>24.30</span>"), NOMS_T)
+check("le titre visible prime sur celui de l'onglet",
+      PREF["nom"] == "Kaboom Canyon", PREF["nom"])
 check("victoires et utilisation sont lues",
       ft["top"][0] == ["8-Bit", 63.83, 24.30], ft["top"][0])
 check("le nom est ramene a celui du catalogue",
@@ -426,8 +441,11 @@ class FauxReseau:
         raise AssertionError("URL inattendue : " + url)
 
 faux = FauxReseau()
-res = R.scraper_cartes(faux, None, [{"nom": "Vieille Carte", "mode": "heist",
-                                     "img": 1, "top": []}])
+res, source = R.scraper_cartes(faux, None, [{"nom": "Vieille Carte", "mode": "heist",
+                                             "img": 1, "top": []}])
+# Le pied de page doit nommer la source qui a reellement servi : annoncer
+# topbrawl quand la donnee vient d'ailleurs serait un mensonge affiche.
+check("la source du repli est nommee", source == "brawlcalculator.com", source)
 par_nom_res = {c["nom"]: c for c in res}
 check("les 18 cartes du pool sont retenues", len(res) == 18, len(res))
 check("hors rotation ecarte", "Old Town" not in par_nom_res)

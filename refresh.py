@@ -790,12 +790,24 @@ def carte_topbrawl(blocs, noms_connus):
     """
     textes = [b["texte"].strip() for b in blocs if (b["texte"] or "").strip()]
 
+    # Les titres visibles d'abord, le reste ensuite. Le titre d'onglet du
+    # navigateur dit la même chose mais avec le nom du site en suffixe, et il
+    # peut se retrouver collé au reste du document — d'où un nom de carte qui
+    # déborde. Le <h1> de la page, lui, est propre et isolé.
+    titres = [b["texte"].strip() for b in blocs
+              if b["type"] == "titre" and (b["texte"] or "").strip()]
+
     mode = nom_carte = None
-    for t in textes:
+    for t in titres + textes:
         m = RX_TOP_TITRE.search(t)
         if m:
             mode = mode_depuis_texte(m.group(1))
-            nom_carte = m.group(2).strip()
+            # Le titre d'onglet du navigateur porte le nom du site en
+            # suffixe — « Bridge Too Far - Brawl Stars ». Le garder donnait
+            # des cartes nommées ainsi dans l'app, et des identifiants du
+            # genre « bridge-too-far-brawl-stars ».
+            nom_carte = re.sub(r"\s*[-–—|·:]\s*brawl\s*stars\s*$", "",
+                               m.group(2), flags=re.I).strip()
             break
     if not mode or not nom_carte:
         return None
@@ -1098,7 +1110,9 @@ def scraper_cartes(net, tr, anciennes):
     noms_connus = noms_depuis_tiers(open(FICHIER_DONNEES, encoding="utf-8").read())
     cartes = cartes_topbrawl(net, noms_connus)
     if cartes:
-        return cartes
+        # Le pied de page doit nommer la source qui a réellement servi, pas
+        # celle qu'on espérait utiliser.
+        return cartes, "topbrawl.com"
 
     souci("topbrawl illisible — repli sur brawltime + brawlcalculator, "
           "sans taux d'utilisation")
@@ -1118,7 +1132,7 @@ def scraper_cartes(net, tr, anciennes):
         index = net.get(BASE_CALC + "/maps/")
     except Exception as e:
         souci("index des cartes inaccessible : %s" % e)
-        return None
+        return None, None
 
     liens = {}
     for b in aplatir(index):
@@ -1128,7 +1142,7 @@ def scraper_cartes(net, tr, anciennes):
                 liens[m.group(1).lower()] = b["texte"]
     if not liens:
         souci("aucun lien /maps/ trouvé — structure changée, voir --debug maps")
-        return None
+        return None, None
     note("%d cartes repérées" % len(liens))
     liens, connus = restreindre_au_pool(liens, reference)
     if connus:
@@ -1208,7 +1222,7 @@ def scraper_cartes(net, tr, anciennes):
         if n < CARTES_PAR_MODE:
             souci("%s : %d carte(s) trouvée(s), %d attendues"
                   % (nom_fr, n, CARTES_PAR_MODE))
-    return cartes
+    return cartes, "brawlcalculator.com"
 
 
 def appliquer_userates(cartes, chemin):
@@ -2043,7 +2057,7 @@ def main():
 
     if a.cartes:
         anciennes = cartes_actuelles(html)
-        cartes = scraper_cartes(net, tr, anciennes)
+        cartes, source_cartes = scraper_cartes(net, tr, anciennes)
         if cartes and pool_appauvri(cartes, anciennes):
             souci("%d carte(s) récupérée(s) contre %d déjà en place : le pool "
                   "serait appauvri, MAPS reste inchangé. La mise en page du "
@@ -2055,7 +2069,7 @@ def main():
             ordre = list(MODES)
             cartes.sort(key=lambda c: (ordre.index(c["mode"]), c["nom"]))
             html = ecrire_bloc(html, "MAPS", rendre_maps(cartes))
-            maj["cartes"] = [aujourdhui, "brawlcalculator.com"]
+            maj["cartes"] = [aujourdhui, source_cartes]
             touche = True
 
     if a.counters:
