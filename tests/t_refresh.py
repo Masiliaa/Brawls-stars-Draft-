@@ -217,6 +217,58 @@ check("le seuil reste plus bas que le pool attendu", R.POOL_MIN < R.POOL_ATTENDU
 check("la premiere source suffisante est gardee",
       len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
 
+print("\n== « trop de requetes » n'est pas un refus ==")
+# Le 02/08/2026, brawlstats a repondu 429 et SYNERGIE est reste vide : le
+# script prenait une demande de patience pour une porte fermee.
+import urllib.error, urllib.request
+_vrai_urlopen = urllib.request.urlopen
+R.ATTENTE_RALENTI, R.PAUSE_MAX = 0.01, 0.05
+
+def _faux(n_429, entete=None):
+    etat = {"n": 0}
+    def urlopen(req, timeout=30):
+        etat["n"] += 1
+        if etat["n"] <= n_429:
+            raise urllib.error.HTTPError(req.full_url, 429, "Too Many Requests",
+                                         entete or {}, None)
+        class Rep:
+            def read(self): return b"ok"
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        return Rep()
+    return urlopen, etat
+
+try:
+    urllib.request.urlopen, etat = _faux(2)
+    net429 = R.Reseau(delai=0, cache=False)
+    check("on reessaie apres un 429", net429._brut("https://x.test/a") == b"ok")
+    check("trois essais ont suffi", etat["n"] == 3, etat["n"])
+    check("l'hote est ralenti pour la suite", net429.delai == R.DELAI_RALENTI)
+
+    urllib.request.urlopen, _ = _faux(99)
+    net_mur = R.Reseau(delai=0, cache=False)
+    try:
+        net_mur._brut("https://x.test/b")
+        check("un mur permanent finit par lever une erreur", False)
+    except urllib.error.HTTPError as e:
+        check("un mur permanent finit par lever une erreur", e.code == 429)
+
+    urllib.request.urlopen, _ = _faux(1, {"Retry-After": "0.01"})
+    check("le delai demande par le serveur est respecte",
+          R.Reseau(delai=0, cache=False)._brut("https://x.test/c") == b"ok")
+
+    urllib.request.urlopen, _ = _faux(1)
+    try:
+        R.Reseau(delai=0, cache=False)._brut("https://x.test/d")
+        ok_404 = False
+    except urllib.error.HTTPError:
+        ok_404 = False
+    else:
+        ok_404 = True
+    check("un 429 isole ne fait pas echouer", ok_404)
+finally:
+    urllib.request.urlopen = _vrai_urlopen
+
 print("\n== fiche topbrawl : victoires ET utilisation ==")
 # Structure relevee sur topbrawl.com/rankeds/15000072 le 02/08/2026. Une
 # seule page porte le mode, le nom de la carte, le taux de victoire et le

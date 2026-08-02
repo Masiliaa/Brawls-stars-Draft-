@@ -112,6 +112,10 @@ COUVERTURE_MIN = 100         # sur 105 brawlers, critère du brief
 PART_VIDES_MAX = 0.25        # au-delà, ce n'est plus une donnée maigre mais
                              # un parseur cassé : on refuse d'écrire
 ABANDON_APRES = 10           # images ratées d'affilée avant de conclure au réseau coupé
+ESSAIS_RALENTI = 4           # tentatives quand un hôte demande de ralentir
+ATTENTE_RALENTI = 20         # secondes avant le 2e essai, doublées ensuite
+PAUSE_MAX = 120              # au-delà, la source est traitée comme fermée
+DELAI_RALENTI = 5.0          # nouveau rythme après un « trop de requêtes »
 
 ERREURS = []
 
@@ -232,12 +236,38 @@ class Reseau:
             "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
             "Accept-Language": "en,fr;q=0.8",
         })
-        try:
-            with urllib.request.urlopen(req, timeout=30) as r:
-                data = r.read()
-        finally:
-            self.dernier[hote] = time.time()
-        return data
+        # « 429 Too Many Requests » et « 503 » ne veulent pas dire « refusé »,
+        # mais « tu vas trop vite ». Abandonner à la première réponse de ce
+        # genre, c'est prendre une demande de patience pour une porte fermée :
+        # c'est ce qui a laissé SYNERGIE vide le 02/08/2026.
+        #
+        # Le serveur indique parfois combien de temps attendre (« Retry-After
+        # »). Quand il le fait, on l'écoute ; sinon on double l'attente à
+        # chaque essai, et on ralentit durablement l'hôte pour la suite.
+        attente_suivante = ATTENTE_RALENTI
+        for essai in range(1, ESSAIS_RALENTI + 1):
+            try:
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    data = r.read()
+                self.dernier[hote] = time.time()
+                return data
+            except urllib.error.HTTPError as e:
+                self.dernier[hote] = time.time()
+                if e.code not in (429, 503) or essai == ESSAIS_RALENTI:
+                    raise
+                demande = nombre(e.headers.get("Retry-After"))
+                pause = demande if demande else attente_suivante
+                note("%s répond %d — on patiente %d s (essai %d/%d)"
+                     % (hote, e.code, pause, essai, ESSAIS_RALENTI))
+                time.sleep(min(pause, PAUSE_MAX))
+                attente_suivante *= 2
+                # Le rythme de départ était trop soutenu pour cet hôte : on
+                # le garde plus lent jusqu'à la fin, plutôt que de retomber
+                # dans le même mur à la requête suivante.
+                self.delai = max(self.delai, DELAI_RALENTI)
+            except Exception:
+                self.dernier[hote] = time.time()
+                raise
 
     def get(self, url, binaire=False):
         """Renvoie le contenu de l'URL, depuis le cache si assez récent."""
@@ -1980,6 +2010,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "topbrawl":
+        return deboguer_ranked(net, (BASE_TOP + "/", RANKED_TOP))
     if quoi == "site":
         return deboguer_site(net)
     if quoi == "onglets":
