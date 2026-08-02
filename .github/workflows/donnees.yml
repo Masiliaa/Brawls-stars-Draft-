@@ -21,7 +21,7 @@ on:
         type: choice
         default: "non"
         options: ["non", "pool", "carte", "carte-ninja", "counters", "maps",
-                  "rotation", "ranked", "ninja", "events"]
+                  "rotation", "ranked", "ninja", "events", "modes"]
 
 # Nécessaire pour que le robot puisse commiter donnees.js.
 permissions:

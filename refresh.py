@@ -1472,6 +1472,34 @@ def deboguer_pool(net):
                 print("      " + h[:62])
 
 
+def deboguer_modes(net):
+    """Les pages par mode listent-elles la rotation, mode par mode ?
+
+    La page du classé n'expose qu'une partie du pool — 9 cartes sur 18 le
+    02/08/2026, et jamais les mêmes d'un chargement à l'autre. Trois modes
+    y sont toujours absents. Ce n'est pas un défaut de rendu : Chromium,
+    défilement compris, en voit encore moins que le téléchargement brut.
+
+    Chaque mode a pourtant sa propre page, dont l'adresse est connue et non
+    devinée : elle apparaît dans les liens de la page du classé.
+    """
+    for mode in MODES:
+        url = "%s/tier-list/mode/%s" % (BASE_NINJA, mode)
+        print("\n--- %s" % url)
+        try:
+            page = net.get(url)
+        except Exception as e:
+            print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+            continue
+        cartes = [c for c in pool_depuis_page(page) if c["mode"] == mode]
+        print("  %d carte(s) : %s"
+              % (len(cartes), ", ".join(c["nom"] for c in cartes)[:88]))
+        autres = [c["nom"] for c in pool_depuis_page(page) if c["mode"] != mode]
+        if autres:
+            print("  %d carte(s) d'autres modes sur la meme page, ex. : %s"
+                  % (len(autres), ", ".join(autres[:4])))
+
+
 def deboguer_carte_ninja(net):
     """Une fiche de carte chez brawltime donne-t-elle les taux de victoire ?
 
@@ -1583,6 +1611,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "modes":
+        return deboguer_modes(net)
     if quoi == "pool":
         return deboguer_pool(net)
     if quoi == "carte-ninja":
