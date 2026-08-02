@@ -1,0 +1,80 @@
+# Rafraîchit les données de l'app, sur les serveurs de GitHub.
+#
+# Deux raisons d'être ici plutôt que sur le Mac de l'utilisateur :
+#   - il n'a rien à lancer, rien à installer, et n'est prévenu que si ça casse ;
+#   - les journaux sont lisibles à distance, donc un diagnostic ne demande plus
+#     de capture d'écran.
+#
+# Rien n'est écrit tant que les 132 contrôles de la suite ne sont pas verts.
+
+name: Données
+
+on:
+  schedule:
+    # Tous les lundis à 6 h UTC. Une saison dure deux mois ; une fois par
+    # semaine suffit largement, et laisse le temps de voir venir une panne.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      diagnostic:
+        description: "Diagnostic seul, sans rien écrire"
+        type: choice
+        default: "non"
+        options: ["non", "pool", "carte", "carte-ninja", "counters", "maps",
+                  "rotation", "ranked", "ninja", "events"]
+
+# Nécessaire pour que le robot puisse commiter donnees.js.
+permissions:
+  contents: write
+
+jobs:
+  donnees:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Le navigateur vit ici, pas sur la machine de l'utilisateur.
+      - name: Installer Chromium
+        run: |
+          pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Diagnostic
+        if: inputs.diagnostic != '' && inputs.diagnostic != 'non'
+        run: python3 refresh.py --debug "${{ inputs.diagnostic }}" --sans-cache
+
+      - name: Relever les données
+        if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
+        # Le script sort en erreur quand une source bloque. Ce n'est pas une
+        # raison de tout arrêter : les autres blocs peuvent avoir été relevés
+        # correctement, et les avertissements restent visibles dans le journal.
+        continue-on-error: true
+        run: python3 refresh.py --cartes --counters --synergie
+
+      - name: Contrôles
+        if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
+        # Barrière : un donnees.js qui ne passe pas la suite ne doit jamais
+        # atteindre le site. En cas d'échec, l'étape suivante ne s'exécute pas
+        # et la modification est simplement abandonnée.
+        run: python3 tests/t_refresh.py
+
+      - name: Commiter si les données ont changé
+        if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
+        run: |
+          if git diff --quiet -- donnees.js; then
+            echo "Aucun changement : rien à commiter."
+            exit 0
+          fi
+          git config user.name "Robot données"
+          git config user.email "noreply@anthropic.com"
+          # Seul donnees.js est commité. Le cache et les images restent
+          # locaux à l'exécution.
+          git add donnees.js
+          git commit -m "Donnees rafraichies automatiquement"
+          git push

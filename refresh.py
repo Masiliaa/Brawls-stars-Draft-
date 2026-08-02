@@ -75,6 +75,8 @@ SOURCES_POOL = (("brawltime.ninja", RANKED_NINJA),
 # à 12 au départ, ce seuil a rejeté un relevé de 8 cartes parfaitement
 # valides : une protection qui jette de la donnée saine est mal placée.
 POOL_MIN = 6
+DEFILEMENTS = 8              # paliers de descente dans une page qui se
+                             # construit au fur et à mesure du défilement
 # L'API donne les vraies adresses d'image. Les deux motifs ci-dessous sont
 # reconstruits à partir du nom : ils ne servent que si l'API ne répond pas,
 # et ils échouent sur les brawlers récents ou aux noms inhabituels.
@@ -292,7 +294,18 @@ class Reseau:
             time.sleep(attente)
         page = nav.new_page(user_agent=UA)
         try:
-            page.goto(url, wait_until="networkidle", timeout=45000)
+            page.goto(url, wait_until="domcontentloaded", timeout=45000)
+            # « networkidle » déclarait la page prête trop tôt : elle rendait
+            # moins de contenu qu'un simple téléchargement (8 cartes contre 9
+            # le 02/08/2026). Beaucoup de sites ne construisent une section
+            # que lorsqu'elle approche de l'écran, et un navigateur qui ne
+            # descend nulle part ne la voit jamais. On descend donc, par
+            # paliers, en laissant le temps à chaque section d'arriver.
+            page.wait_for_timeout(2000)
+            for _ in range(DEFILEMENTS):
+                page.mouse.wheel(0, 3000)
+                page.wait_for_timeout(500)
+            page.wait_for_timeout(1500)
             html = page.content()
         finally:
             page.close()
