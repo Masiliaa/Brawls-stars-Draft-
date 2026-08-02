@@ -678,5 +678,275 @@
  },
  "Covers Pierce's shell routes with delayed lightning, using broad storm pressure to deny his ammo pickups.": {
   "fr": "Couvre les trajets de coquillages de Pierce d'éclairs différés, la large pression de l'orage lui refusant ses ramassages de munitions."
+ },
+ "Covers every angle around Lily with point-blank damage, denying any safe position after her teleport.": {
+  "fr": "Couvre tous les angles autour de Lily avec des dégâts à bout portant, ne lui laissant aucune position sûre après sa téléportation."
+ },
+ "Cripples Najia's single-ammo cycle with Grounded , preventing reloads so she cannot launch another snake or extend her Super.": {
+  "fr": "Paralyse le cycle à munition unique de Najia avec Grounded, bloquant ses rechargements pour qu'elle ne puisse ni lancer un autre serpent ni prolonger son Super."
+ },
+ "Crosses Dynamike's delayed blasts in mid-jump and lands close enough to eliminate him before a counterattack develops.": {
+  "fr": "Franchit les explosions différées de Dynamike en plein saut et atterrit assez près pour l'éliminer avant qu'une contre-attaque ne s'organise."
+ },
+ "Crosses Grom's artillery range by rolling onto him, forcing a close fight where delayed explosions struggle to connect.": {
+  "fr": "Franchit la portée d'artillerie de Grom en roulant sur lui, imposant un combat rapproché où ses explosions différées peinent à toucher."
+ },
+ "Crosses Ruffs's long range with Torpedo Throw, stunning and bursting him after landing inside his sandbag cover.": {
+  "fr": "Franchit la longue portée de Ruffs avec Torpedo Throw, puis l'étourdit et l'explose après avoir atterri dans son abri de sacs de sable."
+ },
+ "Crosses Ruffs's long range with Torpedo Throw, then stuns and bursts him inside his sandbag cover.": {
+  "fr": "Franchit la longue portée de Ruffs avec Torpedo Throw, puis l'étourdit et l'explose au cœur de son abri de sacs de sable."
+ },
+ "Crosses Sprout's Seed Bombs and Hedge barriers by jumping, then drains ammo to suppress the thrower's response.": {
+  "fr": "Franchit d'un saut les Seed Bombs et les barrières de Hedge de Sprout, puis lui vide ses munitions pour étouffer la réponse du lanceur."
+ },
+ "Crosses Tick's delayed minefield with high health and fast movement, then overwhelms his low health up close.": {
+  "fr": "Traverse le champ de mines différées de Tick grâce à ses PV élevés et sa vitesse, puis submerge ses faibles PV au corps à corps."
+ },
+ "Crosses Tick's delayed minefield with tank health and fast movement, then batters his low health at close range.": {
+  "fr": "Traverse le champ de mines différées de Tick grâce à ses PV de tank et sa vitesse, puis matraque ses faibles PV au corps à corps."
+ },
+ "Crosses Ziggy's telegraphed lightning areas with dashes and maintains melee pressure before his next strike resolves.": {
+  "fr": "Franchit en ruée les zones d'éclairs annoncées de Ziggy et maintient la pression au corps à corps avant que sa frappe suivante n'aboutisse."
+ },
+ "Curveball makes cactus spikes harder to dodge, punishing Crow's evasive movement and low health with reliable burst.": {
+  "fr": "Curveball rend les épines de cactus plus difficiles à esquiver, punissant les déplacements fuyants de Crow et ses faibles PV par des dégâts sûrs."
+ },
+ "Cuts Amber's sustained flame damage with Extra Toxic , weakening her continuous-fire pressure throughout every poisoned trade.": {
+  "fr": "Réduit les dégâts de flammes continus d'Amber avec Extra Toxic, affaiblissant sa pression de tir continu à chaque échange empoisonné."
+ },
+ "Cuts across Dynamike's timed explosions with dashes and reaches melee range, punishing his low health before a retaliatory throw is possible.": {
+  "fr": "Traverse en ruée les explosions minutées de Dynamike et arrive au corps à corps, punissant ses faibles PV avant tout jet de riposte."
+ },
+ "Dashes around Barley's slow bottles and into close range, exploiting his low health before he can reload. Also weak to: Assassin": {
+  "fr": "Contourne en ruée les bouteilles lentes de Barley pour arriver au contact, exploitant ses faibles PV avant qu'il ne recharge. Également faible face à : Assassin"
+ },
+ "Dashes around Barley's slow projectiles and heals with each hit, overwhelming his low health at close range.": {
+  "fr": "Contourne en ruée les projectiles lents de Barley et se soigne à chaque coup, submergeant ses faibles PV au corps à corps."
+ },
+ "Dashes around Berry's lingering puddles and into close range, punishing his low health and long reload between thrown cones. Also weak to: Assassin": {
+  "fr": "Contourne en ruée les flaques persistantes de Berry pour arriver au contact, punissant ses faibles PV et son long rechargement entre deux cônes. Également faible face à : Assassin"
+ },
+ "Dashes around Larry's delayed blasts, closes the artillery gap, and recovers recent damage with Hosomaki Healing .": {
+  "fr": "Contourne en ruée les explosions différées de Larry, comble l'écart d'artillerie et récupère les dégâts récents avec Hosomaki Healing."
+ },
+ "Dashes around Lou's narrow volleys, then pressures him at close range before freeze accumulates.": {
+  "fr": "Contourne en ruée les volées étroites de Lou, puis le presse au corps à corps avant que le gel ne s'accumule."
+ },
+ "Dashes around Rico's bouncing fire and uses Breakthrough to destroy his strongest wall angles while maintaining close pressure.": {
+  "fr": "Contourne en ruée les tirs rebondissants de Rico et emploie Breakthrough pour détruire ses meilleurs angles de mur tout en maintenant la pression rapprochée."
+ },
+ "Dashes around Sprout's Seed Bombs and closes to melee range before the artillery thrower can restore spacing.": {
+  "fr": "Contourne en ruée les Seed Bombs de Sprout et arrive au corps à corps avant que le lanceur ne rétablisse la distance."
+ },
+ "Dashes around Squeak's delayed blast zones, then maintains point-blank pressure while his slow reload denies an immediate answer.": {
+  "fr": "Contourne en ruée les zones d'explosion différée de Squeak, puis maintient la pression à bout portant pendant que son rechargement lent l'empêche de répondre."
+ },
+ "Dashes around Squeak's delayed explosion zones, then stays point-blank where slow reload leaves him without immediate defense.": {
+  "fr": "Contourne en ruée les zones d'explosion différée de Squeak, puis reste à bout portant, là où son rechargement lent le laisse sans défense immédiate."
+ },
+ "Dashes around Tick's delayed mines, closes on his low health, and unloads point-blank before the mines detonate.": {
+  "fr": "Contourne en ruée les mines différées de Tick, fond sur ses faibles PV et décharge à bout portant avant que les mines ne sautent."
+ },
+ "Dashes around Ziggy's delayed lightning zones and chains close-range attacks before another strike can land.": {
+  "fr": "Contourne en ruée les zones d'éclairs différés de Ziggy et enchaîne les attaques rapprochées avant qu'une nouvelle frappe ne tombe."
+ },
+ "Dashes between Squeak's delayed explosions, then exploits his slow reload while healing through the close-range fight.": {
+  "fr": "Se faufile en ruée entre les explosions différées de Squeak, puis exploite son rechargement lent en se soignant pendant le combat rapproché."
+ },
+ "Dashes inside her spray's close-range blind spot, where each cloud damages him only once before he bursts her down.": {
+  "fr": "Plonge en ruée dans l'angle mort rapproché de son spray, où chaque nuage ne le touche qu'une fois avant qu'il ne l'explose."
+ },
+ "Dashes out of Ziggy's delayed strike circles, then heals from each hit while pressuring his low health at close range.": {
+  "fr": "Sort en ruée des cercles de frappe différée de Ziggy, puis se soigne à chaque coup en pressant ses faibles PV au corps à corps."
+ },
+ "Dashes past Dynamike's delayed blast zones, then uses rapid alternating strikes to overwhelm his low-health artillery frame.": {
+  "fr": "Franchit en ruée les zones d'explosion différée de Dynamike, puis enchaîne des frappes alternées rapides pour submerger sa frêle carcasse d'artilleur."
+ },
+ "Dashes past Mr P's porter screen and suitcase bounces, forcing the controller into an unfavorable close-range fight.": {
+  "fr": "Franchit en ruée l'écran de porteurs de Mr. P et les rebonds de valises, forçant le contrôleur à un combat rapproché défavorable."
+ },
+ "Dashes repeatedly around Maisie's slow-starting rockets, denying hits and preventing her from charging Shockwave.": {
+  "fr": "Contourne sans cesse en ruée les roquettes lentes à partir de Maisie, lui refusant ses coups et l'empêchant de charger Shockwave."
+ },
+ "Dashes through Berry's puddle zones, healing on every hit while punishing his low health and slow reload.": {
+  "fr": "Traverse en ruée les flaques de Berry, se soignant à chaque coup tout en punissant ses faibles PV et son rechargement lent."
+ },
+ "Dashes through Dynamike's delayed blasts to close instantly, leaving his low-health artillery frame exposed before he can retaliate.": {
+  "fr": "Traverse en ruée les explosions différées de Dynamike pour arriver aussitôt au contact, laissant sa frêle carcasse d'artilleur exposée avant toute riposte."
+ },
+ "Dashes through Janet's attack-focusing window, then sustains close-range pressure by healing from repeated slashes.": {
+  "fr": "Traverse en ruée la fenêtre de focalisation de Janet, puis entretient la pression rapprochée en se soignant à coups de taillades répétées."
+ },
+ "Dashes through Sirius's clustered Shadows with piercing shovel swings, bypassing their body-blocking protection to pressure him directly.": {
+  "fr": "Traverse en ruée les Shadows agglutinées de Sirius à coups de pelle perforants, contournant leur écran de corps pour le presser directement."
+ },
+ "Dashes through gaps in Squeak's delayed zoning, then heals recent damage while overwhelming his slow reload at close range.": {
+  "fr": "Se faufile en ruée dans les trous du contrôle différé de Squeak, puis se soigne des dégâts récents en submergeant son rechargement lent au corps à corps."
+ },
+ "Dashes through gaps in Tick's delayed minefield, then heals through close-range attacks while overwhelming his low health. Also weak to: Thrower Tank": {
+  "fr": "Se faufile en ruée dans les trous du champ de mines différées de Tick, puis se soigne à coups rapprochés en submergeant ses faibles PV. Également faible face à : Lanceur, Tank"
+ },
+ "Dashes through gaps in his spreading coin volleys, repeatedly poking before Griff can connect every wave.": {
+  "fr": "Se faufile en ruée dans les trous de ses volées de pièces qui s'écartent, piquant sans cesse avant que Griff ne place chaque vague."
+ },
+ "Deals full damage at maximum range, while Gale’s wide volley only connects with a few snowballs.": {
+  "fr": "Inflige ses dégâts pleins à portée maximale, là où la volée large de Gale ne place que quelques boules de neige."
+ },
+ "Denies Amber's continuous fire with Scrapsucker , draining her ammo while replenishing Pam's reserves.": {
+  "fr": "Refuse à Amber son tir continu avec Scrapsucker, lui vidant ses munitions pendant que Pam refait les siennes."
+ },
+ "Denies Clancy's token scaling by blocking paintballs with Salty Barrel , while her cannon pressures him over cover.": {
+  "fr": "Prive Clancy de sa montée en jetons en bloquant ses billes de peinture avec Salty Barrel, pendant que son canon le presse par-dessus les abris."
+ },
+ "Denies Fang’s dive with displacement, as Twister stops his Super and knockback keeps him outside kick range.": {
+  "fr": "Refuse le plongeon de Fang par le déplacement forcé : Twister stoppe son Super et le recul le maintient hors de portée de coup de pied."
+ },
+ "Denies Moe's Driller approach with Super knockback, while Blustery Blow stuns him whenever obstacles stop the push.": {
+  "fr": "Refuse l'approche en Driller de Moe par le recul de son Super, pendant que Blustery Blow l'étourdit dès qu'un obstacle arrête la poussée."
+ },
+ "Denies Moe's bouncing projectiles with Salty Barrel , which also lets her burst gold pouches into his approach.": {
+  "fr": "Bloque les projectiles rebondissants de Moe avec Salty Barrel, ce qui lui permet aussi de faire éclater ses bourses d'or sur son approche."
+ },
+ "Denies Pearl time to build Heat by cycling dashes and slashes while sustaining repeated close-range trades.": {
+  "fr": "Ne laisse pas à Pearl le temps d'accumuler sa Chaleur en enchaînant ruées et taillades, tout en tenant des échanges rapprochés répétés."
+ },
+ "Denies Sam's close-range dives with a knockback Super, then upgrades movement speed and range to keep him out.": {
+  "fr": "Refuse les plongeons rapprochés de Sam avec un Super de recul, puis améliore vitesse et portée pour le tenir à distance."
+ },
+ "Denies her stationary Focus with lobbed mines over walls, repeatedly forcing Mandy to abandon long-range firing lanes.": {
+  "fr": "Lui refuse son Focus immobile en lobant des mines par-dessus les murs, forçant Mandy à quitter sans cesse ses couloirs de tir longue portée."
+ },
+ "Deploys her cannon beside Mico's landing point, where Master Blaster deals damage and knocks him beyond follow-up range.": {
+  "fr": "Déploie son canon au point d'atterrissage de Mico, où Master Blaster le blesse et le repousse hors de portée de relance."
+ },
+ "Destabilizes Ruffs with accumulating freeze and slippery terrain, separating him from stationary sandbag cover.": {
+  "fr": "Déstabilise Ruffs par l'accumulation de gel et un sol glissant, le séparant de son abri fixe de sacs de sable."
+ },
+ "Destroys RT's cover with Rocket Fuel , exposing his stationary split legs to long-range splash damage.": {
+  "fr": "Détruit les abris de RT avec Rocket Fuel, exposant ses jambes scindées immobiles aux éclats à longue portée."
+ },
+ "Destroys Rico's wall cover with Rocket Fuel , removing safe bounce angles and forcing exposed, direct fights.": {
+  "fr": "Détruit les murs de Rico avec Rocket Fuel, supprimant ses angles de rebond sûrs et imposant des duels directs à découvert."
+ },
+ "Destroys cover around 8bit's Damage Booster with Rocket Fuel , exposing his setup to sustained long-range rockets.": {
+  "fr": "Détruit les abris autour du Damage Booster de 8-Bit avec Rocket Fuel, exposant son installation à des roquettes longue portée continues."
+ },
+ "Destroys cover around his Damage Booster with Rocket Fuel , exposing the setup to sustained long-range rocket pressure.": {
+  "fr": "Détruit les abris autour de son Damage Booster avec Rocket Fuel, exposant l'installation à une pression continue de roquettes longue portée."
+ },
+ "Destroys cover with Rocket Fuel , exposing RT's stationary split legs to long-range splash damage.": {
+  "fr": "Détruit les abris avec Rocket Fuel, exposant les jambes scindées immobiles de RT aux éclats à longue portée."
+ },
+ "Dislodges Sandy from protected positions using longer-ranged blasts over walls as Lawrie threatens from another direction.": {
+  "fr": "Déloge Sandy de ses positions protégées à coups d'explosions plus longues par-dessus les murs, pendant que Lawrie menace d'un autre côté."
+ },
+ "Disrupts Bolt's speed buildup with slows and knockback before his crowd-control immunity activates.": {
+  "fr": "Casse la montée en vitesse de Bolt par des ralentissements et du recul avant que son immunité aux contrôles ne s'active."
+ },
+ "Dive s through Poco's low-burst sound waves, then drains grouped enemies with a piercing, self-healing Super.": {
+  "fr": "Plonge à travers les ondes sonores peu explosives de Poco, puis draine les ennemis regroupés avec un Super perforant qui le soigne."
+ },
+ "Diverts Colette's single-target fire into Scrappy, then restores the turret with Energize to prolong her ammo burden.": {
+  "fr": "Détourne le tir mono-cible de Colette vers Scrappy, puis répare la tourelle avec Energize pour prolonger sa dépense de munitions."
+ },
+ "Dodges Angelo's charged shots through constant movement while Run N Gun accelerates her reload during the rush.": {
+  "fr": "Esquive les tirs chargés d'Angelo par un mouvement constant, pendant que Run N Gun accélère son rechargement durant la charge."
+ },
+ "Dodges Bo's sweeping arrows and delayed mines with repeatable Super dashes, denying the control his kit depends on.": {
+  "fr": "Esquive les flèches balayantes et les mines différées de Bo par des ruées de Super répétables, lui refusant le contrôle dont dépend son kit."
+ },
+ "Dodges Colette's linear shots and return path with chainable dashes, while Gaso-Heal restores the chip she lands.": {
+  "fr": "Esquive les tirs droits de Colette et leur trajet de retour par des ruées enchaînables, pendant que Gaso-Heal efface les dégâts qu'elle place."
+ },
+ "Dodges Eve’s staggered egg volleys with superior speed, then rapid fire clears hatchlings before they establish pressure.": {
+  "fr": "Esquive les volées d'œufs décalées d'Eve grâce à sa vitesse supérieure, puis son tir rapide nettoie les rejetons avant qu'ils ne s'installent."
+ },
+ "Dodges Larry's delayed explosions with repeated dashes, closes through his artillery range, and keeps pressure between throws.": {
+  "fr": "Esquive les explosions différées de Larry par des ruées répétées, franchit sa portée d'artillerie et maintient la pression entre deux jets."
+ },
+ "Dodges RT's thin projectiles with repeated Super dashes, while Gaso-Heal restores health through any chip damage that lands.": {
+  "fr": "Esquive les projectiles fins de RT par des ruées de Super répétées, pendant que Gaso-Heal efface les quelques dégâts qui portent."
+ },
+ "Dodges RT's thin shots with superior speed, while Phase Shifter grants immunity against marked follow-up damage during the dash.": {
+  "fr": "Esquive les tirs fins de RT grâce à sa vitesse supérieure, pendant que Phase Shifter l'immunise contre les dégâts de suivi sur cible marquée durant la ruée."
+ },
+ "Dodges his narrow shots with repeated dashes, then punishes portal arrivals with fast close-range burst.": {
+  "fr": "Esquive ses tirs étroits par des ruées répétées, puis punit ses sorties de portail d'une explosion rapide au corps à corps."
+ },
+ "Drags Gus into hammer range, where superior durability and heavy swings overwhelm his limited health.": {
+  "fr": "Attire Gus à portée de marteau, où une résistance supérieure et des coups lourds submergent ses PV limités."
+ },
+ "Drives Spike from cover by planting delayed area blasts across the chokepoints he needs to contest.": {
+  "fr": "Chasse Spike de ses abris en semant des explosions de zone différées sur les goulots qu'il doit tenir."
+ },
+ "Endures Belle's ranged poke, closes with a roll, and overwhelms her with both waves of shotgun fire.": {
+  "fr": "Encaisse le harcèlement à distance de Belle, se rapproche d'une roulade et la submerge des deux gerbes de son fusil."
+ },
+ "Endures Crow's poison and close-range dagger burst behind her Super, creating enough time to connect repeated punches.": {
+  "fr": "Encaisse le poison et les dagues rapprochées de Crow derrière son Super, se donnant le temps de placer des coups répétés."
+ },
+ "Endures Jae-Yong’s piercing attacks, then pulls him into point-blank Lens Flare shots before he retreats.": {
+  "fr": "Encaisse les attaques perforantes de Jae-Yong, puis l'attire dans des tirs de Lens Flare à bout portant avant qu'il ne recule."
+ },
+ "Endures Leon's ambush burst at melee range, making Counter Crush punish every hit before he can withdraw.": {
+  "fr": "Encaisse l'explosion d'embuscade de Leon au corps à corps, Counter Crush punissant chaque coup avant qu'il ne se retire."
+ },
+ "Endures Moe’s bouncing shots as Tough Guy reduces sustained damage once health drops low.": {
+  "fr": "Encaisse les tirs rebondissants de Moe, Tough Guy réduisant les dégâts continus une fois ses PV bas."
+ },
+ "Endures Mortis's dash combo through Hardened Hoodie , forcing extra ammo before he can escape.": {
+  "fr": "Encaisse le combo de ruées de Mortis grâce à Hardened Hoodie, le forçant à dépenser des munitions supplémentaires avant de pouvoir fuir."
+ },
+ "Enters the dead zone inside Emz's spray with a dash, limiting each cloud to one hit before closing the duel.": {
+  "fr": "Entre en ruée dans l'angle mort du spray d'Emz, limitant chaque nuage à un seul coup avant de conclure le duel."
+ },
+ "Escapes Dynamike's delayed blast zones with dashes, then overwhelms his low health through rapid alternating attacks.": {
+  "fr": "Sort en ruée des zones d'explosion différée de Dynamike, puis submerge ses faibles PV d'attaques alternées rapides."
+ },
+ "Escapes Edgar's punching range with successive Nitro Boost dashes, cutting off the sustained hits his healing requires.": {
+  "fr": "Sort de la portée de coups d'Edgar par des ruées successives de Nitro Boost, coupant les coups continus dont dépendent ses soins."
+ },
+ "Escapes Ziggy's delayed strike circles with dashes, then pressures his low health while healing on every close-range hit.": {
+  "fr": "Sort en ruée des cercles de frappe différée de Ziggy, puis presse ses faibles PV en se soignant à chaque coup rapproché."
+ },
+ "Evades Larry's delayed blasts, maintaining poison to suppress his retreat healing and punish each attempt to attack from cover.": {
+  "fr": "Esquive les explosions différées de Larry en entretenant son poison, ce qui étouffe les soins de sa retraite et punit chaque tir depuis un abri."
+ },
+ "Evades Leon's blade volleys through attack dashes, then activates Combo Spinner to secure the close-range damage race.": {
+  "fr": "Esquive les volées de lames de Leon par des ruées d'attaque, puis active Combo Spinner pour remporter la course aux dégâts au corps à corps."
+ },
+ "Evades Lou's linear volleys with frequent dashes, then sustains close-range pressure through damage-based healing.": {
+  "fr": "Esquive les volées droites de Lou par des ruées fréquentes, puis tient la pression rapprochée grâce aux soins liés à ses dégâts."
+ },
+ "Evades Pierce’s narrow shots with frequent speed boosts, while switching into Party Mode heals back his weaker opening damage.": {
+  "fr": "Esquive les tirs étroits de Pierce grâce à de fréquents gains de vitesse, le passage en Party Mode effaçant les dégâts de sa faible ouverture."
+ },
+ "Evades Ziggy's delayed lightning through quick movement and dashes, then punishes his low health in melee.": {
+  "fr": "Esquive les éclairs différés de Ziggy par des déplacements vifs et des ruées, puis punit ses faibles PV au corps à corps."
+ },
+ "Exploits 8bit's slow movement with maximum-range shots that punish every failed dodge.": {
+  "fr": "Exploite la lenteur de 8-Bit avec des tirs à portée maximale qui punissent chaque esquive ratée."
+ },
+ "Exploits Darryl's missing Barrel Roll inside the Shadow Realm, using its movement and reload boosts to remain outside shotgun range.": {
+  "fr": "Profite de l'absence de Barrel Roll pour Darryl dans le Shadow Realm, ses gains de vitesse et de rechargement le tenant hors de portée du fusil."
+ },
+ "Exploits Frank’s stationary windups by throwing both morning stars past him, then damaging him again during their recall.": {
+  "fr": "Exploite les préparations immobiles de Frank en lançant ses deux masses au-delà de lui, puis le blesse à nouveau lors de leur retour."
+ },
+ "Exploits Penny’s slow reload with alternating dashes and slashes, healing through her pouch damage while closing into melee.": {
+  "fr": "Exploite le rechargement lent de Penny en alternant ruées et taillades, se soignant des dégâts de sa bourse tout en arrivant au corps à corps."
+ },
+ "Exploits Poco’s low burst by dashing past his wide waves, then drains grouped teammates with a piercing, self-healing Super.": {
+  "fr": "Exploite la faible puissance de Poco en franchissant ses larges ondes en ruée, puis draine ses alliés regroupés avec un Super perforant qui le soigne."
+ },
+ "Farms upgrade tokens from Byron's repeatedly healed frontline, then overwhelms his gradual sustain with an upgraded projectile barrage.": {
+  "fr": "Récolte ses jetons d'amélioration sur la ligne de front sans cesse soignée par Byron, puis submerge ses soins progressifs d'un barrage de projectiles amélioré."
+ },
+ "Farms upgrade tokens from Darryl's tank health, then upgraded multi-projectile attacks punish his predictable straight-line roll-ins.": {
+  "fr": "Récolte ses jetons d'amélioration sur les PV de tank de Darryl, puis ses attaques multi-projectiles améliorées punissent ses roulades en ligne droite, trop prévisibles."
+ },
+ "Feeds Stu's fireworks into sandbags, denying the hit that charges his Super and sustains his dash cycle.": {
+  "fr": "Fait absorber les feux d'artifice de Stu par ses sacs de sable, lui refusant le coup qui charge son Super et entretient son cycle de ruées."
  }
 }
