@@ -136,6 +136,55 @@ const check = (nom, cond, detail = '') => {
   check('pas de motif négatif sous un pick recommandé',
     !/faible|mauvais|perd contre|double un rôle/.test(syn.raisonNeg), syn.raisonNeg);
 
+  console.log('\n== couverture alliée (repli sans duo mesuré) ==');
+  // Personne ne publie de taux de victoire en duo. La table de matchups, elle,
+  // dit qui bat qui : si l'allié bat ce qui te bat, la paire tient. C'est une
+  // déduction, pas une mesure -- d'où un barème plus bas et un texte qui
+  // affiche l'échantillon.
+  const cv = await page.evaluate(() => {
+    const vraiCounters = COUNTERS;
+    // Cible battue par trois lanceurs ; l'allié « edgar » les bat tous.
+    COUNTERS = {
+      cible: { perd: [], bat: [] },
+      // « perd » liste qui bat cette entrée : edgar bat les trois lanceurs.
+      lanceur1: { perd: [['edgar', null]], bat: [['cible', null]] },
+      lanceur2: { perd: [['edgar', null]], bat: [['cible', null]] },
+      lanceur3: { perd: [['edgar', null]], bat: [['cible', null]] },
+      inutile: { perd: [], bat: [['cible', null]] }
+    };
+    SYNERGIE = {};
+    const menaces = menacesContre('cible');
+    const couv = couvertureAlliee('cible', 'edgar');
+    const rien = couvertureAlliee('cible', 'poco');
+    // Sous MENACES_MIN, on ne prétend rien : c'est un manque de données.
+    COUNTERS = { maigre: { perd: [], bat: [['x', null]] } };
+    const troppeu = couvertureAlliee('x', 'maigre');
+    COUNTERS = vraiCounters;
+    return { menaces, couv, rien, troppeu, min: MENACES_MIN, pts: PT_COUVERTURE };
+  });
+  check('les menaces sont lues dans les deux sens',
+    cv.menaces.length === 4, cv.menaces);
+  check('l\'allié qui couvre est reconnu', cv.couv === 0.75, cv.couv);
+  check('un allié qui ne couvre rien vaut zéro', cv.rien === 0, cv.rien);
+  check('trop peu de contres connus : aucune prétention', cv.troppeu === 0, cv.troppeu);
+  check('la déduction pèse moins qu\'une mesure', cv.pts < 10, cv.pts);
+
+  const cv2 = await page.evaluate(p => {
+    eval(p);
+    SYNERGIE = {};
+    allies = [];
+    const seul = conseils().find(x => x.k === 'mortis').score;
+    // Un allié réel qui couvre : le score doit monter, sans dépasser le
+    // plafond d'une vraie synergie mesurée.
+    allies = ['poco'];
+    const accompagne = conseils().find(x => x.k === 'mortis');
+    allies = [];
+    return { seul, score: accompagne.score, detail: accompagne.detail.allies };
+  }, petit);
+  check('la couverture s\'ajoute au score, sans le remplacer',
+    cv2.score >= cv2.seul, cv2);
+  check('l\'apport allié reste borné', Math.abs(cv2.detail) <= 16, cv2.detail);
+
   console.log('\n== mode Analyse : le détail est cohérent avec le score ==');
   const an = await page.evaluate(p => {
     eval(p);

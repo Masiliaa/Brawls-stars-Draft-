@@ -60,6 +60,7 @@ var LANGUES = {
 
       raisonTier: "tier {tier} en {mode}",
       raisonCarte: "n°{rang} sur la carte · {wr} % de victoires",
+      raisonCouverture: "{nom} couvre {n} de tes {total} contres connus",
       raisonBat: "bat {nom}",
       raisonPerd: "perd contre {nom}",
       raisonCycle: "{famille} contre leur {famille2}",
@@ -164,6 +165,7 @@ var LANGUES = {
 
       raisonTier: "tier {tier} in {mode}",
       raisonCarte: "#{rang} on this map · {wr}% win rate",
+      raisonCouverture: "{nom} covers {n} of your {total} known counters",
       raisonBat: "beats {nom}",
       raisonPerd: "loses to {nom}",
       raisonCycle: "{famille} against their {famille2}",
@@ -268,6 +270,7 @@ var LANGUES = {
 
       raisonTier: "tier {tier} en {mode}",
       raisonCarte: "n.º{rang} en el mapa · {wr} % de victorias",
+      raisonCouverture: "{nom} cubre {n} de tus {total} counters conocidos",
       raisonBat: "gana a {nom}",
       raisonPerd: "pierde contra {nom}",
       raisonCycle: "{famille} contra su {famille2}",

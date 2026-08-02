@@ -42,6 +42,17 @@ var PT_ROLE = 6;       /* rôle complété (+) ou doublé (−) dans l'équipe *
    un duo mesuré à +5 marquerait moins qu'une paire inconnue créditée de
    PT_ROLE. Le total est ensuite plafonné pour ne pas écraser le tier. */
 var PT_SYN = 2, SYN_MAX = 10;
+/* Couverture mutuelle, en repli quand aucune synergie mesurée n'existe.
+   Plafond plus bas que SYN_MAX : une déduction ne doit jamais peser autant
+   qu'une mesure. En dessous de COUVERTURE_MIN_ALLIE, l'allié ne couvre pas
+   assez pour que ça vaille la peine d'être dit. */
+var PT_COUVERTURE = 6, COUVERTURE_MIN_ALLIE = 0.34;
+/* Garde-fou si la table venait à s'appauvrir. Mesuré le 02/08/2026 : les
+   105 brawlers ont entre 3 et 9 contres connus, médiane 5. Aucun n'est donc
+   écarté aujourd'hui — et c'est pour ça que le texte affiché montre le
+   compte (« 3 de tes 5 contres ») et non un pourcentage seul : « 100 % » se
+   lirait « invincible » là où ça veut dire « tout ce que la table sait ». */
+var MENACES_MIN = 3;
 
 var NB_CONSEILS = 4;    /* brawlers proposés en mode Rapide */
 var NB_ANALYSE = 10;    /* brawlers détaillés en mode Analyse */
@@ -302,6 +313,50 @@ function pointsExposition(cle) {
 
    Les cumuler ainsi évite de pénaliser un candidat simplement parce que
    son duo, lui, est documenté. */
+/* Les brawlers qui battent `cle`, d'après la table de matchups. On lit dans
+   les deux sens : une paire peut n'être renseignée que d'un côté. */
+function menacesContre(cle) {
+  var menaces = {};
+  (COUNTERS[cle] ? COUNTERS[cle].perd : []).forEach(function (e) {
+    menaces[e[0]] = true;
+  });
+  Object.keys(COUNTERS).forEach(function (autre) {
+    (COUNTERS[autre].bat || []).forEach(function (e) {
+      if (e[0] === cle) menaces[autre] = true;
+    });
+  });
+  return Object.keys(menaces);
+}
+
+
+/* Couverture mutuelle : combien des brawlers qui te battent sont battus par
+   ton allié.
+
+   Ce n'est PAS un taux de victoire en duo — personne ne nous en fournit, et
+   en inventer un serait mentir. C'est une propriété déduite de la table de
+   matchups : si l'adversaire doit choisir entre te contrer toi ou contrer
+   ton allié, la paire tient. C'est le raisonnement qu'un joueur fait de
+   tête, rendu explicite.
+
+   Le texte affiché dit « couvre tes contres », jamais « % de victoires » :
+   une déduction ne doit pas se faire passer pour une mesure. */
+function couvertureAlliee(cle, allie) {
+  var menaces = menacesContre(cle);
+  if (menaces.length < MENACES_MIN) return 0;
+  var couvertes = 0;
+  menaces.forEach(function (m) {
+    var fiche = COUNTERS[m];
+    var battuParAllie = fiche && (fiche.perd || []).some(function (e) {
+      return e[0] === allie;
+    });
+    var alliePerd = COUNTERS[allie] && (COUNTERS[allie].bat || [])
+      .some(function (e) { return e[0] === m; });
+    if (battuParAllie || alliePerd) couvertes++;
+  });
+  return couvertes / menaces.length;
+}
+
+
 function pointsAvecAllies(cle) {
   var points = 0, raisons = [];
   if (!allies.length) return { points: points, raisons: raisons };
@@ -339,6 +394,31 @@ function pointsAvecAllies(cle) {
     } else if (plusMarquant.ecart < 0) {
       raisons.push(raison(7, t("raisonSynergieMoins", {
         nom: nomBrawler(plusMarquant.allie)
+      })));
+    }
+  }
+
+  /* Faute de taux de victoire en duo, on se rabat sur ce que la table de
+     matchups sait déjà : l'allié couvre-t-il ce qui te bat ?
+
+     Uniquement en repli — une vraie mesure, quand elle existe, prime sur une
+     déduction. Le barème est volontairement plus bas que SYN_MAX pour la
+     même raison. */
+  if (!plusMarquant) {
+    var meilleure = null;
+    allies.forEach(function (a) {
+      var part = couvertureAlliee(cle, a);
+      if (part >= COUVERTURE_MIN_ALLIE && (!meilleure || part > meilleure.part)) {
+        meilleure = { part: part, allie: a };
+      }
+    });
+    if (meilleure) {
+      points += Math.round(PT_COUVERTURE * meilleure.part);
+      var total = menacesContre(cle).length;
+      raisons.push(raison(4, t("raisonCouverture", {
+        nom: nomBrawler(meilleure.allie),
+        n: Math.round(meilleure.part * total),
+        total: total
       })));
     }
   }
