@@ -149,6 +149,16 @@ check("un doublon ne compte qu'une fois", noms_pool.count("Safe Zone") == 1)
 check("les liens hors sujet sont ignores", "Open Team Builder" not in noms_pool)
 check("page vide : aucun pool", R.pool_depuis_liens(R.aplatir("<p>x</p>")) == [])
 
+# L'apostrophe fait partie du nom. En l'excluant du motif, « Belle's Rock »
+# etait coupe a « Belle », qui ne correspondait plus a aucune carte connue.
+APOS = ('<a href="/tier-list/mode/knockout/map/Belle\'s-Rock">Belle</a>'
+        '<a href="/tier-list/mode/knockout/map/Out-in-the-Open">Out</a>')
+noms_apos = [c["nom"] for c in R.pool_depuis_liens(R.aplatir(APOS))]
+check("l'apostrophe ne coupe plus le nom",
+      noms_apos == ["Belle's Rock", "Out in the Open"], noms_apos)
+check("le nom apostrophe correspond a la carte connue",
+      R.clef(noms_apos[0]) == R.clef("Belle's Rock"))
+
 # Source de secours : une autre forme d'adresse, rangee par mode. Le filtre
 # reste le mode lui-meme, donc un lien quelconque ne peut pas passer.
 SECOURS = ('<a href="/rankeds/heist/safe-zone">Safe Zone</a>'

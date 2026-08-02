@@ -645,10 +645,13 @@ def mode_depuis_texte(texte):
 
 # brawltime : /tier-list/mode/bounty/map/Dry-Season
 #
-# Le nom s'arrête aussi sur un guillemet, un chevron, une contre-oblique ou
-# une espace : hors d'une balise, l'adresse est suivie du reste du document
+# Le nom s'arrête sur un guillemet, un chevron, une contre-oblique ou une
+# espace : hors d'une balise, l'adresse est suivie du reste du document
 # (« Dry-Season">Dry Season< »), et un motif plus permissif l'avalerait.
-RX_POOL_LONG = re.compile(r"/mode/([^/]+)/map/([^/?#\"'<>\\\s]+)")
+#
+# L'apostrophe, elle, fait partie des noms : « Belle's Rock ». L'exclure
+# coupait la carte à « Belle », qui ne correspondait alors à rien.
+RX_POOL_LONG = re.compile(r"/mode/([^/]+)/map/([^/?#\"<>\\\s]+)")
 # Forme courte, pour une source qui rangerait ses cartes par mode :
 # /rankeds/heist/safe-zone. Sans danger : le premier segment doit être un des
 # six modes connus, sinon le lien est écarté.
@@ -1406,11 +1409,28 @@ def deboguer_pool(net):
     """
     for nom, url in SOURCES_POOL:
         print("\n--- %s" % url)
-        try:
-            page = net.get(url)
-        except Exception as e:
-            print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+        # On rejoue exactement l'escalade du vrai code. Un diagnostic qui
+        # teste autre chose que le code de production ne diagnostique rien.
+        page, voie = None, None
+        for etiquette, recuperer in acces_pool(net, url):
+            try:
+                candidat = recuperer()
+            except Exception as e:
+                print("  %-16s echec : %s" % (etiquette, e))
+                continue
+            if not candidat:
+                print("  %-16s indisponible" % etiquette)
+                continue
+            n = len(pool_depuis_page(candidat))
+            print("  %-16s %d carte(s)" % (etiquette, n))
+            if page is None or n > len(pool_depuis_page(page)):
+                page, voie = candidat, etiquette
+            if n >= POOL_ATTENDU:
+                break
+        if page is None:
+            print("  aucune voie n'a répondu")
             continue
+        print("  -> meilleure voie : %s" % voie)
         blocs = aplatir(page)
 
         liens = [b["href"] for b in blocs if b["type"] == "lien" and b["href"]]
