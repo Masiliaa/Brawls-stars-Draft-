@@ -73,8 +73,19 @@ cartes = R.cartes_actuelles(html)
 # 01/08/2026), pas pour imposer une taille de pool.
 check("pool de cartes plausible", 16 <= len(cartes) <= 36, len(cartes))
 check("autant d'ids que de cartes", len(ids) == len(cartes), (len(ids), len(cartes)))
-check("Belle's Rock relue", any(c["nom"] == "Belle's Rock" for c in cartes))
 check("modes valides", all(c["mode"] in R.MODES for c in cartes))
+# On ne verifie plus qu'une carte nommee est presente : la rotation change
+# a chaque saison, et exiger « Belle's Rock » pour toujours revient a
+# interdire au pool d'evoluer. Ce test a bloque le premier releve reussi
+# de topbrawl le 02/08/2026. Restent les invariants, eux toujours vrais.
+check("noms de carte non vides", all(c["nom"].strip() for c in cartes))
+check("noms de carte uniques",
+      len({R.clef(c["nom"]) for c in cartes}) == len(cartes))
+check("chaque carte a une vignette",
+      all(isinstance(c["img"], int) and c["img"] > 0 for c in cartes))
+check("tous les modes sont representes",
+      {c["mode"] for c in cartes} == set(R.MODES),
+      sorted({c["mode"] for c in cartes}))
 
 print("\n== classement d'une fiche de carte ==")
 # Structure relevee sur brawlcalculator.com/maps/backyard-bowl/ le
