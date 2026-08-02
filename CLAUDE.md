@@ -61,7 +61,41 @@ est occupé par autre chose (un serveur qui tourne), le dire avant.
 - Les marqueurs `@DATA:` / `@END:` de `donnees.js`, utilisés par
   `refresh.py`.
 
-## 7. Phrases de rappel
+## 7. Contraintes levées le 02/08/2026
+
+`BRIEF.md` reste le document d'origine et n'est pas réécrit : c'est une
+trace, pas une consigne. Ce qui suit le remplace.
+
+**Levé — ces règles empêchaient le projet d'avancer :**
+
+- *« Un seul fichier HTML hébergeable, rien d'autre. »* Le code est
+  découpé par rôle, et il peut l'être davantage.
+- *« Interface en français. »* Trois langues, et d'autres si besoin.
+- *« Ni pip, ni node, ni navigateur headless »* pour `refresh.py`.
+  **C'est cette règle qui bloquait la lecture des cartes** : les sites
+  modernes construisent leurs pages dans le navigateur, et sans navigateur
+  on ne voit qu'un tiers du contenu. Une dépendance est désormais
+  acceptable si elle débloque une source — à condition de le dire, et de
+  garder un repli quand elle n'est pas installée.
+- *« Une seule commande, à relancer à chaque saison. »* Le rafraîchissement
+  peut être automatique et programmé.
+- *« Pas d'étape de build. »* Reste préférable, mais n'est plus interdit.
+
+**Non levé — ces règles n'ont jamais rien bloqué :**
+
+- Ne pas inventer de valeurs, ne pas présenter une estimation comme une
+  mesure. C'est ce qui rend l'app utile ; l'enlever ne débloque rien, ça
+  la rendrait juste fausse.
+- La clé `manager:roster`, la Fan Content Policy, les marqueurs `@DATA:`.
+- `robots.txt` et le délai entre requêtes : ne rien coûter en vitesse,
+  et éviter de se faire bannir d'une source.
+- Une main, moins de 25 secondes. Ce n'est pas une contrainte, c'est le
+  but de l'app.
+
+Si l'utilisateur veut lever l'une de ces quatre dernières, il le dira
+explicitement — ce fichier sera alors modifié, pas contourné.
+
+## 8. Phrases de rappel
 
 L'utilisateur peut écrire à tout moment :
 
