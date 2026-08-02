@@ -38,6 +38,9 @@ var LANGUES = {
       choixAllie: "Qu'a pris ton coéquipier ?",
       choixBan: "Quel brawler est banni ?",
       chercher: "Chercher",
+      chercherCarte: "Chercher une carte",
+      noteResume: "D'où viennent ces chiffres",
+      aucuneCarte: "Aucune carte à ce nom",
       annuler: "Annuler",
 
       etape1: "Étape 1",
@@ -139,6 +142,9 @@ var LANGUES = {
       choixAllie: "What did your teammate pick?",
       choixBan: "Which brawler is banned?",
       chercher: "Search",
+      chercherCarte: "Search a map",
+      noteResume: "Where these numbers come from",
+      aucuneCarte: "No map with that name",
       annuler: "Cancel",
 
       etape1: "Step 1",
@@ -240,6 +246,9 @@ var LANGUES = {
       choixAllie: "¿Qué ha elegido tu compañero?",
       choixBan: "¿Qué brawler está baneado?",
       chercher: "Buscar",
+      chercherCarte: "Buscar un mapa",
+      noteResume: "De dónde vienen estas cifras",
+      aucuneCarte: "Ningún mapa con ese nombre",
       annuler: "Cancelar",
 
       etape1: "Paso 1",

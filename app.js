@@ -26,6 +26,10 @@ conteneur.addEventListener("input", function (e) {
   if (grille) {
     grille.innerHTML = grilleBrawlers(ecran === "roster" ? "roster" : "choix");
   }
+  /* L'écran des cartes a sa propre liste : on ne redessine qu'elle, sinon
+     le champ perd le focus à chaque lettre tapée. */
+  var liste = document.getElementById("listeCartes");
+  if (liste) liste.innerHTML = listeCartesHTML();
 });
 
 
@@ -45,7 +49,11 @@ var ACTIONS = {
   /* — Navigation — */
   roster: function () { ecran = "roster"; recherche = ""; },
   draft: function () { ecran = "draft"; recherche = ""; cibleAjout = null; },
-  cartes: function () { ecran = "cartes"; },
+  cartes: function () { ecran = "cartes"; recherche = ""; modeOuvert = null; },
+
+  /* Déplier un mode sur l'écran des cartes. Un seul à la fois : deux modes
+     ouverts, et on retombe dans la liste à rallonge qu'on vient de fermer. */
+  ouvrirModeCarte: function (v) { modeOuvert = (modeOuvert === v) ? null : v; },
 
   /* Choisir une carte remet le draft à zéro : on démarre une nouvelle partie. */
   carte: function (v) {

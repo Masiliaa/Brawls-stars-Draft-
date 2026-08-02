@@ -153,6 +153,10 @@ const check = (nom, cond, detail = '') => {
 
       carteId = 'safe-zone'; roster = new Set(['bull', 'colt', 'bo', 'emz']);
       ecran = 'draft'; render();
+      // Les sources sont repliées : innerText ne voit pas un <details>
+      // fermé. On l'ouvre, puisque c'est bien son contenu qu'on vérifie.
+      const d = document.querySelector('.note details');
+      if (d) d.open = true;
       const conseil = document.body.innerText;
 
       COUNTERS = {};

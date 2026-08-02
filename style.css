@@ -67,7 +67,13 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .row{display:flex;align-items:center;gap:13px;background:transparent;border:none;
   border-bottom:1px solid var(--trait);border-radius:0;padding:12px 2px;margin-bottom:0;box-shadow:none}
 .row .n{font-family:inherit;text-transform:none;font-size:17px;font-weight:600;text-shadow:none;letter-spacing:-.02em}
-.row .w{margin-left:auto;text-align:right;font-size:11.5px;font-weight:400;color:#6f6f78;max-width:50%;line-height:1.35}
+/* La raison était collée à droite et débordait sur trois lignes : illisible
+   en diagonale, alors que c'est justement ce qu'on lit en diagonale pendant
+   un draft. Alignée à gauche, bornée à deux lignes, coupée proprement. */
+.row .w{margin-left:auto;text-align:left;font-size:11.5px;font-weight:400;
+  color:#6f6f78;max-width:52%;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden}
 
 .pil{display:inline-flex;align-items:center;gap:8px;background:var(--carte2);border:1px solid var(--trait);
   border-radius:999px;padding:5px 13px 5px 5px;cursor:pointer;min-height:42px;box-shadow:none;
@@ -182,3 +188,31 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .menu button:active{background:var(--trait)}
 .menu button.actif{color:var(--texte);font-weight:600}
 .menu .coche{width:13px;flex:none;color:var(--vif);font-size:12px}
+
+/* Ligne de mode repliable sur l'écran des cartes. Le compte à droite dit
+   combien de cartes s'ouvriront : on sait ce qu'on déplie avant de taper. */
+.titre-mode-b {
+  color: var(--m);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+.titre-mode-b .compte {
+  margin-left: auto;
+  margin-right: 10px;
+  color: var(--doux);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.titre-mode-b.ouvert { border-color: var(--m); }
+
+/* Pied de page : les sources se replient, la mention Supercell reste. */
+.note .supercell{margin-top:9px}
+.note summary{cursor:pointer;list-style:none;color:var(--faible);
+  font-weight:600;padding:4px 0}
+.note summary::-webkit-details-marker{display:none}
+.note summary::after{content:" ›";display:inline-block}
+.note[open] summary::after{content:" ⌄"}
+.note[open] summary{margin-bottom:8px}

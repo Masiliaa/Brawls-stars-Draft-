@@ -72,14 +72,39 @@ const check = (nom, cond, detail = '') => {
 
   console.log('\n== choisir une carte ==');
   await page.locator('[data-act="cartes"]').first().click();
-  check('les 6 modes sont listés', (await page.locator('.lab').count()) === 6);
-  // Le pool suit la rotation classée : sa taille change d'une saison à
-  // l'autre. On vérifie que l'écran propose exactement les cartes chargées,
-  // pas un nombre fixé une fois pour toutes.
+  // L'écran est replié : six modes, aucune carte visible tant qu'on n'a pas
+  // ouvert. Tout déplier faisait trois écrans de haut avec 27 cartes.
+  check('les 6 modes sont listés',
+    (await page.locator('[data-act="ouvrirModeCarte"]').count()) === 6);
+  check('aucune carte avant d\'ouvrir un mode',
+    (await page.locator('[data-act="carte"]').count()) === 0);
   const nbCartes = await page.evaluate(() => MAPS.length);
-  check('toutes les cartes sont proposées',
-    (await page.locator('[data-act="carte"]').count()) === nbCartes, nbCartes);
   check('pool de taille plausible', nbCartes >= 12 && nbCartes <= 36, nbCartes);
+  check('l\'écran tient sur une hauteur d\'iPhone',
+    (await page.evaluate(() => document.body.scrollHeight)) <= 900,
+    await page.evaluate(() => document.body.scrollHeight));
+
+  await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
+  const nbHeist = await page.evaluate(
+    () => MAPS.filter(c => c.mode === 'heist').length);
+  check('ouvrir un mode montre ses cartes',
+    (await page.locator('[data-act="carte"]').count()) === nbHeist, nbHeist);
+  await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
+  check('re-cliquer referme le mode',
+    (await page.locator('[data-act="carte"]').count()) === 0);
+
+  // La recherche court-circuite le repli : on ne se souvient pas toujours
+  // dans quel mode tombe une carte.
+  await page.locator('#q').fill('safe');
+  const trouvees = await page.locator('[data-act="carte"]').count();
+  check('la recherche trouve la carte', trouvees >= 1 && trouvees < nbCartes, trouvees);
+  await page.locator('#q').fill('zzzz');
+  check('une recherche vaine le dit',
+    (await page.locator('[data-act="carte"]').count()) === 0);
+  await page.locator('#q').fill('');
+  check('vider la recherche rend les modes',
+    (await page.locator('[data-act="ouvrirModeCarte"]').count()) === 6);
+  await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
 
   await page.getByText('Safe Zone').first().click();
   check('un brawler est conseillé', await page.locator('.hero .name').isVisible());
@@ -140,6 +165,7 @@ const check = (nom, cond, detail = '') => {
   console.log('\n== changer de carte remet le draft à zéro ==');
   await ajouter('addE', 2);
   await page.locator('[data-act="cartes"]').first().click();
+  await page.locator('#q').fill('Hot Potato');
   await page.getByText('Hot Potato').first().click();
   check('nouvelle carte affichée',
     (await page.locator('.b.full').first().textContent()).includes('Hot Potato'));
@@ -157,6 +183,7 @@ const check = (nom, cond, detail = '') => {
   // Le roster a été vidé juste avant : deux boutons portent data-act="roster"
   // (la barre du haut et l'encadré d'invite). On prend le premier.
   await page.locator('[data-act="cartes"]').first().click();
+  await page.locator('#q').fill('Safe Zone');
   await page.getByText('Safe Zone').first().click();
   await page.locator('[data-act="roster"]').first().click();
   await page.locator('[data-act="tout"]').click();

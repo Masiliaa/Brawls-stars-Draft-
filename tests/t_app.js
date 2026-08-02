@@ -310,8 +310,10 @@ const check = (nom, cond, detail = '') => {
     /ni affilié, ni approuvé, ni sponsorisé par Supercell/.test(note2), note2);
   check('lien cliquable vers la policy',
     /href="https:\/\/supercell\.com\/fan-content-policy"/.test(note2), note2);
+  // Seules les balises que la note produit elle-même sont admises : tout
+  // autre « < » signalerait du texte de source non échappé.
   check('le reste de la note est bien échappé',
-    !/<(?!\/?(a|div)\b)/.test(note2), note2);
+    !/<(?!\/?(a|div|p|details|summary)\b)/.test(note2), note2);
 
   // Une source non relevée ne doit jamais hériter de la date d'une autre.
   const note3 = await page.evaluate(() => {
@@ -404,6 +406,10 @@ const check = (nom, cond, detail = '') => {
   console.log('\n== parcours complet à l’écran ==');
   await page.evaluate(() => { COUNTERS = {}; SYNERGIE = {}; carteId = null; ennemis = []; allies = []; bans = []; roster = new Set(['mortis','piper','bo','emz']); ecran = 'draft'; render(); });
   await page.getByText('Choisir la carte').first().click();
+  // L'écran est replié par mode : on ouvre le Braquage pour voir ses cartes.
+  check('les modes sont listés',
+    (await page.locator('[data-act="ouvrirModeCarte"]').count()) === 6);
+  await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
   check('liste des cartes affichée', await page.getByText('Safe Zone').first().isVisible());
   await page.getByText('Safe Zone').first().click();
   check('hero affiché après choix', await page.locator('.hero .name').first().isVisible());

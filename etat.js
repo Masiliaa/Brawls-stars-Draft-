@@ -37,6 +37,10 @@ function definirMode(m) {
 var menuOuvert = null;
 var cibleAjout = null;     /* null | "ennemi" | "allie" | "ban" — quand on choisit un brawler */
 var carteId = null;        /* identifiant de la carte sélectionnée */
+/* Mode déplié sur l'écran des cartes. Tout déplier faisait six écrans de
+   haut depuis que le pool est passé à 27 cartes : on ne choisit pas sa
+   carte en un geste quand il faut faire défiler six fois. */
+var modeOuvert = null;
 var recherche = "";        /* texte tapé dans le champ de recherche */
 
 var ennemis = [];          /* jusqu'à 3 clés de brawlers pris en face */

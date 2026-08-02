@@ -203,21 +203,65 @@ function ecranRoster() {
 
 /* ============ Écran 2 — choisir la carte ============ */
 
+/* Une carte de la liste. */
+function ligneCarte(carte) {
+  return '<button class="b full carte-choix" data-act="carte" data-v="' + carte.id + '">'
+       + '<span class="gauche">' + vignette(carte, 34)
+       + '<span class="nom">' + echapper(carte.nom) + "</span></span>"
+       + '<span class="fleche">›</span></button>';
+}
+
+
+/* Écran 2 — choisir la carte.
+
+   Replié par mode, et pas tout déplié : avec 27 cartes en rotation, la
+   liste complète faisait six écrans de haut. On connaît son mode avant
+   d'ouvrir l'app, donc six lignes suffisent à s'y retrouver.
+
+   La recherche court-circuite le repli : trois lettres suffisent quand on
+   connaît le nom, sans avoir à se rappeler dans quel mode la carte tombe. */
 function ecranCartes() {
-  var html = barreHaut();
+  return barreHaut()
+       + '<input class="inp" id="q" placeholder="'
+       + echapper(t("chercherCarte")) + '" value="' + echapper(recherche) + '">'
+       + '<div id="listeCartes">' + listeCartesHTML() + "</div>";
+}
+
+
+/* Séparée de l'écran pour être redessinée seule pendant la frappe : refaire
+   toute la page ferait perdre le focus du champ à chaque lettre. */
+function listeCartesHTML() {
+  var html = "";
+  var filtre = recherche.trim().toLowerCase();
+  if (filtre) {
+    var trouvees = MAPS.filter(function (c) {
+      return c.nom.toLowerCase().indexOf(filtre) !== -1;
+    });
+    if (!trouvees.length) {
+      return html + '<div class="lab" style="margin-top:18px">'
+           + echapper(t("aucuneCarte")) + "</div>";
+    }
+    trouvees.forEach(function (carte) {
+      html += '<section class="groupe-mode" style="--m:' + MODES[carte.mode].c + '">'
+            + ligneCarte(carte) + "</section>";
+    });
+    return html;
+  }
 
   Object.keys(MODES).forEach(function (mode) {
-    var info = MODES[mode];
-    html += '<section class="groupe-mode" style="--m:' + info.c + '">'
-          + '<div class="lab titre-mode">' + echapper(nomMode(mode)) + "</div>";
+    var cartes = MAPS.filter(function (c) { return c.mode === mode; });
+    if (!cartes.length) return;
+    var ouvert = (modeOuvert === mode);
 
-    MAPS.filter(function (c) { return c.mode === mode; }).forEach(function (carte) {
-      html += '<button class="b full carte-choix" data-act="carte" data-v="' + carte.id + '">'
-            + '<span class="gauche">' + vignette(carte, 34)
-            + '<span class="nom">' + echapper(carte.nom) + "</span></span>"
-            + '<span class="fleche">›</span></button>';
-    });
+    html += '<section class="groupe-mode" style="--m:' + MODES[mode].c + '">'
+          + '<button class="b full titre-mode-b' + (ouvert ? " ouvert" : "")
+          + '" data-act="ouvrirModeCarte" data-v="' + mode + '">'
+          + '<span class="gauche"><span class="nom">' + echapper(nomMode(mode))
+          + '</span></span>'
+          + '<span class="compte">' + cartes.length + "</span>"
+          + '<span class="fleche">' + (ouvert ? "⌄" : "›") + "</span></button>";
 
+    if (ouvert) cartes.forEach(function (carte) { html += ligneCarte(carte); });
     html += "</section>";
   });
 
@@ -386,9 +430,14 @@ function ecranDraft() {
   html += (modeAffichage === "analyse")
         ? blocAnalyse(carte)
         : blocConseils(conseils(), couleur);
+
+  /* Les picks adverses viennent juste après le conseil, avant tout le reste.
+     C'est le geste qu'on refait à chaque tour du draft : l'adversaire pick,
+     on le saisit, le conseil se met à jour au-dessus. Plus bas, il fallait
+     descendre pour taper puis remonter pour lire, à chaque fois. */
+  html += sectionPastilles(t("prisEnFace"), ennemis, "", "rme", "addE", MAX_ENNEMIS);
   if (phaseDeBan()) html += blocBans();
   html += sectionPastilles(t("monEquipe"), allies, "allie", "rma", "addA", MAX_ALLIES);
-  html += sectionPastilles(t("prisEnFace"), ennemis, "", "rme", "addE", MAX_ENNEMIS);
   html += sectionPastilles(t("bannis"), bans, "ban", "rmb", "addB", MAX_BANS);
   html += '<button class="b alt sm reset" data-act="reset">'
         + echapper(t("nouveauDraft")) + "</button>";
@@ -428,14 +477,20 @@ function noteHTML() {
 
   if (etatApi === "hors") texte += t("noteApiHors");
 
-  /* Mention exigée par la Fan Content Policy de Supercell, dont relève cet
-     outil : usage personnel, non monétisé, images servies par leur CDN.
-     Le lien est ajouté après l'échappement, c'est le seul HTML de la note. */
-  texte += t("noteSupercell");
+  /* Les sources se replient : huit lignes qu'on ne lit pas chaque fois et
+     qui poussent tout le reste vers le haut. Elles restent à un geste.
 
-  return '<div class="note">' + echapper(texte)
+     La mention Supercell, elle, ne se replie pas. Elle relève de la Fan
+     Content Policy dont dépend cet outil — usage personnel, non monétisé,
+     images servies par leur CDN. Une obligation cachée derrière un clic
+     n'est plus affichée : elle reste donc toujours visible, hors du repli.
+     Le lien est ajouté après l'échappement, c'est le seul HTML de la note. */
+  return '<div class="note">'
+       + "<details><summary>" + echapper(t("noteResume")) + "</summary>"
+       + echapper(texte) + "</details>"
+       + '<p class="supercell">' + echapper(t("noteSupercell"))
        + '<a href="https://supercell.com/fan-content-policy" target="_blank"'
-       + ' rel="noopener noreferrer">' + echapper(t("lienPolicy")) + "</a>.</div>";
+       + ' rel="noopener noreferrer">' + echapper(t("lienPolicy")) + "</a>.</p></div>";
 }
 
 
