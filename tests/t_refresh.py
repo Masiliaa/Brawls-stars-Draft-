@@ -205,6 +205,60 @@ check("le seuil reste plus bas que le pool attendu", R.POOL_MIN < R.POOL_ATTENDU
 check("la premiere source suffisante est gardee",
       len(R.pool_classe(NetSources(GROS, SECOURS))) == 14)
 
+print("\n== ancres de mode ==")
+# Relevé sur une adresse du site : …/tier-list/ranked#brawl-ball. La cle
+# interne « brawlBall » n'apparait que dans les chemins. Viser la mauvaise
+# forme revient a ne cliquer sur rien.
+check("brawlBall -> brawl-ball", R.ancre_de_mode("brawlBall") == "brawl-ball")
+check("gemGrab -> gem-grab", R.ancre_de_mode("gemGrab") == "gem-grab")
+check("hotZone -> hot-zone", R.ancre_de_mode("hotZone") == "hot-zone")
+check("un mode d'un seul mot ne change pas",
+      R.ancre_de_mode("heist") == "heist" and R.ancre_de_mode("bounty") == "bounty")
+
+print("\n== fusion : completer sans jamais perdre ==")
+# Cas reel du 02/08/2026 : brawltime lit 3 cartes de Braquage dont 2 sont
+# deja connues. La troisieme, Kaboom Canyon, est la carte manquante.
+CONNU = [{"nom": "Hot Potato", "mode": "heist"},
+         {"nom": "Safe Zone", "mode": "heist"},
+         {"nom": "Center Stage", "mode": "brawlBall"}]
+LU = [{"nom": "Hot Potato", "mode": "heist"},
+      {"nom": "Kaboom Canyon", "mode": "heist"},
+      {"nom": "Safe Zone", "mode": "heist"}]
+fus = R.fusionner_pool(LU, CONNU)
+noms_fus = [c["nom"] for c in fus]
+check("la carte manquante est ajoutee", "Kaboom Canyon" in noms_fus, noms_fus)
+check("rien n'est perdu", "Center Stage" in noms_fus and len(fus) == 4, noms_fus)
+check("pas de doublon", noms_fus.count("Hot Potato") == 1)
+# Un mode deja complet ne doit pas deborder : le relevé varie d'un
+# chargement a l'autre, et une quatrieme carte serait fausse.
+COMPLET3 = [{"nom": "A", "mode": "knockout"}, {"nom": "B", "mode": "knockout"},
+            {"nom": "C", "mode": "knockout"}]
+fus2 = R.fusionner_pool([{"nom": "D", "mode": "knockout"}], COMPLET3)
+check("un mode complet ne deborde pas", len(fus2) == 3, [c["nom"] for c in fus2])
+check("un mode deja complet garde ses cartes",
+      sorted(c["nom"] for c in fus2) == ["A", "B", "C"], [c["nom"] for c in fus2])
+# Une source qui donne le mode au complet fait autorite, y compris pour
+# retirer : sinon une carte sortie de la rotation garderait sa place.
+PERIME = [{"nom": "Ancienne", "mode": "heist"}, {"nom": "Safe Zone", "mode": "heist"}]
+fus3 = R.fusionner_pool(LU, PERIME)
+check("la source complete remplace le mode entier",
+      sorted(c["nom"] for c in fus3) == ["Hot Potato", "Kaboom Canyon", "Safe Zone"],
+      [c["nom"] for c in fus3])
+check("une carte sortie de rotation est retiree",
+      "Ancienne" not in [c["nom"] for c in fus3])
+# Un releve partiel, lui, ne retire rien.
+fus4 = R.fusionner_pool([{"nom": "Kaboom Canyon", "mode": "heist"}], PERIME)
+check("un releve partiel ne retire rien",
+      sorted(c["nom"] for c in fus4) == ["Ancienne", "Kaboom Canyon", "Safe Zone"],
+      [c["nom"] for c in fus4])
+check("sans rien de connu, on prend le relevé",
+      len(R.fusionner_pool(LU, [])) == 3)
+# L'ordre de sortie suit celui des modes, pas celui de l'entree : les
+# cartes sont triees plus loin, seul le contenu compte ici.
+check("sans relevé, on garde le connu",
+      sorted(c["nom"] for c in R.fusionner_pool([], CONNU))
+      == sorted(c["nom"] for c in CONNU))
+
 print("\n== escalade : gratuit d'abord, navigateur en dernier ==")
 COMPLET = "".join('<a href="/tier-list/mode/heist/map/M-%d">M%d</a>' % (i, i)
                   for i in range(R.POOL_ATTENDU))

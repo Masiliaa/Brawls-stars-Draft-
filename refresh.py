@@ -67,7 +67,12 @@ RANKED_TOP = BASE_TOP + "/rankeds"
 # Deux sources plutôt qu'une : le pool est la seule donnée sans repli
 # possible — sans lui le script ne sait plus quelles cartes lire. Un site qui
 # se refait, et tout s'arrête. On essaie donc la seconde avant d'abandonner.
+# La version française de la page n'est pas forcément bâtie comme l'anglaise
+# — adresse relevée à la main, pas devinée. Elle est essayée en second : si
+# l'anglaise donne le pool complet, on ne la sollicite pas.
+RANKED_NINJA_FR = BASE_NINJA + "/fr/tier-list/ranked"
 SOURCES_POOL = (("brawltime.ninja", RANKED_NINJA),
+                ("brawltime.ninja (fr)", RANKED_NINJA_FR),
                 ("topbrawl.com", RANKED_TOP))
 # Seuil de crédibilité du pool. Volontairement bas : un relevé incomplet
 # reste exploitable, et ce n'est pas ici que donnees.js est protégé — c'est
@@ -792,6 +797,68 @@ def pool_depuis_page(html):
     return pool
 
 
+def fusionner_pool(lu, connu):
+    """Complète le pool connu avec ce qu'une source a réussi à lire.
+
+    Aucune source ne donne les 18 cartes : brawltime en expose 8 ou 9 selon
+    les chargements, et trois modes n'y apparaissent jamais — page chargée,
+    défilée, ou onglets ouverts un par un, le constat est le même.
+
+    Remplacer le pool connu par ce relevé perdrait dix cartes justes.
+    L'ignorer laisserait le pool incomplet pour toujours. On complète donc,
+    mode par mode, sans dépasser trois cartes et sans jamais en retirer une.
+    C'est ainsi qu'a été retrouvé Kaboom Canyon, la carte de Braquage
+    manquante : deux des trois cartes lues étaient déjà connues.
+
+    Limite assumée : une carte qui sort de la rotation ne disparaît pas
+    toute seule. Il faudra la retirer à la main, et le script ne fera pas
+    semblant du contraire.
+    """
+    par_mode_lu = {}
+    for c in lu:
+        par_mode_lu.setdefault(c["mode"], []).append(c)
+
+    fusion, ajouts, sorties = [], [], []
+    for mode in MODES:
+        lus = par_mode_lu.get(mode, [])
+        connus = [c for c in connu if c.get("mode") == mode]
+
+        if len(lus) >= CARTES_PAR_MODE:
+            # La source donne le mode au complet : elle fait autorité, y
+            # compris pour retirer. Sans ça, une carte sortie de la rotation
+            # garderait sa place et empêcherait la nouvelle d'entrer.
+            retenues = lus[:CARTES_PAR_MODE]
+            vues = {clef(c["nom"]) for c in retenues}
+            sorties += ["%s (%s)" % (c["nom"], MODES[mode][0])
+                        for c in connus if clef(c["nom"]) not in vues]
+            ajouts += ["%s (%s)" % (c["nom"], MODES[mode][0])
+                       for c in retenues
+                       if clef(c["nom"]) not in {clef(x["nom"]) for x in connus}]
+            fusion += retenues
+            continue
+
+        # Relevé partiel : il complète, il ne remplace pas.
+        garde = list(connus)
+        cles = {clef(c["nom"]) for c in garde}
+        for c in lus:
+            if len(garde) >= CARTES_PAR_MODE or clef(c["nom"]) in cles:
+                continue
+            garde.append(c)
+            cles.add(clef(c["nom"]))
+            ajouts.append("%s (%s)" % (c["nom"], MODES[mode][0]))
+        fusion += garde
+
+    # Une carte dont le mode n'est plus reconnu ne doit pas disparaître en
+    # silence : on la garde et on laisse les contrôles la signaler.
+    fusion += [c for c in connu if c.get("mode") not in MODES]
+
+    if ajouts:
+        note("entre(nt) dans le pool : " + ", ".join(ajouts))
+    if sorties:
+        souci("sortie(s) du pool d'après la source : %s" % ", ".join(sorties))
+    return fusion
+
+
 def acces_pool(net, url):
     """Les façons d'obtenir une page, de la moins chère à la plus lourde.
 
@@ -897,7 +964,7 @@ def scraper_cartes(net, tr, anciennes):
     print("\n[4+5] Pool de cartes")
     pool = pool_classe(net)
     if pool:
-        reference = pool
+        reference = fusionner_pool(pool, anciennes)
     else:
         souci("pool classé illisible : on garde les %d cartes déjà "
               "enregistrées, qui peuvent dater d'une saison précédente"
@@ -1527,6 +1594,17 @@ LIBELLES_EN = {"brawlBall": "Brawl Ball", "bounty": "Bounty",
                "heist": "Heist", "hotZone": "Hot Zone"}
 
 
+def ancre_de_mode(mode):
+    """« brawlBall » → « brawl-ball », la forme employée dans les ancres.
+
+    Relevée sur une adresse du site (…/ranked#brawl-ball) : la clé interne
+    n'apparaît que dans les chemins, jamais dans les ancres. Viser la
+    mauvaise forme revient à ne cliquer sur rien, ce qui explique un essai
+    resté sans effet le 02/08/2026.
+    """
+    return re.sub(r"(?<!^)([A-Z])", r"-\1", mode).lower()
+
+
 def deboguer_onglets(net):
     """Ouvrir les onglets de mode fait-il apparaître les cartes manquantes ?
 
@@ -1534,7 +1612,7 @@ def deboguer_onglets(net):
     texte brut : trois modes restent introuvables par ces trois voies. Il
     reste la possibilité qu'ils ne soient construits qu'au clic.
     """
-    onglets = list(LIBELLES_EN.items())
+    onglets = [(ancre_de_mode(m), LIBELLES_EN[m]) for m in MODES]
     try:
         html = net.get_rendu_onglets(RANKED_NINJA, onglets)
     except Exception as e:
