@@ -315,6 +315,53 @@ class Reseau:
             f.write(html.encode("utf-8"))
         return html
 
+    def get_rendu_onglets(self, url, onglets):
+        """La page vue après avoir ouvert chacun de ses onglets.
+
+        Charger la page ne suffisait pas : trois modes n'apparaissent jamais,
+        ni au téléchargement, ni avec un navigateur qui défile. Reste une
+        possibilité — leur contenu n'est construit qu'au clic sur l'onglet
+        correspondant. On visite donc chaque onglet et on empile ce qu'on
+        voit à chaque étape.
+
+        Renvoie la concaténation des états successifs : peu importe qu'un
+        onglet remplace le précédent, on garde une trace de tous.
+        """
+        nav = self._navigateur()
+        if nav is None:
+            return None
+        if not self.autorise(url):
+            raise PermissionError("robots.txt interdit %s" % url)
+
+        page = nav.new_page(user_agent=UA)
+        morceaux = []
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=45000)
+            page.wait_for_timeout(2500)
+            morceaux.append(page.content())
+            for ancre, libelle in onglets:
+                # Deux façons d'ouvrir un onglet, et rien ne dit laquelle ce
+                # site emploie : l'ancre dans l'adresse, ou le clic. On tente
+                # les deux, l'échec de l'une n'empêchant pas l'autre.
+                try:
+                    page.evaluate("h => { location.hash = h; }", "#" + ancre)
+                    page.wait_for_timeout(900)
+                except Exception:
+                    pass
+                try:
+                    page.get_by_text(libelle, exact=True).first.click(timeout=2500)
+                    page.wait_for_timeout(900)
+                except Exception:
+                    pass
+                for _ in range(3):
+                    page.mouse.wheel(0, 3000)
+                    page.wait_for_timeout(300)
+                morceaux.append(page.content())
+        finally:
+            page.close()
+            self.dernier[urllib.parse.urlparse(url).netloc] = time.time()
+        return "\n".join(morceaux)
+
     def fermer(self):
         """À appeler en fin de course : un Chromium oublié reste en mémoire."""
         if self._nav is not None:
@@ -1472,6 +1519,39 @@ def deboguer_pool(net):
                 print("      " + h[:62])
 
 
+# Intitulés anglais des modes, tels qu'affichés sur brawltime. Servent à
+# retrouver l'onglet à ouvrir : la clé interne (« hotZone ») n'apparaît que
+# dans les adresses, jamais à l'écran.
+LIBELLES_EN = {"brawlBall": "Brawl Ball", "bounty": "Bounty",
+               "knockout": "Knockout", "gemGrab": "Gem Grab",
+               "heist": "Heist", "hotZone": "Hot Zone"}
+
+
+def deboguer_onglets(net):
+    """Ouvrir les onglets de mode fait-il apparaître les cartes manquantes ?
+
+    Dernier levier non testé. Charger la page, la faire défiler, lire son
+    texte brut : trois modes restent introuvables par ces trois voies. Il
+    reste la possibilité qu'ils ne soient construits qu'au clic.
+    """
+    onglets = list(LIBELLES_EN.items())
+    try:
+        html = net.get_rendu_onglets(RANKED_NINJA, onglets)
+    except Exception as e:
+        print("  echec : %s: %s" % (e.__class__.__name__, e))
+        return
+    if not html:
+        print("  navigateur indisponible")
+        return
+
+    pool = pool_depuis_page(html)
+    print("Après ouverture des %d onglets : %d carte(s) sur %d"
+          % (len(onglets), len(pool), POOL_ATTENDU))
+    for m in MODES:
+        noms = [c["nom"] for c in pool if c["mode"] == m]
+        print("  %-18s %d : %s" % (MODES[m][0], len(noms), ", ".join(noms)[:52]))
+
+
 def deboguer_modes(net):
     """Les pages par mode listent-elles la rotation, mode par mode ?
 
@@ -1611,6 +1691,8 @@ def deboguer(net, quoi):
         return deboguer_carte(net)
     if quoi == "ranked":
         return deboguer_ranked(net)
+    if quoi == "onglets":
+        return deboguer_onglets(net)
     if quoi == "modes":
         return deboguer_modes(net)
     if quoi == "pool":
