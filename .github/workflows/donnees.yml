@@ -57,6 +57,13 @@ jobs:
         continue-on-error: true
         run: python3 refresh.py --cartes --counters --synergie
 
+      # Une phrase traduite entre deux relevés reste sinon dans
+      # data/traductions.json sans jamais atteindre l'app. Cette étape ne va
+      # sur aucun site : elle recopie, et ne touche qu'aux langues.
+      - name: Recopier les traductions
+        if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
+        run: python3 outils/appliquer_traductions.py
+
       - name: Contrôles
         if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
         # Barrière : un donnees.js qui ne passe pas la suite ne doit jamais

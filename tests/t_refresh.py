@@ -785,5 +785,46 @@ check("une phrase anglaise seule reste valide",
 h7 = R.ecrire_bloc(html, "COUNTERS", rendu)
 check("le bloc reste bien clos", R.lire_bloc(h7, "COUNTERS").rstrip().endswith("};"))
 
+print("\n== recopie des traductions dans donnees.js ==")
+
+# outils/appliquer_traductions.py existe parce que refresh.py ne recopie les
+# traductions que lorsqu'il relève les données — donc seulement quand il a le
+# réseau. Ce qui est vérifié ici, c'est qu'il n'ajoute que des langues : ni le
+# texte anglais, ni les autres blocs ne doivent bouger.
+sys.path.insert(0, os.path.join(R.RACINE, "outils"))
+import appliquer_traductions as AT
+
+avant = open(os.path.join(R.RACINE, "donnees.js"), encoding="utf-8").read()
+anglais = re.findall(r'"en":"((?:[^"\\]|\\.)*)"', R.lire_bloc(avant, "COUNTERS"))
+
+apres, ajouts = AT.appliquer(avant, {})
+check("sans table, rien n'est ajoute", ajouts == 0, ajouts)
+check("et le fichier est inchange", apres == avant)
+
+fausse = {json.loads('"%s"' % anglais[0]): {"fr": "Phrase de controle"}}
+apres, ajouts = AT.appliquer(avant, fausse)
+check("une phrase deja traduite n'est pas ecrasee",
+      "Phrase de controle" not in apres, ajouts)
+
+# La même phrase, mais privée de son français : là, la recopie doit avoir lieu.
+nu = re.sub(r'\{"en":"(' + re.escape(anglais[0]) + r')"[^{}]*\}',
+            r'{"en":"\1"}', avant, count=1)
+apres, ajouts = AT.appliquer(nu, fausse)
+check("une phrase sans traduction la recoit", ajouts == 1, ajouts)
+check("le francais recopie est bien celui de la table",
+      '"fr":"Phrase de controle"' in apres)
+
+check("les phrases anglaises sont intactes",
+      re.findall(r'"en":"((?:[^"\\]|\\.)*)"',
+                 R.lire_bloc(apres, "COUNTERS")) == anglais)
+for nom in ("MAJ", "MAPS", "SYNERGIE"):
+    check("le bloc %s n'est pas touche" % nom,
+          R.lire_bloc(apres, nom) == R.lire_bloc(avant, nom))
+
+# Repasser deux fois ne doit rien changer : le robot le lance à chaque
+# exécution, y compris quand il n'y a rien à faire.
+encore, ajouts = AT.appliquer(apres, fausse)
+check("repasser une seconde fois ne change rien", ajouts == 0 and encore == apres)
+
 print("\n== %d ok, %d echecs ==" % (ok, fail))
 sys.exit(1 if fail else 0)
