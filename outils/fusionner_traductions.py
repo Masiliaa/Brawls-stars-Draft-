@@ -27,7 +27,11 @@ def phrases_du_projet():
     h = open(os.path.join(RACINE, "donnees.js"), encoding="utf-8").read()
     bloc = re.search(r"/\* @DATA:COUNTERS \*/(.*?)/\* @END:COUNTERS \*/",
                      h, re.S).group(1)
-    brutes = re.findall(r'\{"en":"((?:[^"\\]|\\.)*)"\}', bloc)
+    # Pas de « } » de fermeture dans le motif : une fois traduite, la phrase
+    # devient {"en":…,"fr":…} dans donnees.js. L'exiger reviendrait à faire
+    # disparaître du décompte tout ce qui est déjà fait — 1129 deviendrait
+    # 829, et le total baisserait à chaque lot.
+    brutes = re.findall(r'"en":"((?:[^"\\]|\\.)*)"', bloc)
     return {json.loads('"%s"' % p) for p in brutes}
 
 
