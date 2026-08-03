@@ -2388,5 +2388,725 @@
  },
  "Overloads Piper’s slow single-target reload with her bear, which absorbs shots and forces Piper from open sniper lanes.": {
   "fr": "Sature le rechargement lent sur cible unique de Piper avec son ours, qui absorbe ses tirs et la chasse des couloirs de sniper ouverts."
+ },
+ "Overpowers Kaze at close range, then knocks her back before she can chain another strike.": {
+  "fr": "Domine Kaze au contact, puis la repousse avant qu'elle n'enchaîne une nouvelle frappe."
+ },
+ "Overpowers Rosa through a larger health pool, repeated stuns, and terrain destruction that strips away her bush cover.": {
+  "fr": "Domine Rosa grâce à une réserve de santé supérieure, des étourdissements répétés et une destruction du terrain qui lui retire ses buissons."
+ },
+ "Overpowers Rosa up close with shotgun bursts and repeated Super knockbacks that break her punching rhythm.": {
+  "fr": "Domine Rosa au contact avec ses bursts de fusil et des poussées de Super répétées qui cassent son rythme de coups de poing."
+ },
+ "Overruns Gene's slow single-target fire with three shadows that absorb his shots and intercept his pull.": {
+  "fr": "Submerge le tir lent sur cible unique de Gene avec trois ombres qui absorbent ses tirs et interceptent sa traction."
+ },
+ "Overwhelms Bea with heavier front-loaded shots before her single-ammo attack can cycle a Supercharged reply.": {
+  "fr": "Submerge Bea avec des tirs initiaux plus lourds avant que son attaque à munition unique ne prépare une réponse Supercharged."
+ },
+ "Overwhelms Bibi up close with shotgun damage and knocks her away before her delayed bat swing lands.": {
+  "fr": "Submerge Bibi au contact avec ses dégâts de fusil et la repousse avant que son coup de batte retardé ne touche."
+ },
+ "Overwhelms Buster at point-blank range with five-hit bursts, using Torpedo Throw to approach and stun.": {
+  "fr": "Submerge Buster à bout portant avec ses bursts en cinq touches, utilisant Torpedo Throw pour approcher et étourdir."
+ },
+ "Overwhelms Buster in sustained melee with faster-reloading punches, using a leap to erase his range advantage.": {
+  "fr": "Submerge Buster dans un corps-à-corps prolongé avec des poings qui rechargent plus vite, effaçant son avantage de portée d'un bond."
+ },
+ "Overwhelms Edgar with concentrated point-blank pellets before his repeated punches can recover enough health.": {
+  "fr": "Submerge Edgar avec des plombs concentrés à bout portant avant que ses coups de poing répétés ne lui rendent assez de santé."
+ },
+ "Overwhelms Gene's slow reload with recurring porters that absorb his single-target shots and intercept his pull.": {
+  "fr": "Submerge le rechargement lent de Gene avec des porteurs qui reviennent sans cesse, absorbent ses tirs sur cible unique et interceptent sa traction."
+ },
+ "Overwhelms Gene's slow reload with three spiders that block his shots and pull before Cocoon disables him.": {
+  "fr": "Submerge le rechargement lent de Gene avec trois araignées qui bloquent ses tirs et sa traction, avant que Cocoon ne le mette hors jeu."
+ },
+ "Overwhelms Gray's narrow shots with sustained jewel volleys while the Ego absorbs fire and attacks from another angle.": {
+  "fr": "Submerge les tirs étroits de Gray avec des volées de joyaux continues pendant que l'Ego absorbe le feu et attaque depuis un autre angle."
+ },
+ "Overwhelms Griff's moderate health by stacking later bell volleys faster than his extended coin attack finishes.": {
+  "fr": "Submerge la santé moyenne de Griff en enchaînant ses volées de cloches plus vite que ne s'achève sa longue attaque de pièces."
+ },
+ "Overwhelms Kenji's attack-based healing at close range by concentrating multiple bells into each volley.": {
+  "fr": "Submerge les soins liés aux attaques de Kenji au contact en concentrant plusieurs cloches dans chaque volée."
+ },
+ "Overwhelms Najia's single-ammo pressure with disposable hatchlings, which cannot trigger Poisonous Protector when defeated.": {
+  "fr": "Submerge la pression à munition unique de Najia avec des petits jetables, dont la mort ne peut pas déclencher Poisonous Protector ."
+ },
+ "Overwhelms Nani's Return To Sender with multi-coin volleys, preserving most of the burst after only one coin reflects.": {
+  "fr": "Submerge Return To Sender de Nani avec ses volées de plusieurs pièces, conservant l'essentiel du burst puisqu'une seule pièce est renvoyée."
+ },
+ "Overwhelms Nani's single-hit Return To Sender with multi-coin volleys, preserving most of his burst after one coin reflects.": {
+  "fr": "Submerge le Return To Sender à touche unique de Nani avec ses volées de plusieurs pièces, conservant l'essentiel de son burst après le renvoi d'une seule pièce."
+ },
+ "Overwhelms Otis at close range with converging bells before his ink attack finishes unloading.": {
+  "fr": "Submerge Otis au contact avec ses cloches convergentes avant que son attaque d'encre n'ait fini de se décharger."
+ },
+ "Overwhelms Poco's healing with stacking spray damage when his nearby teammates group inside the same cloud.": {
+  "fr": "Submerge les soins de Poco avec des dégâts de gerbe cumulés lorsque ses coéquipiers proches se regroupent dans le même nuage."
+ },
+ "Overwhelms Poco’s healing with stacking spray damage, especially when his nearby teammates remain grouped inside the same cloud.": {
+  "fr": "Submerge les soins de Poco avec des dégâts de gerbe cumulés, surtout quand ses coéquipiers proches restent groupés dans le même nuage."
+ },
+ "Overwhelms Scrappy with delayed area explosions, denying Jessie the stationary turret control that anchors her lane. Also weak to: Thrower": {
+  "fr": "Submerge Scrappy avec des explosions de zone retardées, refusant à Jessie le contrôle par tourelle immobile qui ancre son couloir. Faible aussi contre : Thrower"
+ },
+ "Overwhelms Willow's slow reload with double explosions and Lawrie, forcing her to divide attacks between two targets.": {
+  "fr": "Submerge le rechargement lent de Willow avec ses doubles explosions et Lawrie, l'obligeant à partager ses attaques entre deux cibles."
+ },
+ "Overwhelms his narrow single shots with sustained jewel volleys, while her Ego absorbs bullets and attacks from a second angle.": {
+  "fr": "Submerge ses tirs uniques et étroits avec des volées de joyaux continues, pendant que son Ego absorbe les balles et attaque depuis un second angle."
+ },
+ "Pairs Gotcha healing with current-health shots, allowing sustained midrange exchanges against Otis without losing the war of attrition.": {
+  "fr": "Associe les soins de Gotcha à des tirs proportionnels à la santé actuelle, ce qui lui permet de tenir les échanges à moyenne portée face à Otis sans perdre la guerre d'usure."
+ },
+ "Passes straight through Buster's Montage barrier during the roll, creating an opening for two waves of point-blank shells.": {
+  "fr": "Traverse tout droit la barrière Montage de Buster pendant sa roulade, ouvrant la voie à deux vagues de cartouches à bout portant."
+ },
+ "Picks apart Crow from beyond his range, then uses Auto Aimer to repel any close approach.": {
+  "fr": "Démonte Crow hors de sa portée, puis utilise Auto Aimer pour repousser toute approche."
+ },
+ "Pierces Eve’s hatchlings with focused sonic attacks, clearing the swarm while preserving pressure on Eve herself.": {
+  "fr": "Transperce les petits d'Eve avec ses attaques soniques concentrées, nettoyant l'essaim tout en maintenant la pression sur Eve elle-même."
+ },
+ "Pierces Lola and her Ego in one sustained flame stream, denying the clone's value as a shield.": {
+  "fr": "Transperce Lola et son Ego d'un même jet de flammes continu, annulant l'intérêt du clone comme bouclier."
+ },
+ "Pierces Pam and her healing turret on both throw and recall, punishing the stationary positioning her sustain requires.": {
+  "fr": "Transperce Pam et sa tourelle de soins au lancer comme au rappel, punissant le placement immobile qu'exige sa régénération."
+ },
+ "Pierces Ruffs's sandbags with each boomerang throw, invalidating his cover and threatening two hits per attack.": {
+  "fr": "Transperce les sacs de sable de Ruffs à chaque lancer de boomerang, annulant son couvert et menaçant de deux touches par attaque."
+ },
+ "Pierces Ruffs's sandbags with each pickaxe throw, negating his cover while threatening hits on both passes.": {
+  "fr": "Transperce les sacs de sable de Ruffs à chaque lancer de pioche, annulant son couvert tout en menaçant de toucher aux deux passages."
+ },
+ "Pierces Spiders with wide attacks, while Sandstorm concealment makes Charlie's narrow yo-yo and Cocoon harder to land.": {
+  "fr": "Transperce les Araignées avec ses larges attaques, pendant que la tempête de sable rend l'étroit yo-yo de Charlie et son Cocoon plus difficiles à placer."
+ },
+ "Pierces through Lola's Ego with sustained flames, damaging both targets and denying the clone's value as a shield. Also weak to: Thrower": {
+  "fr": "Transperce l'Ego de Lola avec ses flammes continues, touchant les deux cibles et annulant l'intérêt du clone comme bouclier. Faible aussi contre : Thrower"
+ },
+ "Pierces through Pam and her healing turret on both throw and recall, punishing the stationary positioning her sustain requires.": {
+  "fr": "Transperce Pam et sa tourelle de soins au lancer comme au rappel, punissant le placement immobile qu'exige sa régénération."
+ },
+ "Pierces through Tara and her grouped Shadows, then out-sustains her slow reload with Healing Winds inside the Sandstorm.": {
+  "fr": "Transperce Tara et ses Ombres regroupées, puis tient plus longtemps que son rechargement lent grâce à Healing Winds dans la tempête de sable."
+ },
+ "Pins Finx between Lawrie's flank pressure and double blasts over cover, making Time Warp less secure.": {
+  "fr": "Coince Finx entre la pression de flanc de Lawrie et des doubles explosions par-dessus le couvert, rendant Time Warp moins sûr."
+ },
+ "Pins Mina outside combo range with long homing shots, using Ragequit to halt any dash that closes the gap.": {
+  "fr": "Cloue Mina hors de portée de son combo avec de longs tirs chercheurs, utilisant Ragequit pour stopper tout dash qui comblerait l'écart."
+ },
+ "Pins Nori within shotgun reach using Tar Barrel , allowing greater durability and two-shell volleys to decide the brawl.": {
+  "fr": "Cloue Nori à portée de fusil grâce à Tar Barrel , laissant sa résistance supérieure et ses volées de deux cartouches trancher le combat."
+ },
+ "Places Life Plant between Stu and his non-piercing fireworks, denying the hits he needs to chain Super dashes.": {
+  "fr": "Place Life Plant entre Stu et ses feux d'artifice non perforants, lui refusant les touches nécessaires pour enchaîner ses dashs Super."
+ },
+ "Places Salty Barrel between Stu and each firework, preventing the hit that would immediately restore Nitro Boost.": {
+  "fr": "Place Salty Barrel entre Stu et chaque feu d'artifice, empêchant la touche qui lui rendrait aussitôt Nitro Boost."
+ },
+ "Places Take Cover in Chester's firing lane, making his bells hit sandbags and draining the reloads behind his burst.": {
+  "fr": "Place Take Cover dans le couloir de tir de Chester, si bien que ses cloches frappent les sacs de sable et vident les rechargements qui alimentent son burst."
+ },
+ "Places Twister in Fang's Super path, halting the dive before knockback maintains separation from his kicks.": {
+  "fr": "Place Twister sur la trajectoire du Super de Fang, arrêtant son plongeon avant que la poussée ne préserve la distance face à ses coups de pied."
+ },
+ "Places the cannon at Mico's landing spot so Master Blaster damages him and knocks him out of follow-up range.": {
+  "fr": "Place le canon à l'endroit où Mico atterrit, si bien que Master Blaster le touche et le repousse hors de portée d'enchaînement."
+ },
+ "Poisons her from range, reducing incoming healing and weakening her short-range burst with Extra Toxic .": {
+  "fr": "L'empoisonne à distance, réduisant les soins qu'elle reçoit et affaiblissant son burst de courte portée avec Extra Toxic ."
+ },
+ "Pokes Emz beyond her strongest aerosol overlap, using aerial movement to leave the slowing Super below.": {
+  "fr": "Harcèle Emz hors de la zone où ses aérosols se superposent le plus, s'élevant dans les airs pour laisser son Super ralentissant au sol."
+ },
+ "Pokes Gale from beyond his snowballs, then marks him to amplify every follow-up hit.": {
+  "fr": "Harcèle Gale hors de portée de ses boules de neige, puis le marque pour amplifier chaque touche suivante."
+ },
+ "Pokes Trunk beyond the spin's reach with Lance Stab's damaging tip, then finishes the engagement through sustained fire breath.": {
+  "fr": "Harcèle Trunk hors de portée de sa rotation avec la pointe blessante de Lance Stab , puis conclut l'engagement au souffle de feu continu."
+ },
+ "Pounces onto Ziggy to stun him, exploiting his delayed lightning and denying space to line up another strike.": {
+  "fr": "Bondit sur Ziggy pour l'étourdir, exploitant le retard de son éclair et lui refusant l'espace nécessaire à une nouvelle frappe."
+ },
+ "Prepares split form with Out Of Line , then catches Ollie's dash between simultaneous head and leg blasts.": {
+  "fr": "Prépare sa forme séparée avec Out Of Line , puis prend le dash d'Ollie entre les explosions simultanées de sa tête et de ses jambes."
+ },
+ "Pressures Bolt from beyond his range, then uses Auto Aimer after his crowd-control immunity expires.": {
+  "fr": "Presse Bolt hors de sa portée, puis utilise Auto Aimer une fois son immunité aux contrôles expirée."
+ },
+ "Pressures Buzz from range and meets Torpedo Throw with broad knockback, interrupting the dive before his close-range combo begins.": {
+  "fr": "Presse Buzz à distance et accueille Torpedo Throw d'une large poussée, interrompant son plongeon avant que son combo rapproché ne commence."
+ },
+ "Pressures Charlie over walls and uses lingering puddles to clear Spiders before they can absorb incoming attacks.": {
+  "fr": "Presse Charlie par-dessus les murs et utilise ses flaques persistantes pour nettoyer les Araignées avant qu'elles n'absorbent les attaques."
+ },
+ "Pressures Chester with sustained fire during his slow reload windows while staying beyond the range where clustered bells connect.": {
+  "fr": "Presse Chester d'un feu continu pendant ses fenêtres de rechargement lentes tout en restant hors de la portée où ses cloches groupées touchent."
+ },
+ "Pressures Clancy beyond his reach and reloads faster, denying the repeated hits that advance his stages.": {
+  "fr": "Presse Clancy hors de sa portée et recharge plus vite, lui refusant les touches répétées qui font monter ses paliers."
+ },
+ "Pressures Clancy's early form with three attacking Shadows, draining his ammo before concentrated card damage closes the exchange.": {
+  "fr": "Presse la forme initiale de Clancy avec trois Ombres offensives, vidant ses munitions avant que des dégâts de cartes concentrés ne concluent l'échange."
+ },
+ "Pressures Colette through cover, then uses Ragequit to interrupt her charge before its return hit. Also weak to: Sniper Thrower": {
+  "fr": "Presse Colette à travers le couvert, puis utilise Ragequit pour interrompre sa charge avant sa touche de retour. Faible aussi contre : Sniper Thrower"
+ },
+ "Pressures Damian from beyond punch range and resets his advance with knockback before sustained contact develops.": {
+  "fr": "Presse Damian hors de portée de ses poings et réinitialise son avancée d'une poussée avant qu'un contact durable ne s'installe."
+ },
+ "Pressures Doug with longer-reaching hammer waves while remaining beyond his compact circular attack.": {
+  "fr": "Presse Doug avec ses ondes de marteau de plus longue portée tout en restant hors de sa courte attaque circulaire."
+ },
+ "Pressures Dynamike in open lanes with faster long-range projectiles, making his delayed lobs harder to land or trade.": {
+  "fr": "Presse Dynamike dans les couloirs ouverts avec des projectiles longue portée plus rapides, rendant ses lancers retardés plus durs à placer ou à échanger."
+ },
+ "Pressures Frank beyond hammer reach, with jetpack flight denying both his windup attack and stunning Super.": {
+  "fr": "Presse Frank hors de portée du marteau, son vol en jetpack lui refusant à la fois son attaque chargée et son Super étourdissant."
+ },
+ "Pressures Gigi beyond spin range, then rewinds to his prior position with replenished ammo as she commits to her delayed teleport.": {
+  "fr": "Presse Gigi hors de portée de sa rotation, puis revient à sa position antérieure avec ses munitions rendues au moment où elle engage sa téléportation retardée."
+ },
+ "Pressures Griff with slightly homing projectiles, then stuns and knocks him back before his close-range burst fully connects.": {
+  "fr": "Presse Griff avec ses projectiles légèrement chercheurs, puis l'étourdit et le repousse avant que son burst rapproché ne touche pleinement."
+ },
+ "Pressures Grom behind cover with bouncing suitcases, driving him from walls before he establishes artillery control.": {
+  "fr": "Presse Grom derrière son couvert avec ses valises rebondissantes, le chassant des murs avant qu'il n'installe son contrôle d'artillerie."
+ },
+ "Pressures Kenji throughout close combat with Dragon Solo, dealing steady fire damage faster than his attack pattern can restore health.": {
+  "fr": "Presse Kenji tout au long du corps-à-corps avec Dragon Solo, infligeant des dégâts de feu réguliers plus vite que son schéma d'attaque ne lui rend de la santé."
+ },
+ "Pressures Lily from range, then activates Out Of Line to answer her dive with an immediate close-range blast.": {
+  "fr": "Presse Lily à distance, puis active Out Of Line pour répondre à son plongeon par une explosion rapprochée immédiate."
+ },
+ "Pressures Maisie over walls and blankets approaches with lingering puddles, denying clean lines for her slow-starting rockets.": {
+  "fr": "Presse Maisie par-dessus les murs et couvre les approches de flaques persistantes, lui refusant des lignes propres pour ses roquettes lentes à démarrer."
+ },
+ "Pressures Meeple around cover with split spikes while Life Plant absorbs their single-projectile attacks.": {
+  "fr": "Presse Meeple autour du couvert avec ses épines fractionnées pendant que Life Plant absorbe ses attaques à projectile unique."
+ },
+ "Pressures Meeple around cover with split spikes, while Life Plant absorbs their single-projectile shots.": {
+  "fr": "Presse Meeple autour du couvert avec ses épines fractionnées, pendant que Life Plant absorbe ses tirs à projectile unique."
+ },
+ "Pressures Najia from marksman range, then Sugar Rush 's movement and reload boosts exploit downtime between her single-ammo attacks.": {
+  "fr": "Presse Najia à portée de tireur d'élite, puis les gains de vitesse et de rechargement de Sugar Rush exploitent les temps morts entre ses attaques à munition unique."
+ },
+ "Pressures Najia from marksman range, then uses Sugar Rush to exploit downtime between her single-ammo attacks.": {
+  "fr": "Presse Najia à portée de tireur d'élite, puis utilise Sugar Rush pour exploiter les temps morts entre ses attaques à munition unique."
+ },
+ "Pressures Pearl before Heat builds, alternating dashes and slashes while healing through repeated close-range engagements.": {
+  "fr": "Presse Pearl avant que sa Chaleur ne monte, alternant dashs et coups de sabre tout en se soignant au fil des engagements rapprochés."
+ },
+ "Pressures Rico through wall cover with Acid Spray while avoiding the bounce angles his projectiles control.": {
+  "fr": "Presse Rico à travers les murs avec Acid Spray tout en évitant les angles de rebond que ses projectiles contrôlent."
+ },
+ "Pressures Sandy through cover with wall-penetrating area attacks while her durability absorbs his weaker blasts.": {
+  "fr": "Presse Sandy à travers le couvert avec des attaques de zone qui traversent les murs pendant que sa résistance absorbe ses explosions plus faibles."
+ },
+ "Pressures Stu beyond his fireworks' reach, forcing risky approaches before he can start chaining dashes.": {
+  "fr": "Presse Stu hors de portée de ses feux d'artifice, l'obligeant à des approches risquées avant qu'il ne commence à enchaîner ses dashs."
+ },
+ "Pressures his stationary Damage Booster from artillery range, while Salty Barrel blocks his projectiles and enables pouch bursts.": {
+  "fr": "Presse son Damage Booster immobile depuis sa portée d'artillerie, pendant que Salty Barrel bloque ses projectiles et permet des bursts de bourses."
+ },
+ "Prevents Meg from rebuilding her Mecha inside the Shadow Realm, giving repeated two-shot bursts time to exhaust each form.": {
+  "fr": "Empêche Meg de reconstruire son Mecha dans le Royaume des Ombres, laissant à des bursts répétés en deux tirs le temps d'épuiser chaque forme."
+ },
+ "Pulls Gale from his preferred range, then unloads close-range card damage before knockback restores his defensive spacing.": {
+  "fr": "Arrache Gale à sa portée favorite, puis décharge ses dégâts de cartes au contact avant que sa poussée ne rétablisse sa distance défensive."
+ },
+ "Pulls Gale out of defensive spacing, then bursts him down at close range before knockback can reset the lane.": {
+  "fr": "Sort Gale de sa distance défensive, puis le burst au contact avant que sa poussée ne remette le couloir à zéro."
+ },
+ "Pulls Jae-Yong away from nearby teammates with Magic Hand, stripping his stacking speed boosts and exposing him to focused damage.": {
+  "fr": "Arrache Jae-Yong à ses coéquipiers proches avec sa Main Magique, lui retirant ses gains de vitesse cumulés et l'exposant à des dégâts concentrés."
+ },
+ "Pulls Jae-Yong away from nearby teammates, removing his stacking speed boosts and exposing him to focused damage.": {
+  "fr": "Arrache Jae-Yong à ses coéquipiers proches, lui retirant ses gains de vitesse cumulés et l'exposant à des dégâts concentrés."
+ },
+ "Pulls Piper out of her preferred long-range lane, forcing close combat where her distance-scaled damage collapses.": {
+  "fr": "Arrache Piper à son couloir longue portée favori, imposant un corps-à-corps où ses dégâts liés à la distance s'effondrent."
+ },
+ "Pulls Piper out of her preferred long-range lane, forcing close combat where her distance-scaled damage falls sharply.": {
+  "fr": "Arrache Piper à son couloir longue portée favori, imposant un corps-à-corps où ses dégâts liés à la distance chutent fortement."
+ },
+ "Pulls Ruffs away from his team, using close-range mushroom fire to exploit his low health throughout the Shadow Realm duel.": {
+  "fr": "Arrache Ruffs à son équipe, exploitant sa faible santé au feu de champignons rapproché tout au long du duel dans le Royaume des Ombres."
+ },
+ "Punishes Alli's short-range dash by concentrating multi-bell volleys before she can disengage.": {
+  "fr": "Punit le dash de courte portée d'Alli en concentrant ses volées de plusieurs cloches avant qu'elle ne décroche."
+ },
+ "Punishes Angelo's fully charged arrow with Return To Sender , reflecting part of their single heavy hit back at them.": {
+  "fr": "Punit la flèche pleinement chargée d'Angelo avec Return To Sender , lui renvoyant une partie de son unique touche lourde."
+ },
+ "Punishes Bonnie's high-health cannon form with percentage-based attacks, converting her durability into heavier opening damage.": {
+  "fr": "Punit la forme canon très résistante de Bonnie avec des attaques proportionnelles, transformant sa résistance en dégâts d'ouverture plus lourds."
+ },
+ "Punishes Chester's approach with stacking hairspray damage, then uses Friendzoner to push him back into the lingering cloud.": {
+  "fr": "Punit l'approche de Chester avec des dégâts de laque cumulés, puis utilise Friendzoner pour le renvoyer dans le nuage persistant."
+ },
+ "Punishes Chuck at fixed Post endpoints with charged shots, then uses Stinging Flight to evade his arriving dashes.": {
+  "fr": "Punit Chuck sur ses Poteaux fixes avec des tirs chargés, puis utilise Stinging Flight pour esquiver ses dashs à l'arrivée."
+ },
+ "Punishes Dynamike at close range with clustered bells that land before his delayed explosives detonate.": {
+  "fr": "Punit Dynamike au contact avec des cloches groupées qui touchent avant que ses explosifs retardés ne détonent."
+ },
+ "Punishes Edgar at point-blank range by concentrating multiple bells where his short punches must connect.": {
+  "fr": "Punit Edgar à bout portant en concentrant plusieurs cloches là où ses poings courts doivent forcément toucher."
+ },
+ "Punishes Edgar's committed jump by surviving his punches and turning their repeated damage back through Counter Crush .": {
+  "fr": "Punit le saut engagé d'Edgar en survivant à ses poings et en lui renvoyant leurs dégâts répétés via Counter Crush ."
+ },
+ "Punishes El Primo's need to stay close, shredding his health before Super knockback pushes him beyond punching range.": {
+  "fr": "Punit le besoin d'El Primo de rester au contact, déchirant sa santé avant que la poussée de son Super ne le renvoie hors de portée de ses poings."
+ },
+ "Punishes Fang after his dive with concentrated bell volleys before he can disengage.": {
+  "fr": "Punit Fang après son plongeon avec des volées de cloches concentrées avant qu'il ne décroche."
+ },
+ "Punishes Fang's committed dives with dense coin volleys that concentrate into heavy burst at point-blank range.": {
+  "fr": "Punit les plongeons engagés de Fang avec des volées de pièces denses qui se concentrent en un lourd burst à bout portant."
+ },
+ "Punishes Fang’s committed dive with dense coin volleys, concentrating their damage at point-blank range for heavy burst.": {
+  "fr": "Punit le plongeon engagé de Fang avec des volées de pièces denses, concentrant leurs dégâts à bout portant pour un lourd burst."
+ },
+ "Punishes Fang’s dive with a wide Super volley, turning every landed paintball into progress toward stronger stages.": {
+  "fr": "Punit le plongeon de Fang avec une large volée de Super, transformant chaque bille de peinture placée en progression vers ses paliers supérieurs."
+ },
+ "Punishes Frank's massive health with scaling fire, while Push It can disrupt his Super and line up both charge passes.": {
+  "fr": "Punit l'énorme santé de Frank avec un feu proportionnel, pendant que Push It peut perturber son Super et aligner les deux passages de sa charge."
+ },
+ "Punishes Frank's stationary windups at point-blank range, while Suplex Supplement cancels his Super before more punches follow.": {
+  "fr": "Punit les temps de charge immobiles de Frank à bout portant, pendant que Suplex Supplement annule son Super avant la suite des coups de poing."
+ },
+ "Punishes Frank's stationary windups by throwing both morning stars past him and striking again as they return.": {
+  "fr": "Punit les temps de charge immobiles de Frank en lançant ses deux étoiles du matin au-delà de lui et en frappant à nouveau à leur retour."
+ },
+ "Punishes Frank's stationary windups with close-range multi-bell volleys, connecting every bell during his attack.": {
+  "fr": "Punit les temps de charge immobiles de Frank avec des volées rapprochées de plusieurs cloches, chacune touchant pendant son attaque."
+ },
+ "Punishes Frank’s stationary windups at point-blank range, while Suplex Supplement can cancel his Super before renewed close-range pressure.": {
+  "fr": "Punit les temps de charge immobiles de Frank à bout portant, pendant que Suplex Supplement peut annuler son Super avant une nouvelle pression rapprochée."
+ },
+ "Punishes Grom's slow lobbed attacks with fast, direct shots, sidestepping each explosion before he establishes artillery pressure.": {
+  "fr": "Punit les lancers lents de Grom avec des tirs directs et rapides, esquivant chaque explosion avant qu'il n'installe sa pression d'artillerie."
+ },
+ "Punishes Hank's predictable Balloon Blast approach with artillery volleys, while Satchel Charge cancels the attack before release.": {
+  "fr": "Punit l'approche prévisible de Hank en Balloon Blast avec des volées d'artillerie, pendant que Satchel Charge annule l'attaque avant sa libération."
+ },
+ "Punishes Jessie for placing Scrappy nearby, chaining Electro-Bolts across both targets from superior range.": {
+  "fr": "Punit Jessie d'avoir posé Scrappy à côté d'elle, enchaînant ses Electro-Bolts sur les deux cibles depuis une portée supérieure."
+ },
+ "Punishes Leon's close-range ambush with shotgun burst, then Shell Shock slows him before he can disengage.": {
+  "fr": "Punit l'embuscade rapprochée de Leon avec un burst de fusil, puis Shell Shock le ralentit avant qu'il ne décroche."
+ },
+ "Punishes Leon's close-range ambush with shotgun burst, then Shell Shock slows his escape.": {
+  "fr": "Punit l'embuscade rapprochée de Leon avec un burst de fusil, puis Shell Shock ralentit sa fuite."
+ },
+ "Punishes Lola for stacking beside her Ego, chaining Electro-Bolts through both targets from outside her range.": {
+  "fr": "Punit Lola de se coller à son Ego, enchaînant ses Electro-Bolts à travers les deux cibles hors de sa portée."
+ },
+ "Punishes Lola for stacking with her Ego, splashing gold pouches through the clone to damage both targets.": {
+  "fr": "Punit Lola de se coller à son Ego, ses bourses d'or éclaboussant à travers le clone pour toucher les deux cibles."
+ },
+ "Punishes Lumi from behind walls with burst damage that her forward-thrown morning stars cannot answer.": {
+  "fr": "Punit Lumi depuis l'abri des murs avec un burst auquel ses étoiles du matin lancées vers l'avant ne peuvent pas répondre."
+ },
+ "Punishes Mandy's telegraphed Super with Return To Sender , reflecting much of its damage back into her.": {
+  "fr": "Punit le Super télégraphié de Mandy avec Return To Sender , lui renvoyant l'essentiel de ses dégâts."
+ },
+ "Punishes Meeple's reliance on cover because Sticky Blomb explosions reach through walls, while Residue slows their escape.": {
+  "fr": "Punit la dépendance de Meeple au couvert, les explosions de Sticky Blomb traversant les murs pendant que Residue ralentit sa fuite."
+ },
+ "Punishes Meg's durable Mecha by farming upgrade tokens, then overwhelms both forms with escalating multi-projectile burst.": {
+  "fr": "Punit le Mecha résistant de Meg en y récoltant des jetons d'amélioration, puis submerge ses deux formes avec un burst multi-projectiles croissant."
+ },
+ "Punishes Melodie's dashes with a wide Super barrage, gaining tokens from every hit to strengthen subsequent attacks.": {
+  "fr": "Punit les dashs de Melodie avec un large barrage de Super, gagnant des jetons à chaque touche pour renforcer ses attaques suivantes."
+ },
+ "Punishes Melodie's dives with split-form area burst, striking around himself whenever she enters orbiting-note range.": {
+  "fr": "Punit les plongeons de Melodie avec un burst de zone en forme séparée, frappant tout autour de lui dès qu'elle entre à portée de ses notes."
+ },
+ "Punishes Melodie’s dives with concentrated point-blank shotgun bursts while surviving repeated damage from her orbiting notes.": {
+  "fr": "Punit les plongeons de Melodie avec des bursts de fusil concentrés à bout portant tout en survivant aux dégâts répétés de ses notes en orbite."
+ },
+ "Punishes Moe's Driller approach with Jump Scare 's nearby slow, limiting his ability to disengage.": {
+  "fr": "Punit l'approche en foreuse de Moe avec le ralentissement de proximité de Jump Scare , limitant sa capacité à décrocher."
+ },
+ "Punishes Moe's Driller approach with shotgun pressure, then uses Shell Shock to slow his immediate retreat.": {
+  "fr": "Punit l'approche en foreuse de Moe avec la pression de son fusil, puis utilise Shell Shock pour ralentir sa retraite immédiate."
+ },
+ "Punishes Moe's Driller approach with shotgun pressure, while Shell Shock slows him and denies an immediate retreat.": {
+  "fr": "Punit l'approche en foreuse de Moe avec la pression de son fusil, pendant que Shell Shock le ralentit et lui refuse une retraite immédiate."
+ },
+ "Punishes Nani's distant positioning with Vengeful Spirits , whose homing missiles gain damage across long travel distances.": {
+  "fr": "Punit le placement lointain de Nani avec Vengeful Spirits , dont les missiles chercheurs gagnent en dégâts sur de longues distances."
+ },
+ "Punishes Nani's long-range positioning with homing missiles that target every visible opponent and scale damage with distance.": {
+  "fr": "Punit le placement à longue portée de Nani avec des missiles chercheurs qui visent chaque adversaire visible et gagnent en dégâts avec la distance."
+ },
+ "Punishes Ollie's high health with percentage-based shots, then interrupts his Super dash by carrying and stunning him.": {
+  "fr": "Punit la grande santé d'Ollie avec des tirs proportionnels, puis interrompt son dash Super en l'emportant et en l'étourdissant."
+ },
+ "Punishes Otis at close range with converging bell volleys, delivering heavier burst before his ink attack finishes unloading.": {
+  "fr": "Punit Otis au contact avec des volées de cloches convergentes, plaçant un burst plus lourd avant que son attaque d'encre n'ait fini de se décharger."
+ },
+ "Punishes Pam's high health with percentage-based shots, converting every heal into more damage on the next hit.": {
+  "fr": "Punit la grande santé de Pam avec des tirs proportionnels, transformant chaque soin en dégâts supplémentaires à la touche suivante."
+ },
+ "Punishes Pam's inaccurate long-range Scrapstorm with superior reach, then overwhelms her turret's gradual healing with Damage Booster.": {
+  "fr": "Punit le Scrapstorm imprécis de Pam à longue portée grâce à sa portée supérieure, puis dépasse les soins progressifs de sa tourelle avec son Damage Booster."
+ },
+ "Punishes Pam's turret-centered positioning with bouncing shots that strike her and the healing station from one projectile.": {
+  "fr": "Punit le placement de Pam autour de sa tourelle avec des tirs rebondissants qui la touchent, elle et la station de soins, d'un seul projectile."
+ },
+ "Punishes Pierce’s shell routes with delayed area strikes, while the wide storm forces him away from ammo pickups.": {
+  "fr": "Punit les trajets de collecte de coquilles de Pierce avec des frappes de zone retardées, pendant que la large tempête l'éloigne de ses munitions."
+ },
+ "Punishes Piper whenever cover shortens the lane, stacking spray damage where her distance-scaled shots lose most of their power.": {
+  "fr": "Punit Piper dès que le couvert raccourcit le couloir, cumulant les dégâts de gerbe là où ses tirs liés à la distance perdent l'essentiel de leur puissance."
+ },
+ "Punishes Piper whenever cover shortens the lane, stacking spray damage where her shots lose much of their power.": {
+  "fr": "Punit Piper dès que le couvert raccourcit le couloir, cumulant les dégâts de gerbe là où ses tirs perdent une grande part de leur puissance."
+ },
+ "Punishes Poco’s grouped formations with bouncing attacks, while Scrappy adds sustained pressure that strains his shared healing. Also weak to: Thrower": {
+  "fr": "Punit les formations groupées de Poco avec des attaques rebondissantes, pendant que Scrappy ajoute une pression continue qui met ses soins collectifs à l'épreuve. Faible aussi contre : Thrower"
+ },
+ "Punishes Rosa's approach with lingering spray damage, then Friendzoner pushes her back outside punching range.": {
+  "fr": "Punit l'approche de Rosa avec des dégâts de gerbe persistants, puis Friendzoner la renvoie hors de portée de ses poings."
+ },
+ "Punishes Rosa's approach with lingering spray damage, then uses Friendzoner to push her outside punching range.": {
+  "fr": "Punit l'approche de Rosa avec des dégâts de gerbe persistants, puis utilise Friendzoner pour la repousser hors de portée de ses poings."
+ },
+ "Punishes Sirius's clustered Shadows with gold-pouch splash, damaging him whenever he shelters behind the summoned group.": {
+  "fr": "Punit les Ombres regroupées de Sirius avec les éclaboussures de ses bourses d'or, le touchant dès qu'il s'abrite derrière son groupe d'invocations."
+ },
+ "Punishes Spiders with gold-pouch splash, while cannon fire pressures Charlie behind walls where her yo-yo cannot reach.": {
+  "fr": "Punit les Araignées avec les éclaboussures de ses bourses d'or, pendant que son canon presse Charlie derrière les murs où son yo-yo ne porte pas."
+ },
+ "Punishes Willow's slow reload with consecutive explosions while Lawrie makes her divide ammunition between both twins.": {
+  "fr": "Punit le rechargement lent de Willow avec des explosions successives pendant que Lawrie l'oblige à partager ses munitions entre les deux frères."
+ },
+ "Punishes every Lily teleport with point-blank shotgun damage and Super knockback before she can continue attacking.": {
+  "fr": "Punit chaque téléportation de Lily avec des dégâts de fusil à bout portant et la poussée de son Super avant qu'elle ne puisse poursuivre son attaque."
+ },
+ "Punishes every landing with overlapping split-form blasts, bursting Mico during the grounded window before he can jump again.": {
+  "fr": "Punit chaque atterrissage avec des explosions superposées en forme séparée, burstant Mico pendant sa fenêtre au sol avant qu'il ne resaute."
+ },
+ "Punishes his slow movement with maximum-damage shots from long range, making every missed dodge especially costly.": {
+  "fr": "Punit sa lenteur avec des tirs à dégâts maximum depuis la longue portée, rendant chaque esquive ratée particulièrement coûteuse."
+ },
+ "Rapid volleys repeatedly freeze Byron, breaking his attack rhythm before his damage-over-time darts establish sustained pressure.": {
+  "fr": "Des volées rapides gèlent Byron à répétition, cassant son rythme d'attaque avant que ses fléchettes à dégâts prolongés n'installent une pression durable."
+ },
+ "Reaches Buster through Montage's directional shield, then makes Counter Crush return part of his close-range damage.": {
+  "fr": "Atteint Buster à travers le bouclier directionnel de Montage, puis fait renvoyer par Counter Crush une partie de ses dégâts rapprochés."
+ },
+ "Reaches Grom behind cover with bouncing suitcases, forcing him from walls before he can establish artillery control.": {
+  "fr": "Atteint Grom derrière son couvert avec ses valises rebondissantes, le chassant des murs avant qu'il n'installe son contrôle d'artillerie."
+ },
+ "Reaches Grom through his delayed blasts with dash-slash attacks, then recovers from recent damage while denying him point-blank safety.": {
+  "fr": "Atteint Grom à travers ses explosions retardées en alternant dashs et coups de sabre, puis récupère des dégâts récents tout en lui refusant toute sécurité à bout portant."
+ },
+ "Reaches Lou with Lets Fly , then bursts and heals at point-blank range before repeated volleys can build freeze.": {
+  "fr": "Rejoint Lou avec Lets Fly , puis burst et se soigne à bout portant avant que ses volées répétées n'accumulent le gel."
+ },
+ "Reaches Rico with Fast Forward , reloads completely, then overwhelms his low health with concentrated shotgun damage.": {
+  "fr": "Rejoint Rico avec Fast Forward , recharge entièrement, puis submerge sa faible santé de dégâts de fusil concentrés."
+ },
+ "Readies Super knockback for Edgar's landing, interrupting his healing punches before following with ranged shots.": {
+  "fr": "Garde la poussée de son Super prête pour l'atterrissage d'Edgar, interrompant ses coups de poing soignants avant d'enchaîner à distance."
+ },
+ "Redirects Bolt's approach with mind control once his crowd-control immunity expires, preventing the intended collision.": {
+  "fr": "Détourne l'approche de Bolt par contrôle mental une fois son immunité aux contrôles expirée, empêchant la collision prévue."
+ },
+ "Redirects some of Moe's bouncing damage into Lawrie, preserving health through sustained pressure.": {
+  "fr": "Détourne une partie des dégâts rebondissants de Moe sur Lawrie, préservant sa santé sous une pression continue."
+ },
+ "Reduces Jacky's Groundbreaker damage with her Super, then keeps punching until the extended close-range exchange swings in her favor.": {
+  "fr": "Réduit les dégâts de Groundbreaker de Jacky grâce à son Super, puis continue de frapper jusqu'à ce que l'échange rapproché prolongé tourne à son avantage."
+ },
+ "Removes Melodie's orbiting notes in the Shadow Realm, stripping her dive damage before winning the isolated close-range duel.": {
+  "fr": "Efface les notes en orbite de Melodie dans le Royaume des Ombres, la privant des dégâts de son plongeon avant de gagner le duel rapproché en tête à tête."
+ },
+ "Removes Nita's main pressure source from beyond her reach because her summoned bear receives reliable fixed damage.": {
+  "fr": "Supprime la principale source de pression de Nita hors de sa portée, son ours invoqué encaissant des dégâts fixes et fiables."
+ },
+ "Removes Otis's silence from nearby allies and grants temporary debuff immunity through Protective Tunes .": {
+  "fr": "Retire le silence d'Otis aux alliés proches et leur accorde une immunité temporaire aux malus grâce à Protective Tunes ."
+ },
+ "Removes Rico's wall cover with Rocket Fuel , denying safe bounce angles and forcing exposed direct fights.": {
+  "fr": "Détruit le couvert de Rico avec Rocket Fuel , lui refusant ses angles de rebond sûrs et imposant des combats directs à découvert."
+ },
+ "Repeatedly freezes Draco to disrupt sustained pressure while Hypothermia steadily reduces his damage.": {
+  "fr": "Gèle Draco à répétition pour casser sa pression continue pendant qu'Hypothermie réduit peu à peu ses dégâts."
+ },
+ "Repeatedly freezes Meg's slow Mecha, interrupting its long barrage while Hypothermia reduces its return damage.": {
+  "fr": "Gèle à répétition le Mecha lent de Meg, interrompant son long barrage pendant qu'Hypothermie réduit sa riposte."
+ },
+ "Repels Moe's Driller entry, with Blustery Blow stunning him whenever the knockback drives him against an obstacle.": {
+  "fr": "Repousse l'entrée en foreuse de Moe, Blustery Blow l'étourdissant dès que la poussée le plaque contre un obstacle."
+ },
+ "Repels Mortis's dives with Super knockback, and Blustery Blow stuns him against obstacles before he can dash away.": {
+  "fr": "Repousse les plongeons de Mortis avec la poussée de son Super, et Blustery Blow l'étourdit contre les obstacles avant qu'il ne s'échappe d'un dash."
+ },
+ "Repels Nori's dive with Super knockback, then repeated slowing attacks prevent him from re-engaging.": {
+  "fr": "Repousse le plongeon de Nori avec la poussée de son Super, puis des attaques ralentissantes répétées l'empêchent de revenir."
+ },
+ "Repels Ollie's dives with Super knockback, then upgrades his speed and range to punish renewed approaches.": {
+  "fr": "Repousse les plongeons d'Ollie avec la poussée de son Super, puis améliore sa vitesse et sa portée pour punir chaque nouvelle approche."
+ },
+ "Restricts Colette's movement with Slowing Toxin , creating room to avoid her round-trip Super while poison reduces her recovery.": {
+  "fr": "Entrave les déplacements de Colette avec Slowing Toxin , se dégageant l'espace pour éviter son Super aller-retour pendant que le poison réduit sa récupération."
+ },
+ "Rolls across Gus's range, then relies on post-roll protection to overwhelm him with a close-range burst.": {
+  "fr": "Traverse la portée de Gus en roulade, puis s'appuie sur la protection qui suit pour le submerger d'un burst rapproché."
+ },
+ "Rolls across Sprout's artillery range and survives Seed Bombs with post-roll damage reduction before unloading at point-blank range. Also weak to: Tank Assassin": {
+  "fr": "Traverse la portée d'artillerie de Sprout en roulade et survit aux Seed Bombs grâce à la réduction de dégâts qui suit, avant de tout décharger à bout portant. Faible aussi contre : Tank Assassin"
+ },
+ "Rolls across Sprout's firing lane, then uses follow-up protection to weather Seed Bombs and launch a point-blank assault.": {
+  "fr": "Traverse le couloir de tir de Sprout en roulade, puis utilise la protection qui suit pour encaisser les Seed Bombs et lancer un assaut à bout portant."
+ },
+ "Rolls across Tick's minefield with damage reduction, then unloads point-blank shells into his low health.": {
+  "fr": "Traverse le champ de mines de Tick en roulade sous réduction de dégâts, puis vide ses cartouches à bout portant dans sa faible santé."
+ },
+ "Rolls inside Montage to bypass its barrier, then overwhelms Buster at point-blank range with double-shot burst damage.": {
+  "fr": "Roule à l'intérieur de Montage pour en contourner la barrière, puis submerge Buster à bout portant avec son burst en double tir."
+ },
+ "Rolls past Tara's long-range card poke, then uses tank health and point-blank burst to punish her slow reload.": {
+  "fr": "Franchit en roulade le harcèlement de cartes à longue portée de Tara, puis punit son rechargement lent avec sa santé de tank et un burst à bout portant."
+ },
+ "Rolls through Squeak's zoning and uses post-roll damage reduction to survive delayed blasts while unloading at point-blank range. Also weak to: Healer Assassin": {
+  "fr": "Traverse le zonage de Squeak en roulade et utilise la réduction de dégâts qui suit pour survivre aux explosions retardées tout en déchargeant à bout portant. Faible aussi contre : Healer Assassin"
+ },
+ "Rolls through Tara's card volleys and exploits her slow reload, using tank durability to win the ensuing point-blank exchange.": {
+  "fr": "Traverse les volées de cartes de Tara en roulade et exploite son rechargement lent, sa résistance de tank lui faisant gagner l'échange à bout portant qui suit."
+ },
+ "Rolls through Tick's mines under follow-up damage reduction, then punishes his low health with point-blank shotgun fire.": {
+  "fr": "Traverse les mines de Tick en roulade sous la réduction de dégâts qui suit, puis punit sa faible santé à bout portant au fusil."
+ },
+ "Seeds Janet's firing angles with timed blasts, while Residue slows her movement before each focused shot.": {
+  "fr": "Sème des explosions retardées dans les angles de tir de Janet, pendant que Residue ralentit ses déplacements avant chaque tir concentré."
+ },
+ "Sends Chuck into the Shadow Realm, cutting him off from his established Post network, Super travel, and objective pressure.": {
+  "fr": "Envoie Chuck dans le Royaume des Ombres, le coupant de son réseau de Poteaux, de ses déplacements en Super et de sa pression sur l'objectif."
+ },
+ "Sends Spiders into Chester's bells, absorbing his multi-projectile burst before the summons pressure him up close.": {
+  "fr": "Envoie ses Araignées dans les cloches de Chester, absorbant son burst multi-projectiles avant que les invocations ne le pressent au contact."
+ },
+ "Sends Spiders into Meeple's homing shots, forcing wasted ammo and denying clean hits.": {
+  "fr": "Envoie ses Araignées dans les tirs chercheurs de Meeple, lui faisant gaspiller ses munitions et lui refusant des touches propres."
+ },
+ "Sends recurring porters into Gene's single-target shots and pull, exploiting his slow reload to overwhelm his lane.": {
+  "fr": "Envoie des porteurs à répétition dans les tirs sur cible unique et la traction de Gene, exploitant son rechargement lent pour submerger son couloir."
+ },
+ "Sends slightly homing shots toward Griff, then denies his close-range advantage by stunning and pushing him away before the burst lands.": {
+  "fr": "Envoie des tirs légèrement chercheurs sur Griff, puis lui retire son avantage au contact en l'étourdissant et en le repoussant avant que son burst ne touche."
+ },
+ "Shelters behind Salty Barrel from Maisie's pressure rockets while cannon blasts dislodge her from protected angles.": {
+  "fr": "S'abrite derrière Salty Barrel des roquettes de pression de Maisie pendant que les tirs de canon la délogent de ses angles protégés."
+ },
+ "Shields against Hank's Balloon Blast at point-blank range, then overwhelms him with rapid punches.": {
+  "fr": "Se protège du Balloon Blast de Hank à bout portant, puis le submerge de coups de poing rapides."
+ },
+ "Shreds Bull's tank health with concentrated close-range coins while Piggy Bank removes the cover he needs to approach.": {
+  "fr": "Déchire la santé de tank de Bull avec ses pièces concentrées au contact pendant que Piggy Bank détruit le couvert dont il a besoin pour approcher."
+ },
+ "Shreds Damian's tank health with percentage-based attacks, making his large health pool offer little protection.": {
+  "fr": "Déchire la santé de tank de Damian avec des attaques proportionnelles, si bien que sa grande réserve de santé ne le protège guère."
+ },
+ "Shreds Frank’s huge health pool with percentage-based shots, then Push It can interrupt his Super and secure both charge hits.": {
+  "fr": "Déchire l'énorme réserve de santé de Frank avec ses tirs proportionnels, puis Push It peut interrompre son Super et assurer les deux touches de sa charge."
+ },
+ "Shreds Meg's high-health Mecha with percentage-based attacks, preventing its durability from creating favorable damage trades.": {
+  "fr": "Déchire le Mecha très résistant de Meg avec des attaques proportionnelles, empêchant sa résistance de créer des échanges favorables."
+ },
+ "Shrugs off Moe's repeated bounces during long trades because Hardy Hard Hat reduces the damage of each connection.": {
+  "fr": "Encaisse sans peine les rebonds répétés de Moe dans les longs échanges car Hardy Hard Hat réduit les dégâts de chaque touche."
+ },
+ "Shrugs off pressure from Mr P's suitcases and porters, using the roll's follow-up protection to win at close range.": {
+  "fr": "Encaisse sans peine la pression des valises et des porteurs de Mr P, utilisant la protection qui suit sa roulade pour l'emporter au contact."
+ },
+ "Sidesteps Lou's linear volleys with repeated dashes, then sustains pressure through healing at close range.": {
+  "fr": "Esquive les volées rectilignes de Lou avec des dashs répétés, puis maintient la pression au contact grâce à ses soins."
+ },
+ "Sidesteps RT's narrow shots with chained Super dashes, using Gaso-Heal to recover from stray hits.": {
+  "fr": "Esquive les tirs étroits de RT avec des dashs Super enchaînés, utilisant Gaso-Heal pour se remettre des touches perdues."
+ },
+ "Silences Damian with Poison Mushroom , preventing his short-range punches during the window when he finally closes distance.": {
+  "fr": "Réduit Damian au silence avec Poison Mushroom , l'empêchant de frapper au moment précis où il parvient enfin au contact."
+ },
+ "Silences Edgar on arrival, denying both his attacks and the healing those punches would generate during the duel.": {
+  "fr": "Réduit Edgar au silence dès son arrivée, lui refusant à la fois ses attaques et les soins que ses poings lui rendraient pendant le duel."
+ },
+ "Silences Edgar on landing, denying his punches and their healing during the duel.": {
+  "fr": "Réduit Edgar au silence dès son atterrissage, lui refusant ses coups de poing et les soins qu'ils procurent pendant le duel."
+ },
+ "Silences Fang as he dives, preventing attacks and Supers while sustained ink volleys finish him.": {
+  "fr": "Réduit Fang au silence pendant son plongeon, l'empêchant d'attaquer ou d'utiliser son Super pendant que des volées d'encre continues l'achèvent."
+ },
+ "Silences Fang during his dive, preventing attacks and follow-up Supers while sustained ink volleys finish him.": {
+  "fr": "Réduit Fang au silence pendant son plongeon, l'empêchant d'attaquer ou d'enchaîner un Super pendant que des volées d'encre continues l'achèvent."
+ },
+ "Silences Mortis at close range, preventing chained dashes and leaving weakened targets beyond his reach.": {
+  "fr": "Réduit Mortis au silence au contact, l'empêchant d'enchaîner ses dashs et laissant les cibles affaiblies hors de son atteinte."
+ },
+ "Silences Nori during his dive, blocking attacks and fish healing while leaving him exposed at close range.": {
+  "fr": "Réduit Nori au silence pendant son plongeon, bloquant ses attaques et les soins de ses poissons tout en le laissant exposé au contact."
+ },
+ "Silences Nori during his dive, blocking attacks and fish-based healing while exposing him to close-range ink.": {
+  "fr": "Réduit Nori au silence pendant son plongeon, bloquant ses attaques et ses soins par les poissons tout en l'exposant à l'encre rapprochée."
+ },
+ "Silences Starr Nova at close range, stopping sword-form attacks and self-healing while extra ink drops complete the burst.": {
+  "fr": "Réduit Starr Nova au silence au contact, coupant les attaques et l'auto-soin de sa forme épée pendant que des gouttes d'encre supplémentaires complètent le burst."
+ },
+ "Silences her at close range, preventing sword-form attacks and self-healing while extra ink drops finish the burst.": {
+  "fr": "La réduit au silence au contact, empêchant les attaques et l'auto-soin de sa forme épée pendant que des gouttes d'encre supplémentaires achèvent le burst."
+ },
+ "Silences his close-range punches with Poison Mushroom , then unloads high burst before he can retaliate.": {
+  "fr": "Réduit ses coups de poing rapprochés au silence avec Poison Mushroom , puis décharge un gros burst avant qu'il ne riposte."
+ },
+ "Skirts Berry's persistent puddles with dashes, then exploits his low health during the lengthy reload between cones.": {
+  "fr": "Contourne les flaques persistantes de Berry avec ses dashs, puis exploite sa faible santé pendant le long rechargement entre deux cônes."
+ },
+ "Slices through Mina's defensive projectile wall, using Hosomaki Healing afterward to erase damage from her combo.": {
+  "fr": "Tranche à travers le mur de projectiles défensif de Mina, puis efface les dégâts de son combo avec Hosomaki Healing ."
+ },
+ "Slightly outranges Gray's narrow shot and outlasts his poke through spirit healing and Spooky's shield.": {
+  "fr": "Porte légèrement plus loin que le tir étroit de Gray et tient plus longtemps que son harcèlement grâce aux soins de ses esprits et au bouclier de Spooky."
+ },
+ "Slightly outranges Tara's spread cards, pierces through summoned Shadows, and escapes Gravity by launching into the air. Also weak to: Assassin Thrower": {
+  "fr": "Porte légèrement plus loin que les cartes dispersées de Tara, transperce ses Ombres invoquées, et échappe à Gravité en s'élevant dans les airs. Faible aussi contre : Assassin Thrower"
+ },
+ "Slightly outranges his narrow shot and out-sustains Gray's poke through spirit healing and Spooky's shield.": {
+  "fr": "Porte légèrement plus loin que son tir étroit et résiste mieux au harcèlement de Gray grâce aux soins de ses esprits et au bouclier de Spooky."
+ },
+ "Slips between Barley's slow bottle arcs with dashes and punishes his low health before another throw becomes available.": {
+  "fr": "Se faufile entre les arcs lents des bouteilles de Barley avec ses dashs et punit sa faible santé avant qu'un nouveau lancer ne soit disponible."
+ },
+ "Slips between Griff's wide coin volleys and keeps attacking with four ammo slots while movement speeds each reload.": {
+  "fr": "Se faufile entre les larges volées de pièces de Griff et continue d'attaquer avec ses quatre munitions pendant que son mouvement accélère chaque rechargement."
+ },
+ "Slips between Lou's narrow volleys with attack dashes and begins melee pressure before the freeze meter builds.": {
+  "fr": "Se faufile entre les volées étroites de Lou avec ses dashs d'attaque et engage la pression au corps-à-corps avant que la jauge de gel ne monte."
+ },
+ "Slips between Lou's three narrow projectiles, chaining Super dashes out of his ice field before freezing builds.": {
+  "fr": "Se faufile entre les trois projectiles étroits de Lou, enchaînant des dashs Super hors de son champ de glace avant que le gel ne s'accumule."
+ },
+ "Slips between Max's four-shot bursts with chained Super dashes, using Gaso-Heal to withstand extended pressure.": {
+  "fr": "Se faufile entre les bursts en quatre tirs de Max avec des dashs Super enchaînés, utilisant Gaso-Heal pour tenir sous une pression prolongée."
+ },
+ "Slips past Chester's spread volleys with chained Super dashes and attacks during his lengthy reload windows.": {
+  "fr": "Se faufile entre les volées dispersées de Chester avec des dashs Super enchaînés et attaque pendant ses longues fenêtres de rechargement."
+ },
+ "Slips past Gray's narrow projectiles, then rushes him with close-range damage whenever he emerges from a portal.": {
+  "fr": "Se faufile entre les projectiles étroits de Gray, puis fond sur lui avec ses dégâts rapprochés dès qu'il sort d'un portail."
+ },
+ "Slips past Mandy's narrow projectiles with quick movement, while lingering poison prevents recovery before the next ranged duel.": {
+  "fr": "Se faufile entre les projectiles étroits de Mandy grâce à sa vivacité, pendant que le poison persistant l'empêche de récupérer avant le duel à distance suivant."
+ },
+ "Slows Alli's entry with Freezing Snow and blows her back before she can chain consecutive dashes.": {
+  "fr": "Ralentit l'entrée d'Alli avec Freezing Snow et la souffle en arrière avant qu'elle n'enchaîne ses dashs."
+ },
+ "Slows Bull with recalled morning stars, repeatedly breaking the close contact his tank pressure requires.": {
+  "fr": "Ralentit Bull avec ses étoiles du matin rappelées, brisant sans cesse le contact rapproché qu'exige sa pression de tank."
+ },
+ "Slows Chester with Freezing Snow and preserves the distance that blunts his multi-bell burst.": {
+  "fr": "Ralentit Chester avec Freezing Snow et préserve la distance qui émousse son burst de plusieurs cloches."
+ },
+ "Slows Clancy's token growth as Salty Barrel absorbs paintballs and cannon shots reach him over cover.": {
+  "fr": "Freine la montée en jetons de Clancy pendant que Salty Barrel absorbe ses billes de peinture et que les tirs de canon l'atteignent par-dessus le couvert."
+ },
+ "Slows Jacky throughout her approach and resets the spacing with knockback whenever she enters attack range.": {
+  "fr": "Ralentit Jacky tout au long de son approche et rétablit la distance d'une poussée dès qu'elle entre à portée d'attaque."
+ },
+ "Slows Jacky's approach with a trap while firing from beyond her short attack radius.": {
+  "fr": "Ralentit l'approche de Jacky avec un piège tout en tirant hors de son court rayon d'attaque."
+ },
+ "Slows Max's speed-based pressure with Slowing Toxin , while poison interrupts regeneration and keeps her vulnerable between engagements.": {
+  "fr": "Freine la pression fondée sur la vitesse de Max avec Slowing Toxin , pendant que le poison interrompt sa régénération et la laisse vulnérable entre deux engagements."
+ },
+ "Slows and pushes Hank beyond Balloon Blast reach, forcing him to rebuild ideal spacing for every charge.": {
+  "fr": "Ralentit et repousse Hank hors de portée de Balloon Blast, l'obligeant à retrouver la bonne distance avant chaque charge."
+ },
+ "Soaks Hank's charged Balloon Blast up close, then delivers heavy swings before his next attack finishes charging.": {
+  "fr": "Encaisse le Balloon Blast chargé de Hank au contact, puis place de lourds coups avant que son attaque suivante n'ait fini de charger."
+ },
+ "Softens Fang during his approach with health-scaled fire, saving Push It to reset distance when he commits.": {
+  "fr": "Affaiblit Fang pendant son approche avec un feu proportionnel à sa santé, gardant Push It pour rétablir la distance au moment où il s'engage."
+ },
+ "Splashes gold pouches through Lola's nearby Ego, making her stacked positioning expose both targets at once.": {
+  "fr": "Éclabousse ses bourses d'or à travers l'Ego proche de Lola, si bien que son placement superposé expose les deux cibles à la fois."
+ },
+ "Spreads bouncing damage across Poco's clustered team while Scrappy adds another threat his group healing must cover.": {
+  "fr": "Répand des dégâts rebondissants sur l'équipe groupée de Poco pendant que Scrappy ajoute une menace de plus que ses soins collectifs doivent couvrir."
+ },
+ "Stacks freeze on Pearl while Hypothermia suppresses her heated damage until a full freeze interrupts the next volley.": {
+  "fr": "Accumule le gel sur Pearl pendant qu'Hypothermie étouffe ses dégâts chauds jusqu'à ce qu'un gel complet interrompe la volée suivante."
+ },
+ "Stacks hairspray damage as Chester approaches, then uses Friendzoner to push him back into the lingering cloud.": {
+  "fr": "Cumule les dégâts de laque pendant que Chester approche, puis utilise Friendzoner pour le renvoyer dans le nuage persistant."
+ },
+ "Stays ahead of Mr P's suitcases, using movement-fueled reloads to keep his porters under continuous fire.": {
+  "fr": "Garde une longueur d'avance sur les valises de Mr P, ses rechargements accélérés par le mouvement maintenant ses porteurs sous un feu continu."
+ },
+ "Stays beyond Damian's punches by chaining Nitro Boost dashes, disengaging whenever he tries to maintain contact.": {
+  "fr": "Reste hors de portée des poings de Damian en enchaînant les dashs Nitro Boost, décrochant dès qu'il tente de maintenir le contact."
+ },
+ "Stays beyond Doug's circular attack while harvesting his high health for tokens that strengthen later volleys.": {
+  "fr": "Reste hors de l'attaque circulaire de Doug tout en récoltant sur sa grande santé les jetons qui renforceront ses volées suivantes."
+ },
+ "Stays beyond Gene's full-damage range while hatchlings consume his slow-loading shots and intercept his pull.": {
+  "fr": "Reste hors de la portée pleine puissance de Gene pendant que ses petits consomment ses tirs au chargement lent et interceptent sa traction."
+ },
+ "Stays beyond Mortis's dash reach, then uses Slowing Toxin to disrupt attack chains and hinder his escape.": {
+  "fr": "Reste hors de portée du dash de Mortis, puis utilise Slowing Toxin pour casser ses enchaînements et gêner sa fuite."
+ },
+ "Stays beyond Nita's shockwaves and repeatedly dashes away from her bear, denying both sources sustained contact.": {
+  "fr": "Reste hors des ondes de choc de Nita et s'éloigne de son ours par des dashs répétés, refusant à l'un comme à l'autre un contact durable."
+ },
+ "Stops 8bit from sustaining boosted fire by using Grounded to block his reloads after a mark.": {
+  "fr": "Empêche 8-Bit d'entretenir son feu amplifié en bloquant ses rechargements avec Grounded après une marque."
+ },
+ "Stops Carl's spinning dive with Lamp Blowout , pushing him away and canceling the Super before it deals sustained damage.": {
+  "fr": "Arrête le plongeon tournoyant de Carl avec Lamp Blowout , le repoussant et annulant son Super avant qu'il n'inflige des dégâts continus."
+ },
+ "Stops Chuck's Post dashes by sending him to the Shadow Realm, removing his Super route and access to objectives.": {
+  "fr": "Coupe les dashs entre Poteaux de Chuck en l'envoyant dans le Royaume des Ombres, lui retirant sa voie de Super et son accès aux objectifs."
+ },
+ "Stops Damian's short-range punches with Poison Mushroom when he closes in, creating a burst window without retaliation.": {
+  "fr": "Coupe les poings courts de Damian avec Poison Mushroom quand il se rapproche, ouvrant une fenêtre de burst sans riposte."
+ },
+ "Stops Kenji's close-range pressure with Cocoon, blocking his attacks and healing while teammates reposition to punish his release.": {
+  "fr": "Coupe la pression rapprochée de Kenji avec son Cocoon, bloquant ses attaques et ses soins pendant que ses coéquipiers se replacent pour le punir à sa sortie."
+ },
+ "Stops Leon's ambush with Cocoon as he emerges, isolating him before his close-range burst can finish.": {
+  "fr": "Coupe l'embuscade de Leon avec son Cocoon au moment où il surgit, l'isolant avant que son burst rapproché n'aboutisse."
+ },
+ "Stops Melodie's dives with a stun and five-hit burst, denying her orbiting notes repeated contact.": {
+  "fr": "Coupe les plongeons de Melodie avec un étourdissement et un burst en cinq touches, refusant à ses notes en orbite un contact répété."
+ },
+ "Stops Mortis's close-range assault by preventing attacks, leaving him unable to chain dashes or finish weakened targets.": {
+  "fr": "Coupe l'assaut rapproché de Mortis en l'empêchant d'attaquer, le laissant incapable d'enchaîner ses dashs ou d'achever les cibles affaiblies."
+ },
+ "Stops Ollie's Super dash by carrying him to maximum range and stunning him after percentage-based shots punish his health.": {
+  "fr": "Coupe le dash Super d'Ollie en l'emportant à portée maximale et en l'étourdissant, après que des tirs proportionnels ont puni sa santé."
+ },
+ "Stops Sam's rushes by freezing and stunning him, while accumulated frost reduces the damage of his close-range punches.": {
+  "fr": "Coupe les charges de Sam en le gelant et en l'étourdissant, pendant que le givre accumulé réduit les dégâts de ses poings au contact."
+ },
+ "Strikes Jessie and Scrappy together with broad hammer waves, wearing down the turret before she can repair it.": {
+  "fr": "Frappe Jessie et Scrappy ensemble avec ses larges ondes de marteau, usant la tourelle avant qu'elle ne puisse la réparer."
+ },
+ "Stuns Nori as he dives, denying his attacks long enough to survive and unload burst damage at close range. Also weak to: Tank Knockback": {
+  "fr": "Étourdit Nori pendant son plongeon, lui refusant ses attaques assez longtemps pour survivre et décharger son burst au contact. Faible aussi contre : Tank Knockback"
+ },
+ "Stuns Nori during his dive, buying time to survive and unload close-range burst before he can attack.": {
+  "fr": "Étourdit Nori pendant son plongeon, gagnant le temps de survivre et de décharger son burst rapproché avant qu'il ne puisse attaquer."
  }
 }
