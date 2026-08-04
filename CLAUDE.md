@@ -95,7 +95,40 @@ trace, pas une consigne. Ce qui suit le remplace.
 Si l'utilisateur veut lever l'une de ces quatre dernières, il le dira
 explicitement — ce fichier sera alors modifié, pas contourné.
 
-## 8. Phrases de rappel
+## 8. « Je ne peux pas lire cette page » — c'est faux
+
+Constaté le 04/08/2026, après l'avoir dit à tort plusieurs fois.
+
+Quand une page renvoie **403** depuis la session qui écrit ce code, ce n'est
+**pas le site qui bloque**. C'est le proxy de l'environnement, qui applique
+la politique réseau de l'organisation. Le diagnostic se lit :
+
+```
+curl -sS "$HTTPS_PROXY/__agentproxy/status"
+```
+
+`connect_rejected` + `gateway answered 403 to CONNECT` = la sortie est fermée
+pour cet hôte. On ne cherche pas à contourner une politique. On déplace la
+lecture là où elle est permise :
+
+```
+Onglet Actions → « Lire une page » → Run workflow → coller l'adresse
+```
+
+Le flux ouvre la page dans Chromium sur les serveurs de GitHub, et imprime
+titres, texte visible et liens dans le journal — que Claude lit à distance.
+Il ne commite rien (`permissions: contents: read`) et respecte robots.txt.
+
+Deux lectures de contrôle, réussies : `brawl360.com` (667 223 caractères) et
+`metapick-ai.com/draft-tool`.
+
+Autre voie, si l'utilisateur préfère : élargir la politique réseau de
+l'environnement, dans les réglages de Claude Code sur le web.
+
+**Donc : ne plus jamais écrire « leurs sites bloquent la lecture ». Lancer le
+flux, ou dire précisément quel hôte la politique refuse.**
+
+## 9. Phrases de rappel
 
 L'utilisateur peut écrire à tout moment :
 
