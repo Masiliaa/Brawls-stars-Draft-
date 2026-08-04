@@ -43,6 +43,17 @@ const check = (nom, cond, detail = '') => {
     await page.getByText('Choisir la carte').first().isVisible());
   check('le pied de page est affiché', await page.locator('.note').isVisible());
 
+  // Il y avait ici deux commandes identiques l'une sous l'autre : le bandeau
+  // « Choisir la carte », puis un encadré qui redisait « Choisir la carte ».
+  // Un seul geste possible, donc un seul bouton.
+  check('un seul chemin vers la liste des cartes',
+    (await page.locator('[data-act="cartes"]').count()) === 1,
+    await page.locator('[data-act="cartes"]').count());
+  // Sur l'accueil, le nom du produit n'a nulle part où mener : il redevient
+  // un titre. Ce qui répond au doigt doit faire quelque chose.
+  check('et le nom du produit n\'est pas un bouton qui ne fait rien',
+    (await page.locator('.logo[data-act]').count()) === 0);
+
   console.log('\n== mes persos : cocher, chercher, décocher ==');
   await page.locator('[data-act="roster"]').click();
   check('la grille des persos s\'affiche', (await page.locator('.cel').count()) > 90);

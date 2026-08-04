@@ -151,11 +151,16 @@ function barreHaut() {
     }));
 
   /* Le nom du produit ramène à l'accueil : c'est le réflexe de n'importe quel
-     site, et il était mort ici. Un titre qui ne répond pas au doigt, c'est
-     une sortie de secours condamnée. */
-  return '<div class="bar">'
-       + '<button class="tt logo" data-act="draft" title="'
-       + echapper(t("retourAccueil")) + '">Le Manager</button>'
+     site, et il était mort ici. Mais sur l'accueil lui-même il n'a nulle part
+     où aller : un bouton qui ne fait rien est pire que pas de bouton, alors
+     il redevient un simple titre. Ce qui répond au doigt fait quelque chose,
+     toujours. */
+  var logo = surLeDraft
+    ? '<span class="tt logo">Le Manager</span>'
+    : '<button class="tt logo" data-act="draft" title="'
+      + echapper(t("retourAccueil")) + '">Le Manager</button>';
+
+  return '<div class="bar">' + logo
        + '<div class="actions">' + menuMode + menuLangue
        + '<button class="b alt sm" data-act="' + (surLeDraft ? "roster" : "draft") + '">'
        + echapper(surLeDraft ? t("mesBrawlers") : t("retour"))
@@ -306,11 +311,29 @@ function astuceClavier() {
 
 /* Le grand bouton du haut : la carte en cours, ou l'invitation à en choisir une. */
 function boutonCarte(carte, couleur) {
+  /* Tant qu'aucune carte n'est choisie, ce bandeau EST l'invitation : il
+     porte la phrase d'explication et le seul bouton de l'écran.
+     ----------------------------------------------------------------------
+     Il y avait ici deux commandes identiques, l'une sous l'autre : ce
+     bandeau, qui disait « Choisir la carte », puis un encadré qui redisait
+     « Choisir la carte ». Et le bandeau proposait « changer » alors qu'il
+     n'y avait rien à changer. Deux fois le même geste, un mot qui ment. */
+  if (!carte) {
+    return '<button class="b full carte-active vide" data-act="cartes"'
+         + ' style="--m:' + couleur + '">'
+         + '<span class="deux-lignes">'
+         + '<span class="sur">' + echapper(t("etape1")) + "</span>"
+         + '<span class="nom">' + echapper(t("choisirCarte")) + "</span>"
+         + '<span class="aide">' + echapper(t("inviteCarte")) + "</span>"
+         + "</span>"
+         + '<span class="fleche" aria-hidden="true">›</span></button>';
+  }
+
   return '<button class="b full carte-active" data-act="cartes" style="--m:' + couleur + '">'
-       + '<span class="gauche">' + (carte ? vignette(carte, 32) : "")
+       + '<span class="gauche">' + vignette(carte, 32)
        + '<span class="deux-lignes">'
-       + '<span class="sur">' + echapper(carte ? nomMode(carte.mode) : t("etape1")) + "</span>"
-       + '<span class="nom">' + echapper(carte ? nomCarte(carte) : t("choisirCarte")) + "</span>"
+       + '<span class="sur">' + echapper(nomMode(carte.mode)) + "</span>"
+       + '<span class="nom">' + echapper(nomCarte(carte)) + "</span>"
        + "</span></span>"
        + '<span class="action">' + echapper(t("changer")) + "</span></button>";
 }
@@ -613,9 +636,9 @@ function ecranDraft() {
   var couleur = carte ? MODES[carte.mode].c : "#FFC93C";
   var html = barreHaut() + boutonCarte(carte, couleur);
 
-  if (!carte) {
-    return html + encadre(t("inviteCarte"), "cartes", t("choisirCarte")) + noteHTML();
-  }
+  /* Le bandeau porte déjà l'invitation et le geste : rien à ajouter sous
+     lui, sinon on redemande deux fois la même chose. */
+  if (!carte) return html + noteHTML();
 
   if (roster.size === 0) {
     return html + encadre(t("inviteRoster"), "roster", t("cocherMesBrawlers")) + noteHTML();
