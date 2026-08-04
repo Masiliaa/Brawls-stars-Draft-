@@ -20,6 +20,29 @@
      taux de victoire disparaissaient. Eclairci a 4,6:1. */
   --police:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,
            "Helvetica Neue",Arial,sans-serif;
+
+  /* ---- L'échelle, posée une seule fois ----
+     Avant, chaque marge avait été choisie seule, au fil des écrans : 7, 8, 9,
+     10, 12, 13, 14, 16, 18, 22, 24, 26, 28 px. Treize valeurs pour un même
+     rôle. C'est ce désordre-là qu'on lit comme « pas fini » — bien avant le
+     manque de décoration.
+
+     Les pas viennent de l'échelle d'Open Props (open-props.style), lue dans
+     son dépôt : 4, 8, 16, 20, 24, 32, 48. On ne charge pas la bibliothèque —
+     trois cents variables pour en employer sept, et une requête de plus au
+     démarrage d'une app qui doit répondre en 25 secondes. C'est l'échelle qui
+     vaut quelque chose, pas le fichier. */
+  --e1:4px; --e2:8px; --e3:16px; --e4:20px; --e5:24px; --e6:32px; --e7:48px;
+
+  /* Trois rayons au lieu de six : petit (champ, tuile), grand (carte), rond
+     (pastille). Six rayons différents sur un même écran, l'œil le voit même
+     s'il ne sait pas le nommer. */
+  --r1:12px; --r2:20px; --r3:999px;
+
+  /* Quatre tailles de texte au lieu de huit. La hauteur des zones tactiles
+     ne passe PAS par cette échelle : 44 px est une taille de pouce, pas un
+     rythme visuel. */
+  --t1:11.5px; --t2:13px; --t3:15px; --t4:19px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -43,7 +66,7 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 }
 
 .tt{font-family:inherit;text-transform:none;letter-spacing:-.03em;line-height:1;text-shadow:none}
-.bar{display:flex;align-items:center;gap:8px;margin-bottom:22px}
+.bar{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e5)}
 /* Le logo est un bouton depuis qu'il ramène à l'accueil : on annule donc
    l'apparence que le navigateur donne à <button>, sans rien changer à l'œil. */
 /* Le logo cède sa place aux boutons d'action, jamais l'inverse : sur un
@@ -64,12 +87,12 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 .b{display:inline-flex;align-items:center;justify-content:center;gap:7px;
   font-family:inherit;text-transform:none;font-size:14px;font-weight:500;
-  color:var(--texte);background:var(--carte2);border:1px solid var(--trait);border-radius:999px;
-  padding:10px 16px;cursor:pointer;box-shadow:none;min-height:44px;transition:background .12s}
+  color:var(--texte);background:var(--carte2);border:1px solid var(--trait);border-radius:var(--r3);
+  padding:var(--e2) var(--e3);cursor:pointer;box-shadow:none;min-height:44px;transition:background .12s}
 .b:active{background:#232327;transform:none}
 .b.alt{background:transparent;color:var(--doux)}
-.b.sm{font-size:13px;padding:9px 14px;min-height:40px}
-.b.full{width:100%;justify-content:space-between;text-align:left;border-radius:14px;
+.b.sm{font-size:var(--t2);padding:var(--e2) var(--e3);min-height:40px}
+.b.full{width:100%;justify-content:space-between;text-align:left;border-radius:var(--r1);
   background:var(--carte);color:var(--texte)}
 .b.lang{min-width:44px;color:var(--texte)}
 
@@ -83,8 +106,8 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 /* Le hero est un bouton depuis qu'il ouvre le calcul : il faut donc annuler
    ce que le navigateur met sur un <button> et rendre le texte alignable. */
-.hero{position:relative;background:var(--carte);border:1px solid var(--trait);border-radius:20px;
-  padding:26px 20px 20px;margin-bottom:12px;overflow:hidden;box-shadow:none;
+.hero{position:relative;background:var(--carte);border:1px solid var(--trait);border-radius:var(--r2);
+  padding:var(--e5) var(--e4) var(--e4);margin-bottom:var(--e3);overflow:hidden;box-shadow:none;
   display:block;width:100%;text-align:left;font:inherit;color:inherit;
   cursor:pointer;-webkit-appearance:none}
 .hero:active{background:var(--carte2)}
@@ -93,15 +116,15 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .retour-conseil{margin-bottom:14px}
 .hero:before{content:"";position:absolute;top:-40%;left:-10%;width:120%;height:180%;
   background:radial-gradient(closest-side,color-mix(in srgb,var(--r) 22%,transparent),transparent 68%);pointer-events:none}
-.hero .in{position:relative;display:flex;align-items:center;gap:18px}
+.hero .in{position:relative;display:flex;align-items:center;gap:var(--e4)}
 .ribbon{display:inline-block;background:transparent;color:var(--vif);border:none;border-radius:0;
   font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:800;letter-spacing:.2em;
-  padding:0;box-shadow:none;margin-bottom:7px}
+  padding:0;box-shadow:none;margin-bottom:var(--e2)}
 .name{font-size:clamp(34px,11vw,50px);font-weight:800;letter-spacing:-.045em;word-break:break-word;line-height:.95}
 .tierb{font-family:inherit;font-size:11px;font-weight:600;color:var(--doux);background:transparent;
   border:1px solid var(--trait);border-radius:999px;padding:4px 10px;position:absolute;top:18px;right:18px;z-index:2}
 .why{position:relative;margin-top:18px;background:transparent;border-top:1px solid var(--trait);
-  border-radius:0;padding:13px 0 0;font-size:13.5px;font-weight:400;color:var(--doux);line-height:1.5}
+  border-radius:0;padding:var(--e3) 0 0;font-size:var(--t2);font-weight:400;color:var(--doux);line-height:1.5}
 
 .row{display:flex;align-items:center;gap:13px;background:transparent;border:none;
   border-bottom:1px solid var(--trait);border-radius:0;padding:12px 2px;margin-bottom:0;box-shadow:none}
@@ -121,7 +144,17 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .pil.allie{background:rgba(255,92,57,.1);border-color:rgba(255,92,57,.3)}
 .pil.add{background:transparent;border-style:dashed;color:var(--doux);padding:5px 15px}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px}
+/* Le titre d'une section commençait au bord de la page, et le premier
+   portrait 40 px plus à droite. Cause : les colonnes valaient « 1fr », donc
+   elles s'étiraient pour remplir la ligne, et le portrait flottait au centre
+   d'une case bien plus large que lui. Aucune colonne commune, rien à quoi
+   l'œil puisse s'accrocher — c'est le premier de tous les défauts relevés.
+
+   Colonnes de largeur fixe, et l'espace en trop réparti ENTRE elles : la
+   première est alors collée à la marge, la dernière au bord opposé, et la
+   grille a enfin deux arêtes droites. */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,64px);
+  justify-content:space-between;row-gap:var(--e4);column-gap:var(--e2)}
 /* Le voile a 50 % dit « celui-la, tu ne l'as pas coche ». Il n'a de sens que
    sur l'ecran des brawlers, ou il y a deux etats. Il etait pose sur .cel,
    donc sur TOUTES les grilles — y compris celle ou l'on designe un ennemi en
@@ -129,43 +162,60 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    entier : noms a 2,25:1 la ou il en faut 4,5. L'ecran le plus tendu de
    l'app etait le moins lisible. Le voile est desormais reserve a .cel.roster. */
 .cel{background:transparent;border:none;border-radius:0;padding:0;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:none;transition:opacity .12s}
-.cel b{font-family:inherit;font-weight:500;text-transform:none;font-size:11px;line-height:1.15;
+  display:flex;flex-direction:column;align-items:center;gap:var(--e2);width:64px;
+  box-shadow:none;transition:opacity .12s}
+.cel b{font-family:inherit;font-weight:500;text-transform:none;font-size:var(--t1);line-height:1.2;
   color:var(--texte);text-shadow:none}
 .cel.roster{opacity:.5}
 .cel.roster b{color:var(--doux)}
+/* Un anneau orange autour de chacun des 105 portraits cochés : la couleur
+   d'accent ne désignait plus rien, puisqu'elle désignait tout. Le voile et
+   la couleur du nom disent déjà les deux états — mesuré, l'écart de
+   luminosité est franc. L'orange retourne à son seul rôle : la réponse. */
 .cel.roster.on{background:transparent;opacity:1}
-.cel.roster.on .port{box-shadow:0 0 0 2px var(--vif)}
 .cel.roster.on b{color:var(--texte)}
 
 /* L'intitulé d'une rareté : son nom, où l'on en est, et le bouton qui coche
    le groupe entier. Sur une ligne, pour ne pas manger la hauteur qui sert
    à voir les portraits. */
-.rangee-rarete{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
-.rangee-rarete:first-child{margin-top:8px}
-.titre-rarete{font-size:12px;font-weight:700;letter-spacing:.14em;
+.rangee-rarete{display:flex;align-items:center;gap:var(--e3);margin:var(--e5) 0 var(--e3)}
+.rangee-rarete:first-child{margin-top:var(--e2)}
+.titre-rarete{font-size:var(--t2);font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;color:var(--doux)}
-.compte-rarete{font-size:12px;color:var(--faible);margin-right:auto}
+.compte-rarete{font-size:var(--t2);color:var(--faible);margin-right:auto}
 
-.lab{font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:700;letter-spacing:.18em;
-  color:var(--faible);margin:24px 0 10px;text-shadow:none}
-.wrap{display:flex;flex-wrap:wrap;gap:8px}
-.inp{width:100%;background:var(--carte);border:1px solid var(--trait);border-radius:12px;padding:13px 15px;
-  color:var(--texte);font-family:inherit;font-weight:400;font-size:16px;margin-bottom:12px}
+.lab{font-family:inherit;text-transform:uppercase;font-size:var(--t1);font-weight:700;letter-spacing:.16em;
+  color:var(--faible);margin:var(--e5) 0 var(--e3);text-shadow:none}
+.wrap{display:flex;flex-wrap:wrap;gap:var(--e2)}
+.inp{width:100%;background:var(--carte);border:1px solid var(--trait);border-radius:var(--r1);
+  padding:var(--e2) var(--e3);min-height:44px;
+  color:var(--texte);font-family:inherit;font-weight:400;font-size:16px;margin-bottom:var(--e3)}
 .inp::placeholder{color:var(--faible)}
-.inp:focus{outline:none;border-color:var(--vif)}
-.box{background:transparent;border:1px dashed var(--trait);border-radius:16px;padding:28px 20px;text-align:center}
-.box p{margin:0 0 16px;font-size:14px;font-weight:400;color:var(--doux);line-height:1.6}
+/* L'orange marque la réponse, pas un champ vide. Le cadre orange épais
+   autour de la recherche était l'objet le plus fort de tout l'écran, pour
+   dire « le curseur est ici » — ce que le curseur dit déjà. */
+.inp:focus{outline:none;border-color:var(--doux)}
+.box{background:transparent;border:1px dashed var(--trait);border-radius:var(--r2);padding:var(--e6) var(--e4);text-align:center}
+.box p{margin:0 0 var(--e3);font-size:var(--t3);font-weight:400;color:var(--doux);line-height:1.6}
 /* Le pied de page etait a 2,73:1, le pire contraste de l'app — et c'est lui
    qui porte la mention Supercell. Une mention legale illisible n'est pas
    affichee : c'est exactement la regle qu'on s'etait donnee en refusant de
    la cacher derriere un repli. */
-.note{margin-top:28px;font-size:10.5px;font-weight:400;color:var(--faible);line-height:1.75}
+.note{margin-top:var(--e6);font-size:10.5px;font-weight:400;color:var(--faible);line-height:1.75}
 /* Une mention legale qu'on ne peut pas toucher n'en est pas une : le lien
    passe a 32 px de haut sans changer de taille de texte. */
 .note a{color:var(--doux);text-decoration:underline;
   display:inline-block;padding:9px 0}
-.intro{font-size:14px;font-weight:400;color:var(--doux);margin:0 0 14px;line-height:1.55}
+.intro{font-size:var(--t3);font-weight:400;color:var(--doux);margin:0 0 var(--e3);line-height:1.55}
+/* Le nom du produit s'affichait « Le Manageı » sur un iPhone : les trois
+   boutons de la barre prenaient 250 px sur les 358 disponibles, et le nom
+   se faisait rogner. Un nom de produit coupé est le premier signe qu'une
+   page n'est pas finie. Les boutons se resserrent en dessous de 430 px —
+   ils gardent leurs 40 px de hauteur, seule la largeur cède. */
+@media (max-width:430px){
+  .bar{gap:var(--e1)}
+  .bar .b.sm{padding:var(--e2) var(--e2)}
+}
 @media (max-width:359px){.bar .b.sm{font-size:12px;padding:8px 11px}.b.lang{min-width:36px;padding:8px 8px}}
 
 /* Fenêtre large mais basse — le téléphone couché, c'est-à-dire dans la
@@ -194,11 +244,11 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 }
 
 /* ============ Liste des cartes ============ */
-.groupe-mode{display:block;margin-bottom:22px}
+.groupe-mode{display:block;margin-bottom:var(--e5)}
 .titre-mode{color:var(--m);margin-top:0}
-.carte-choix{margin-bottom:7px}
+.carte-choix{margin-bottom:var(--e2)}
 .carte-choix .fleche{color:var(--faible);font-size:16px}
-.b.full .gauche{display:flex;align-items:center;gap:12px;min-width:0}
+.b.full .gauche{display:flex;align-items:center;gap:var(--e3);min-width:0}
 .b.full .nom{font-size:17px;font-weight:600;letter-spacing:-.02em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .carte-active{margin-bottom:14px;border-left:3px solid var(--m)}
@@ -341,16 +391,20 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* ============ Saisie du mode rapide ============
    Deux rangées au lieu de trois sections. « Nouveau draft » se range au
    bout du premier intitulé : il ne coûte plus une ligne à lui seul. */
-.lab-avec-action{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lab-avec-action{display:flex;align-items:center;justify-content:space-between;gap:var(--e3)}
 .lab-avec-action .relancer{margin:0;font-size:12px;padding:6px 12px;min-height:34px;
   letter-spacing:0;text-transform:none;font-weight:500}
 .lab-avec-action .compte-ban{font-variant-numeric:tabular-nums;color:var(--faible);
   letter-spacing:.04em}
-.rangee-bans{align-items:center;gap:7px}
+.rangee-bans{align-items:center;gap:var(--e2)}
 /* La croix se pose PAR-DESSUS le portrait : elle dit « retirable » sans
    coûter un pixel de hauteur, ce qui était tout l'enjeu de cette rangée. */
 .jeton-ctx{position:relative}
-.jeton-ctx .croix{position:absolute;top:-3px;right:-3px;width:14px;height:14px;
+/* La croix se posait a -3 px du BOUTON — or le bouton porte 7 px de
+   rembourrage pour offrir une zone tactile de 40 px. Elle se retrouvait donc
+   10 px au-dessus du portrait, c'est-a-dire par-dessus l'intitule de la
+   rangee. Decalee de la valeur du rembourrage, elle revient sur le dessin. */
+.jeton-ctx .croix{position:absolute;top:var(--e1);right:var(--e1);width:14px;height:14px;
   border-radius:50%;background:var(--fond);border:1px solid var(--trait);
   color:var(--doux);font-size:8px;line-height:12px;text-align:center;
   pointer-events:none}
@@ -360,8 +414,8 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* ============ Contexte du mode analyse ============
    La même information sur une ligne, en tête d'écran. Elle était sous dix
    fiches : corriger un ennemi demandait trois écrans de défilement. */
-.contexte{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-  padding-bottom:13px;border-bottom:1px solid var(--trait);margin-bottom:14px}
+.contexte{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;
+  padding-bottom:var(--e3);border-bottom:1px solid var(--trait);margin-bottom:var(--e3)}
 /* Pas de margin-left:auto : à trois groupes, le bouton passe de toute façon
    à la ligne, et collé à droite il flottait seul dans le vide. */
 .contexte .relancer{font-size:12px;padding:6px 12px;
@@ -441,6 +495,12 @@ body.clavier .astuce-clavier{display:block;margin:-4px 0 14px;
    où l'on est dans la grille. */
 body.clavier :focus-visible{outline:2px solid var(--vif);outline-offset:2px;
   border-radius:6px}
+/* Sauf le champ de recherche. Sur un ordinateur on y place le curseur dès
+   l'ouverture, si bien que la première chose vue était un gros cadre orange
+   autour d'une boîte vide — la couleur d'accent dépensée pour dire « le
+   curseur est ici », ce que le curseur dit déjà. Le repère reste, mais c'est
+   le contour du champ qui passe en blanc : visible, et à sa place. */
+body.clavier .inp:focus-visible{outline:none;border-color:var(--texte)}
 
 /* Pied de page : les sources se replient, la mention Supercell reste. */
 .note .supercell{margin-top:9px}
@@ -492,6 +552,7 @@ body.clavier :focus-visible{outline:2px solid var(--vif);outline-offset:2px;
    portrait, elle, est posée en ligne par portrait() — une règle d'ici ne
    pourrait pas la reprendre, elle se décide donc dans cellules(). */
 @media (min-width:820px) and (min-height:600px){
-  .grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px}
-  .cel b{font-size:12px}
+  .grid{grid-template-columns:repeat(auto-fill,96px);row-gap:var(--e5);column-gap:var(--e3)}
+  .cel{width:96px}
+  .cel b{font-size:var(--t2)}
 }
