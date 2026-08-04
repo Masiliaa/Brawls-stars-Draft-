@@ -22,7 +22,6 @@ var LANGUES = {
     pluriel: function (n) { return n > 1; },
     txt: {
       titre: "Le Manager — draft Brawl Stars",
-      changerLangue: "Changer de langue",
       choisirLangue: "Choisir la langue",
       choisirMode: "Choisir l'affichage",
 
@@ -65,7 +64,6 @@ var LANGUES = {
       sinon: "Sinon",
       altRang: "n°{rang} · {wr} %",
       nouveauDraft: "Nouveau draft",
-      equipeEtBans: "Mon équipe · bannis",
       voirCalcul: "Voir le calcul",
       retourConseil: "Retour au conseil",
       ctxFace: "Face",
@@ -97,7 +95,6 @@ var LANGUES = {
 
       modeRapide: "Rapide",
       modeAnalyse: "Analyse",
-      changerMode: "Changer de mode d'affichage",
       libScore: "score",
       libTier: "tier",
       libCarte: "carte",
@@ -141,7 +138,6 @@ var LANGUES = {
     pluriel: function (n) { return n !== 1; },
     txt: {
       titre: "Le Manager — Brawl Stars draft",
-      changerLangue: "Change language",
       choisirLangue: "Choose language",
       choisirMode: "Choose display",
 
@@ -184,7 +180,6 @@ var LANGUES = {
       sinon: "Else",
       altRang: "#{rang} · {wr}%",
       nouveauDraft: "New draft",
-      equipeEtBans: "My team · banned",
       voirCalcul: "See the breakdown",
       retourConseil: "Back to the pick",
       ctxFace: "Enemy",
@@ -216,7 +211,6 @@ var LANGUES = {
 
       modeRapide: "Quick",
       modeAnalyse: "Analysis",
-      changerMode: "Change display mode",
       libScore: "score",
       libTier: "tier",
       libCarte: "map",
@@ -260,7 +254,6 @@ var LANGUES = {
     pluriel: function (n) { return n !== 1; },
     txt: {
       titre: "Le Manager — draft de Brawl Stars",
-      changerLangue: "Cambiar idioma",
       choisirLangue: "Elegir idioma",
       choisirMode: "Elegir visualización",
 
@@ -303,7 +296,6 @@ var LANGUES = {
       sinon: "Si no",
       altRang: "n.º{rang} · {wr} %",
       nouveauDraft: "Nuevo draft",
-      equipeEtBans: "Mi equipo · baneados",
       voirCalcul: "Ver el cálculo",
       retourConseil: "Volver al consejo",
       ctxFace: "Enfrente",
@@ -335,7 +327,6 @@ var LANGUES = {
 
       modeRapide: "Rápido",
       modeAnalyse: "Análisis",
-      changerMode: "Cambiar modo de visualización",
       libScore: "puntuación",
       libTier: "tier",
       libCarte: "mapa",
@@ -401,11 +392,6 @@ function definirLangue(code) {
   langue = code;
   try { localStorage.setItem(CLE_LANGUE, code); } catch (e) { /* ignoré */ }
   appliquerLangue();
-}
-
-function langueSuivante() {
-  var i = ORDRE_LANGUES.indexOf(langue);
-  return ORDRE_LANGUES[(i + 1) % ORDRE_LANGUES.length];
 }
 
 /* Répercute la langue sur la page elle-même : indispensable pour que le

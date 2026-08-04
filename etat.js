@@ -75,11 +75,16 @@ function deuxColonnes() {
 var vueAnalyse = false;
 
 function modeEffectif() {
-  /* Sur deux colonnes le classement est déjà à l'écran, à côté du conseil :
-     choisir entre les deux n'a plus de sens, et proposer un choix sans
-     effet est une friction de plus. */
-  if (deuxColonnes()) return "large";
-  return vueAnalyse ? "analyse" : modeAffichage;
+  /* Le mode veut dire la même chose sur tous les écrans : « la réponse » ou
+     « la réponse et son calcul ». Seule la forme change avec la place.
+     ----------------------------------------------------------------------
+     J'avais fait disparaître le menu sur écran large, en décidant seul que
+     le choix ne servait plus à rien puisque les deux colonnes montrent tout.
+     C'était retirer une commande à quelqu'un qui ne l'avait pas demandé :
+     sur un grand écran aussi, on peut vouloir le nom seul et rien d'autre. */
+  var detaille = vueAnalyse || modeAffichage === "analyse";
+  if (deuxColonnes()) return detaille ? "large" : "rapide";
+  return detaille ? "analyse" : "rapide";
 }
 
 /* Menu déroulant ouvert dans la barre du haut : null, "langue" ou "mode".

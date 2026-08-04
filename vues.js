@@ -133,10 +133,10 @@ function barreHaut() {
      propose de revenir au draft. */
   var surLeDraft = (ecran === "draft") && !cibleAjout;
 
-  /* À deux colonnes, conseil et classement sont affichés ensemble : choisir
-     entre les deux ne changerait rien. Un menu sans effet est une friction,
-     pas une option — il disparaît, et revient dès qu'on rétrécit. */
-  var menuMode = deuxColonnes() ? "" : menuDeroulant(
+  /* Le choix du mode reste offert partout, y compris sur grand écran : c'est
+     à l'utilisateur de dire s'il veut le nom seul ou le calcul avec, pas à
+     la largeur de sa fenêtre d'en décider pour lui. */
+  var menuMode = menuDeroulant(
     "Mode",
     t(modeAffichage === "rapide" ? "modeRapide" : "modeAnalyse"),
     t("choisirMode"), "mode",

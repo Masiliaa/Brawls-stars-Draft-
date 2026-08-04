@@ -140,7 +140,11 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .inp:focus{outline:none;border-color:var(--vif)}
 .box{background:transparent;border:1px dashed var(--trait);border-radius:16px;padding:28px 20px;text-align:center}
 .box p{margin:0 0 16px;font-size:14px;font-weight:400;color:var(--doux);line-height:1.6}
-.note{margin-top:28px;font-size:10.5px;font-weight:400;color:#565660;line-height:1.75}
+/* Le pied de page etait a 2,73:1, le pire contraste de l'app — et c'est lui
+   qui porte la mention Supercell. Une mention legale illisible n'est pas
+   affichee : c'est exactement la regle qu'on s'etait donnee en refusant de
+   la cacher derriere un repli. */
+.note{margin-top:28px;font-size:10.5px;font-weight:400;color:var(--faible);line-height:1.75}
 /* Une mention legale qu'on ne peut pas toucher n'en est pas une : le lien
    passe a 32 px de haut sans changer de taille de texte. */
 .note a{color:var(--doux);text-decoration:underline;
@@ -387,6 +391,14 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    que la moitié d'un écran de 1920. */
 .deux-colonnes{display:grid;grid-template-columns:minmax(340px,400px) minmax(0,1fr);
   gap:28px;align-items:start}
+/* En mode rapide sur grand écran, il n'y a qu'une colonne à montrer : la
+   laisser s'étirer sur 1500 px éloignerait le nom de sa saisie pour rien.
+   La condition de hauteur est indispensable : sans elle, cette limite
+   écrasait la mise en page du téléphone couché, qui pose justement le
+   conseil et la saisie côte à côte sur 844 px. */
+@media (min-width:820px) and (min-height:600px){
+  .rapide-corps{max-width:620px}
+}
 .col-conseil{position:sticky;top:18px}
 .col-detail{min-width:0}
 /* Le classement est déjà annoncé par le conseil à côté : sa phrase

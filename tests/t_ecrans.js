@@ -20,7 +20,10 @@ const check = (nom, cond, detail = '') => {
   else { fail++; console.log('  FAIL ' + nom + '   ' + JSON.stringify(detail)); }
 };
 
-// Largeur, hauteur, et si les deux colonnes sont attendues.
+// Largeur, hauteur, et si les deux colonnes sont possibles à cette taille.
+// « Possible » et non « affiché » : les deux colonnes ne viennent que si la
+// place le permet ET si l'utilisateur a demandé le détail. Le mode reste son
+// choix — la largeur de sa fenêtre ne décide pas à sa place.
 const TAILLES = [
   ['iPhone debout',   390,  844, false],
   ['iPhone couché',   844,  390, false],  // large, mais 390 px de haut
@@ -76,14 +79,23 @@ const PREPARER = () => {
     const perdu = Math.round(100 * (w - vu.colonne) / w);
     check('moins de 25 % de largeur perdue', perdu <= 25, perdu + ' %');
 
-    check(attenduLarge ? 'deux colonnes' : 'une seule colonne',
-      vu.deuxCol === attenduLarge, { large: vu.large, deuxCol: vu.deuxCol });
+    // Le mode reste offert partout : sur un grand écran aussi, on peut
+    // vouloir le nom seul. Le faire disparaître, c'était retirer une
+    // commande à quelqu'un qui ne l'avait pas demandé.
+    check('le choix du mode est offert', vu.menuMode);
+    check('en mode rapide, une seule colonne partout', !vu.deuxCol);
 
-    // À deux colonnes, conseil et classement sont affichés ensemble : le
-    // menu qui choisit entre les deux ne ferait plus rien. Un choix sans
-    // effet est une friction, pas une option.
-    check(attenduLarge ? 'le menu de mode a disparu' : 'le menu de mode est là',
-      vu.menuMode === !attenduLarge);
+    const enDetail = await page.evaluate(() => {
+      definirMode('analyse'); render();
+      return { deuxCol: !!document.querySelector('.deux-colonnes'),
+               fiches: document.querySelectorAll('.analyse').length };
+    });
+    check(attenduLarge
+            ? 'en mode analyse, le calcul se met à côté du conseil'
+            : 'en mode analyse, le calcul remplace le conseil',
+      enDetail.deuxCol === attenduLarge, enDetail);
+    check('et le classement est bien là', enDetail.fiches > 1, enDetail.fiches);
+    await page.evaluate(() => { definirMode('rapide'); render(); });
 
     await page.close();
   }
@@ -95,6 +107,7 @@ const PREPARER = () => {
   page.on('pageerror', e => erreurs.push('redimensionnement : ' + e.message));
   await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
   await page.evaluate(prep => eval('(' + prep + ')()'), PREPARER.toString());
+  await page.evaluate(() => { definirMode('analyse'); render(); });
   check('on part bien sur deux colonnes',
     (await page.locator('.deux-colonnes').count()) === 1);
 
