@@ -128,8 +128,22 @@ var NOMS_DE_SECOURS = (function () {
 })();
 
 var brawlers = NOMS_DE_SECOURS.map(function (nom) {
-  return { nom: nom, k: clef(nom), img: null, couleur: null, classe: null };
+  return { nom: nom, k: clef(nom), img: null, couleur: null, classe: null,
+           rarete: null };
 });
+
+/* Une couleur venue d'une API n'est pas forcément une couleur.
+   ------------------------------------------------------------------------
+   Relevé le 04/08/2026 : la rareté « Legendary » est publiée avec la valeur
+   « #fff11ev ». Le « v » n'est pas un chiffre hexadécimal, donc ce n'est pas
+   une couleur — et les 15 brawlers légendaires perdaient silencieusement leur
+   teinte à l'écran. On ne corrige pas la donnée d'autrui : on refuse ce qui
+   n'est pas lisible, et le repli habituel reprend la main. */
+function couleurValide(c) {
+  return (typeof c === "string"
+       && /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(c))
+    ? c : null;
+}
 
 /* Accès direct par clé, reconstruit à chaque fois que la liste change. */
 var parClef = {};
@@ -142,7 +156,8 @@ indexerBrawlers();
 /* Le brawler correspondant à une clé. Renvoie un objet minimal plutôt que
    null si la clé est inconnue, pour que l'affichage ne casse jamais. */
 function brawler(cle) {
-  return parClef[cle] || { nom: cle, k: cle, img: null, couleur: null, classe: null };
+  return parClef[cle]
+      || { nom: cle, k: cle, img: null, couleur: null, classe: null, rarete: null };
 }
 
 function nomBrawler(cle) {
@@ -162,8 +177,16 @@ function chargerBrawlers() {
             nom: b.name,
             k: clef(b.name),
             img: b.imageUrl2 || b.imageUrl || null,
-            couleur: (b.rarity && b.rarity.color) || null,
-            classe: (b.class && b.class.name !== "Unknown") ? b.class.name : null
+            couleur: couleurValide(b.rarity && b.rarity.color),
+            classe: (b.class && b.class.name !== "Unknown") ? b.class.name : null,
+            /* La rareté sert à ranger l'écran « Mes brawlers » : on possède
+               presque toujours les communs, et ce qui manque se concentre
+               dans les légendaires. Le nom est celui de l'API, en anglais ;
+               langues.js le traduit quand il connaît la rareté, et le laisse
+               tel quel sinon — Supercell peut en ajouter une demain. */
+            rarete: (b.rarity && typeof b.rarity.id === "number")
+              ? { id: b.rarity.id, nom: b.rarity.name || String(b.rarity.id) }
+              : null
           };
         })
         .sort(function (a, b) { return a.nom.localeCompare(b.nom, "fr"); });

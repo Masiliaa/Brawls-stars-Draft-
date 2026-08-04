@@ -555,6 +555,61 @@ const check = (nom, cond, detail = '') => {
   check('depuis « Mes brawlers » il ramène à l’accueil',
     (await page.evaluate(() => ecran)) === 'draft');
 
+  // ── Les brawlers rangés par rareté ─────────────────────────────────────
+  // L'ordre alphabétique ne dit rien de ce qu'on possède ; la rareté, si.
+  // L'API n'est pas joignable pendant les tests, donc aucune rareté n'est
+  // connue et l'écran retombe sur la liste simple — ce repli est vérifié en
+  // premier. On injecte ensuite les 7 raretés relevées le 04/08/2026 sur
+  // api.brawlapi.com, avec leurs effectifs réels, pour vérifier le reste.
+  console.log('\n== les brawlers rangés par rareté ==');
+  await page.locator('[data-act="roster"]').first().click();
+  check('sans rareté connue, la liste simple reprend la main',
+    (await page.locator('.rangee-rarete').count()) === 0 &&
+    (await page.evaluate(() => document.getElementById('grid').className)) === 'grid');
+
+  const RARETES = [[1, 'Common', 1], [2, 'Rare', 8], [3, 'Super Rare', 10],
+                   [4, 'Epic', 30], [5, 'Mythic', 41], [6, 'Legendary', 15],
+                   [7, 'Ultra Legendary', 2]];
+  await page.evaluate((R) => {
+    let i = 0;
+    R.forEach(([id, nom, n]) => {
+      for (let j = 0; j < n && i < brawlers.length; j++, i++) brawlers[i].rarete = { id, nom };
+    });
+    while (i < brawlers.length) brawlers[i++].rarete = { id: 5, nom: 'Mythic' };
+    roster = new Set(); sauverRoster(); render();
+  }, RARETES);
+
+  const intitules = await page.locator('.rangee-rarete').allInnerTexts();
+  check('un intitulé par rareté rencontrée', intitules.length >= 6, intitules.length);
+  check('l’intitulé est traduit, pas laissé en anglais',
+    intitules[0].toLowerCase().includes('commun'), intitules[0]);
+  check('il dit où l’on en est', /0\s+sur\s+1/.test(intitules[0].replace(/\n/g, ' ')),
+    intitules[0]);
+  check('du plus commun au plus rare',
+    intitules[intitules.length - 1].toLowerCase().includes('légendaire'),
+    intitules[intitules.length - 1]);
+
+  // Compléter, et non basculer chacun : un groupe à moitié coché doit se
+  // remplir, pas s'inverser.
+  await page.locator('[data-act="groupe"]').nth(1).click();
+  check('« tout cocher » remplit le groupe et lui seul',
+    (await page.evaluate(() => roster.size)) === 8,
+    await page.evaluate(() => roster.size));
+  check('le bouton propose alors de décocher',
+    (await page.locator('.rangee-rarete').nth(1).innerText()).includes('décocher'));
+  await page.locator('[data-act="groupe"]').nth(1).click();
+  check('et le re-clic vide le groupe',
+    (await page.evaluate(() => roster.size)) === 0);
+
+  // Découper trois résultats en sept intitulés ne range rien.
+  await page.locator('#q').fill('mor');
+  check('pendant une recherche, la liste redevient simple',
+    (await page.locator('.rangee-rarete').count()) === 0 &&
+    (await page.evaluate(() => document.getElementById('grid').className)) === 'grid');
+  await page.locator('#q').fill('');
+  check('vider la recherche rend les raretés',
+    (await page.locator('.rangee-rarete').count()) >= 6);
+
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);
 

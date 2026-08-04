@@ -52,8 +52,14 @@ conteneur.addEventListener("input", function (e) {
   recherche = e.target.value;
 
   var grille = document.getElementById("grid");
-  if (grille) {
-    grille.innerHTML = grilleBrawlers(ecran === "roster" ? "roster" : "choix");
+  if (grille && ecran === "roster") {
+    /* L'écran des brawlers est groupé par rareté au repos et à plat dès
+       qu'on cherche : la classe change en même temps que le contenu. */
+    var corps = corpsRoster();
+    grille.className = corps.classe;
+    grille.innerHTML = corps.html;
+  } else if (grille) {
+    grille.innerHTML = grilleBrawlers("choix");
   }
   /* L'écran des cartes a sa propre liste : on ne redessine qu'elle, sinon
      le champ perd le focus à chaque lettre tapée. */
@@ -133,6 +139,22 @@ var ACTIONS = {
     sauverRoster();
   },
   rien: function () { roster = new Set(); sauverRoster(); },
+
+  /* Cocher ou décocher une rareté entière. Le bouton fait l'inverse de ce
+     qui est déjà là : tout coché → il décoche, sinon il complète. Compléter
+     plutôt que basculer chacun, sinon un groupe à moitié coché s'inverserait
+     au lieu de se remplir — ce que personne n'attend d'un « tout cocher ». */
+  groupe: function (v) {
+    var id = Number(v);
+    var membres = brawlers.filter(function (b) {
+      return ((b.rarete && b.rarete.id) || 0) === id;
+    });
+    var complet = membres.every(function (b) { return roster.has(b.k); });
+    membres.forEach(function (b) {
+      if (complet) roster.delete(b.k); else roster.add(b.k);
+    });
+    sauverRoster();
+  },
   toggle: function (v) {
     if (roster.has(v)) roster.delete(v); else roster.add(v);
     sauverRoster();

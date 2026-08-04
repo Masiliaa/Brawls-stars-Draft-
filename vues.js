@@ -200,6 +200,12 @@ function grilleBrawlers(usage) {
     liste = ordreProbable(liste).slice(0, 60);
   }
 
+  return cellules(liste, usage);
+}
+
+/* Les boutons d'une liste donnée. Séparé de grilleBrawlers() parce que
+   l'écran des brawlers dessine plusieurs grilles, une par rareté. */
+function cellules(liste, usage) {
   return liste.map(function (b) {
     var coche = usage === "roster" && roster.has(b.k);
     /* La classe « roster » porte le voile des non cochés. Sans elle, la
@@ -223,8 +229,79 @@ function grilleBrawlers(usage) {
 
 /* ============ Écran 1 — mes persos ============ */
 
+/* Les brawlers rangés par rareté, du plus commun au plus rare.
+   ------------------------------------------------------------------------
+   L'ordre alphabétique ne dit rien de ce qu'on possède. La rareté, si :
+   on a presque toujours les communs et les rares, et ce qui manque se
+   concentre à la fin. Relevé le 04/08/2026 sur l'API : 1 commun, 8 rares,
+   10 super rares, 30 épiques, 41 mythiques, 15 légendaires, 2 ultra.
+
+   À dire franchement : ça ne divise pas le nombre d'appuis — les deux tiers
+   des brawlers sont mythiques ou épiques. Ça regroupe l'incertitude, ce qui
+   n'est pas la même chose mais reste ce qu'on peut faire de mieux sans aller
+   lire le compte du joueur. */
+function groupesParRarete(liste) {
+  var groupes = {}, ordre = [];
+  liste.forEach(function (b) {
+    var id = (b.rarete && b.rarete.id) || 0;
+    if (!groupes[id]) {
+      groupes[id] = { id: id, nom: (b.rarete && b.rarete.nom) || "", liste: [] };
+      ordre.push(id);
+    }
+    groupes[id].liste.push(b);
+  });
+  ordre.sort(function (a, b) { return a - b; });
+  return ordre.map(function (id) { return groupes[id]; });
+}
+
+/* Le nom d'une rareté, traduit si on la connaît, tel que l'API l'annonce
+   sinon. Supercell peut en ajouter une demain : mieux vaut un mot anglais
+   qu'un trou, et surtout pas un nom qu'on aurait inventé. */
+function nomRarete(g) {
+  var cle = "rarete" + g.id;
+  var connue = LANGUES[langue].txt[cle] !== undefined
+            || LANGUES[LANGUE_DEFAUT].txt[cle] !== undefined;
+  return connue ? t(cle) : g.nom;
+}
+
+function blocRarete(g) {
+  var coches = g.liste.filter(function (b) { return roster.has(b.k); }).length;
+  var complet = coches === g.liste.length;
+  var etiquette = nomRarete(g);
+  /* Sept boutons « Tout cocher » identiques ne disent pas lequel on active.
+     Le titre porte le nom du groupe, seul repère utile à la voix comme au
+     survol. */
+  var titre = t(complet ? "decocherGroupe" : "cocherGroupe", { groupe: etiquette });
+  return '<div class="rangee-rarete">'
+       + '<span class="titre-rarete">' + echapper(etiquette) + "</span>"
+       + '<span class="compte-rarete">'
+       + echapper(t("rosterCompte", { n: coches, total: g.liste.length })) + "</span>"
+       + '<button class="b alt sm" data-act="groupe" data-v="' + g.id
+       + '" title="' + echapper(titre) + '">'
+       + echapper(t(complet ? "toutDecocher" : "toutCocher")) + "</button></div>"
+       + '<div class="grid">' + cellules(g.liste, "roster") + "</div>";
+}
+
+/* Le corps de la grille, rendu à part : la frappe dans la recherche ne
+   redessine que lui, sinon le champ perdrait le focus à chaque lettre. */
+function corpsRoster() {
+  var filtre = sansAccents(recherche.trim());
+  var liste = brawlers.filter(function (b) {
+    return sansAccents(b.nom).indexOf(filtre) > -1;
+  });
+  var groupes = groupesParRarete(liste);
+  /* Pendant une recherche, découper trois résultats en sept intitulés ne
+     range rien. Et si l'API n'a pas répondu, aucune rareté n'est connue :
+     on retombe alors sur la liste simple, qui a toujours marché. */
+  var groupe = !filtre && groupes.every(function (g) { return g.id > 0; });
+  return groupe
+    ? { classe: "", html: groupes.map(blocRarete).join("") }
+    : { classe: "grid", html: cellules(liste, "roster") };
+}
+
 function ecranRoster() {
   var nb = roster.size;
+  var corps = corpsRoster();
   return barreHaut()
        + '<p class="intro">'
        + echapper(t(pluriel(nb) ? "rosterIntroN" : "rosterIntro1", { n: nb })) + "</p>"
@@ -233,7 +310,7 @@ function ecranRoster() {
        + '<button class="b alt sm" data-act="rien">' + echapper(t("toutDecocher")) + "</button></div>"
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercherBrawler"))
        + '" value="' + echapper(recherche) + '">'
-       + '<div class="grid" id="grid">' + grilleBrawlers("roster") + "</div>";
+       + '<div class="' + corps.classe + '" id="grid">' + corps.html + "</div>";
 }
 
 

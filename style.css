@@ -139,6 +139,15 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .cel.roster.on .port{box-shadow:0 0 0 2px var(--vif)}
 .cel.roster.on b{color:var(--texte)}
 
+/* L'intitulé d'une rareté : son nom, où l'on en est, et le bouton qui coche
+   le groupe entier. Sur une ligne, pour ne pas manger la hauteur qui sert
+   à voir les portraits. */
+.rangee-rarete{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.rangee-rarete:first-child{margin-top:8px}
+.titre-rarete{font-size:12px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--doux)}
+.compte-rarete{font-size:12px;color:var(--faible);margin-right:auto}
+
 .lab{font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:700;letter-spacing:.18em;
   color:var(--faible);margin:24px 0 10px;text-shadow:none}
 .wrap{display:flex;flex-wrap:wrap;gap:8px}
