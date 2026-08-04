@@ -80,6 +80,29 @@ var ACTIONS = {
   draft: function () { ecran = "draft"; recherche = ""; cibleAjout = null; },
   cartes: function () { ecran = "cartes"; recherche = ""; modeOuvert = null; },
 
+  /* Le nom du produit ramène au vrai point de départ : plus de carte, plus de
+     picks, l'écran d'invitation.
+     ----------------------------------------------------------------------
+     Il pointait sur « draft », qui ne fait qu'aller à l'écran de draft. Une
+     fois la carte choisie, on y est déjà : l'écran était rigoureusement
+     identique avant et après le clic, donc le bouton paraissait mort — et il
+     l'était les neuf dixièmes du temps, puisque c'est l'écran où l'on passe
+     sa vie.
+
+     Cette action est volontairement distincte de « draft » : le bouton
+     « Retour » de la barre, lui, doit ramener sans rien effacer. Les deux
+     partageaient la même entrée ; les séparer évite qu'un retour depuis
+     « Mes brawlers » ne vide un draft en cours. */
+  accueil: function () {
+    carteId = null;
+    ennemis = []; bans = []; allies = [];
+    cibleAjout = null;
+    vueAnalyse = false;
+    recherche = "";
+    modeOuvert = null;
+    ecran = "draft";
+  },
+
   /* Taper le nom conseillé ouvre le calcul, retaper referme. Le même bouton
      dans les deux sens : c'est un aller-retour, pas un changement de mode.
      modeAffichage n'est pas touché — on repart toujours de son réglage. */

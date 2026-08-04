@@ -53,7 +53,7 @@ const check = (nom, cond, detail = '') => {
   // inerte là où l'on est déjà semblait logique et se voyait cassé une fois
   // sur deux, puisque c'est l'écran où l'on passe sa vie.
   check('le nom du produit est cliquable, ici comme ailleurs',
-    (await page.locator('.logo[data-act="draft"]').count()) === 1);
+    (await page.locator('.logo[data-act="accueil"]').count()) === 1);
 
   console.log('\n== mes persos : cocher, chercher, décocher ==');
   await page.locator('[data-act="roster"]').click();
@@ -162,7 +162,7 @@ const check = (nom, cond, detail = '') => {
     check(nom + ' : on peut revenir au draft',
       (await page.locator('.bar .actions [data-act="draft"]').count()) === 1);
     check(nom + ' : le nom du produit y ramène aussi',
-      (await page.locator('.logo[data-act="draft"]').count()) === 1);
+      (await page.locator('.logo[data-act="accueil"]').count()) === 1);
     await page.locator('.bar .actions [data-act="draft"]').click();
     check(nom + ' : et on y est', await page.locator('.hero .name').isVisible());
   }
@@ -481,6 +481,45 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="ouvrirLangue"]').textContent()).includes('FR'));
   check('plus aucune trace de « persos »',
     !(await page.locator('#app').innerText()).toLowerCase().includes('persos'));
+
+  // ── Le nom du produit repart de zéro ───────────────────────────────────
+  // Il pointait sur « aller à l'écran de draft ». Une fois la carte choisie
+  // on y était déjà : l'écran ne bougeait pas d'un pixel, donc le bouton
+  // paraissait mort — et il l'était sur l'écran où l'on passe sa vie.
+  // Il repart maintenant de zéro. Ce qui compte ici est la contrepartie :
+  // le bouton « Retour » de la barre, lui, ne doit RIEN effacer, sinon
+  // aller vérifier son roster en pleine draft coûterait ses picks.
+  console.log('\n== le nom du produit repart de zéro ==');
+  await page.locator('[data-act="cartes"]').first().click();
+  await page.locator('#q').fill('Safe Zone');
+  await page.getByText('Safe Zone').first().click();
+  await ajouter('addE', 2);
+  await ajouter('addB', 1);
+
+  await page.locator('[data-act="roster"]').first().click();
+  await page.locator('.bar .actions [data-act="draft"]').click();
+  check('« Retour » ne touche pas au draft',
+    (await page.locator('[data-act="rme"]').count()) === 2 &&
+    (await page.locator('[data-act="rmb"]').count()) === 1);
+
+  const ecranAvant = await page.locator('#app').innerText();
+  await page.locator('.bar .logo').click();
+  check('le clic sur le nom change bien l’écran',
+    (await page.locator('#app').innerText()) !== ecranAvant);
+  check('la carte est relâchée',
+    await page.evaluate(() => carteId === null));
+  check('les picks sont vidés',
+    await page.evaluate(() =>
+      ennemis.length === 0 && allies.length === 0 && bans.length === 0));
+  check('on retombe sur l’invitation à choisir une carte',
+    (await page.locator('[data-act="cartes"]').count()) > 0 &&
+    (await page.locator('.hero .name').count()) === 0);
+
+  // Et depuis un autre écran que le draft, il doit ramener là aussi.
+  await page.locator('[data-act="roster"]').first().click();
+  await page.locator('.bar .logo').click();
+  check('depuis « Mes brawlers » il ramène à l’accueil',
+    (await page.evaluate(() => ecran)) === 'draft');
 
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);

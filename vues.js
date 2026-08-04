@@ -162,14 +162,14 @@ function barreHaut() {
 
   /* Le nom du produit ramène à l'accueil, sur TOUS les écrans sans exception.
      ----------------------------------------------------------------------
-     Il a d'abord été mort partout. Puis je l'ai rendu inerte sur l'écran de
-     draft, en me disant qu'on y était déjà — sauf que c'est l'écran où l'on
-     passe sa vie, donc il paraissait cassé une fois sur deux. Un logo qui
-     répond ici et pas là est pire que les deux.
+     Il a d'abord été mort partout. Puis inerte sur l'écran de draft, en me
+     disant qu'on y était déjà. Puis branché sur « draft » — ce qui revenait
+     au même une fois la carte choisie : l'écran ne bougeait pas d'un pixel.
 
-     Sur l'accueil d'un site, cliquer le logo ne change rien à l'écran, et
-     personne ne s'en plaint : ce qui compte, c'est qu'il réponde toujours. */
-  var logo = '<button class="tt logo" data-act="draft" title="'
+     Il pointe maintenant sur « accueil », qui repart de zéro : plus de carte,
+     plus de picks. Le geste a donc toujours un effet, depuis n'importe où.
+     C'est aussi ce que veut dire cliquer le nom d'un produit : recommencer. */
+  var logo = '<button class="tt logo" data-act="accueil" title="'
            + echapper(t("retourAccueil")) + '">Le Manager</button>';
 
   return '<div class="bar">' + logo
