@@ -74,6 +74,11 @@ function deuxColonnes() {
    modeAffichage reste le mode de départ, et n'est pas touché. */
 var vueAnalyse = false;
 
+/* Sur l'écran des brawlers : n'afficher que ceux qui ne sont pas cochés.
+   On part de « tout cocher », puis on retire ce qu'on n'a pas — et la liste
+   rétrécit à mesure, au lieu de rester à 107 portraits jusqu'au bout. */
+var filtreManquants = false;
+
 function modeEffectif() {
   /* Le mode veut dire la même chose sur tous les écrans : « la réponse » ou
      « la réponse et son calcul ». Seule la forme change avec la place.

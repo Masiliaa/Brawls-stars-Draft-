@@ -83,6 +83,10 @@ var ACTIONS = {
 
   /* — Navigation — */
   roster: function () { ecran = "roster"; recherche = ""; vueAnalyse = false; },
+
+  /* N'afficher que ceux qui ne sont pas cochés, et revenir à tout. Ce n'est
+     pas enregistré : c'est une façon de regarder, pas un réglage. */
+  manquants: function () { filtreManquants = !filtreManquants; },
   draft: function () { ecran = "draft"; recherche = ""; cibleAjout = null; },
   cartes: function () { ecran = "cartes"; recherche = ""; modeOuvert = null; },
 

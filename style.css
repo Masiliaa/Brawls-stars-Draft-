@@ -130,7 +130,6 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    l'app etait le moins lisible. Le voile est desormais reserve a .cel.roster. */
 .cel{background:transparent;border:none;border-radius:0;padding:0;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:none;transition:opacity .12s}
-.cel .port{width:52px;height:52px}
 .cel b{font-family:inherit;font-weight:500;text-transform:none;font-size:11px;line-height:1.15;
   color:var(--texte);text-shadow:none}
 .cel.roster{opacity:.5}
@@ -469,3 +468,30 @@ body.clavier :focus-visible{outline:2px solid var(--vif);outline-offset:2px;
    évite qu'un lecteur d'écran annonce « drapeau de la France, Français ». */
 .menu .drapeau{flex:none;font-size:15px;line-height:1}
 .bar .declenche{gap:5px}
+
+/* ============ L'écran des brawlers ============ */
+
+/* Le nombre était en fin de phrase alors que c'est la seule chose qu'on
+   vient vérifier. Il passe devant, et son total avec lui : « 68 » seul ne
+   dit pas s'il en manque beaucoup. */
+.intro .compteur{font-size:19px;font-weight:800;color:var(--texte);
+  margin-right:7px;letter-spacing:-.01em}
+/* Le filtre est un état, pas une action : quand il est actif, ça se voit. */
+.b.alt.actif{border-color:var(--vif);color:var(--texte)}
+
+/* Un champ de recherche large de 1124 px pour un mot de dix lettres : la
+   cible devient énorme et la ligne illisible d'un bout à l'autre. On le
+   borne, la grille en dessous garde toute la largeur. */
+.inp{max-width:520px}
+
+/* Sur un grand écran, la place existe : autant s'en servir pour reconnaître
+   un brawler à son portrait plutôt qu'à son nom écrit en 11 px.
+   Ces règles sont en fin de feuille, comme celles des fenêtres basses : à
+   spécificité égale, c'est la dernière écrite qui gagne. */
+/* Même seuil que partout ailleurs : largeur ET hauteur. La taille du
+   portrait, elle, est posée en ligne par portrait() — une règle d'ici ne
+   pourrait pas la reprendre, elle se décide donc dans cellules(). */
+@media (min-width:820px) and (min-height:600px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px}
+  .cel b{font-size:12px}
+}

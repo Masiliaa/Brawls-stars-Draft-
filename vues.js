@@ -206,6 +206,12 @@ function grilleBrawlers(usage) {
 /* Les boutons d'une liste donnée. Séparé de grilleBrawlers() parce que
    l'écran des brawlers dessine plusieurs grilles, une par rareté. */
 function cellules(liste, usage) {
+  /* La taille du portrait est posée en ligne par portrait() : une règle CSS
+     ne peut pas la reprendre. Elle se décide donc ici, avec le seuil que
+     l'app emploie déjà partout — largeur ET hauteur, jamais le type
+     d'appareil. Un iPhone couché fait 844 px de large mais 390 de haut :
+     agrandir les portraits lui coûterait les lignes qu'il n'a pas. */
+  var taille = deuxColonnes() ? 64 : 40;
   return liste.map(function (b) {
     var coche = usage === "roster" && roster.has(b.k);
     /* La classe « roster » porte le voile des non cochés. Sans elle, la
@@ -214,7 +220,7 @@ function cellules(liste, usage) {
          + (coche ? " on" : "") + '"'
          + ' data-act="' + (usage === "roster" ? "toggle" : "choisir") + '"'
          + ' data-v="' + b.k + '">'
-         + portrait(b, 40, false)
+         + portrait(b, taille, false)
          + "<b>" + echapper(b.nom) + "</b></button>";
   }).join("");
 }
@@ -268,6 +274,16 @@ function blocRarete(g) {
   var coches = g.liste.filter(function (b) { return roster.has(b.k); }).length;
   var complet = coches === g.liste.length;
   var etiquette = nomRarete(g);
+
+  /* Le compte porte sur le groupe entier, pas sur ce qui reste affiché :
+     sous le filtre « ceux qui manquent », « 0 sur 30 » serait un mensonge
+     par omission. Un groupe entièrement coché n'a plus rien à montrer, on
+     l'efface — c'est le but du filtre. */
+  var montres = filtreManquants
+    ? g.liste.filter(function (b) { return !roster.has(b.k); })
+    : g.liste;
+  if (!montres.length) return "";
+
   /* Sept boutons « Tout cocher » identiques ne disent pas lequel on active.
      Le titre porte le nom du groupe, seul repère utile à la voix comme au
      survol. */
@@ -279,7 +295,7 @@ function blocRarete(g) {
        + '<button class="b alt sm" data-act="groupe" data-v="' + g.id
        + '" title="' + echapper(titre) + '">'
        + echapper(t(complet ? "toutDecocher" : "toutCocher")) + "</button></div>"
-       + '<div class="grid">' + cellules(g.liste, "roster") + "</div>";
+       + '<div class="grid">' + cellules(montres, "roster") + "</div>";
 }
 
 /* Le corps de la grille, rendu à part : la frappe dans la recherche ne
@@ -294,20 +310,31 @@ function corpsRoster() {
      range rien. Et si l'API n'a pas répondu, aucune rareté n'est connue :
      on retombe alors sur la liste simple, qui a toujours marché. */
   var groupe = !filtre && groupes.every(function (g) { return g.id > 0; });
-  return groupe
-    ? { classe: "", html: groupes.map(blocRarete).join("") }
-    : { classe: "grid", html: cellules(liste, "roster") };
+  if (groupe) return { classe: "", html: groupes.map(blocRarete).join("") };
+
+  if (filtreManquants) {
+    liste = liste.filter(function (b) { return !roster.has(b.k); });
+  }
+  return { classe: "grid", html: cellules(liste, "roster") };
 }
 
 function ecranRoster() {
-  var nb = roster.size;
+  /* Le nombre était en fin de phrase — « … que tu sais jouer. 68 cochés. »
+     C'est pourtant la seule chose qu'on vient vérifier en revenant ici. Il
+     passe devant, en grand, avec son total : « 68 sur 107 » se lit d'un
+     coup d'œil, « 68 » seul ne dit pas s'il en manque beaucoup. */
   var corps = corpsRoster();
   return barreHaut()
-       + '<p class="intro">'
-       + echapper(t(pluriel(nb) ? "rosterIntroN" : "rosterIntro1", { n: nb })) + "</p>"
+       + '<p class="intro"><b class="compteur">'
+       + echapper(t("rosterCompte", { n: roster.size, total: brawlers.length }))
+       + "</b> " + echapper(t("rosterConsigne")) + "</p>"
        + '<div class="wrap barre-outils">'
        + '<button class="b sm" data-act="tout">' + echapper(t("toutCocher")) + "</button>"
-       + '<button class="b alt sm" data-act="rien">' + echapper(t("toutDecocher")) + "</button></div>"
+       + '<button class="b alt sm" data-act="rien">' + echapper(t("toutDecocher")) + "</button>"
+       + '<button class="b alt sm' + (filtreManquants ? " actif" : "")
+       + '" data-act="manquants">'
+       + echapper(t(filtreManquants ? "rosterFiltreTous" : "rosterFiltreManquants"))
+       + "</button></div>"
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercherBrawler"))
        + '" value="' + echapper(recherche) + '">'
        + '<div class="' + corps.classe + '" id="grid">' + corps.html + "</div>";

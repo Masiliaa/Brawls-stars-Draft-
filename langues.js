@@ -28,8 +28,7 @@ var LANGUES = {
       mesBrawlers: "Mes brawlers",
       retour: "Retour",
 
-      rosterIntro1: "Coche les brawlers niveau 9 minimum que tu sais jouer. {n} coché.",
-      rosterIntroN: "Coche les brawlers niveau 9 minimum que tu sais jouer. {n} cochés.",
+      rosterConsigne: "Coche les brawlers niveau 9 minimum que tu sais jouer.",
       toutCocher: "Tout cocher",
       toutDecocher: "Tout décocher",
       chercherBrawler: "Chercher un brawler",
@@ -156,8 +155,7 @@ var LANGUES = {
       mesBrawlers: "My brawlers",
       retour: "Back",
 
-      rosterIntro1: "Tick the brawlers at power 9 or above that you can play. {n} selected.",
-      rosterIntroN: "Tick the brawlers at power 9 or above that you can play. {n} selected.",
+      rosterConsigne: "Tick the brawlers at power 9 or above that you can play.",
       toutCocher: "Select all",
       toutDecocher: "Clear all",
       chercherBrawler: "Search for a brawler",
@@ -284,8 +282,7 @@ var LANGUES = {
       mesBrawlers: "Mis brawlers",
       retour: "Volver",
 
-      rosterIntro1: "Marca los brawlers de nivel 9 o más que sabes jugar. {n} seleccionado.",
-      rosterIntroN: "Marca los brawlers de nivel 9 o más que sabes jugar. {n} seleccionados.",
+      rosterConsigne: "Marca los brawlers de nivel 9 o más que sabes jugar.",
       toutCocher: "Marcar todos",
       toutDecocher: "Desmarcar todos",
       chercherBrawler: "Buscar un brawler",

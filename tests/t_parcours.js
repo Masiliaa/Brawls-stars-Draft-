@@ -610,6 +610,38 @@ const check = (nom, cond, detail = '') => {
   check('vider la recherche rend les raretés',
     (await page.locator('.rangee-rarete').count()) >= 6);
 
+  // ── Voir où l'on en est, et ce qui manque ──────────────────────────────
+  // Le nombre était en fin de phrase, alors que c'est la seule chose qu'on
+  // vient vérifier. Et rien ne permettait de trouver ce qu'on n'a pas : la
+  // recherche marche sur un nom qu'on a déjà en tête.
+  console.log('\n== voir où l\'on en est, et ce qui manque ==');
+  const total = await page.evaluate(() => brawlers.length);
+  await page.locator('[data-act="tout"]').click();
+  check('le compteur dit le nombre ET le total',
+    (await page.locator('.compteur').innerText()).replace(/\s+/g, ' ')
+      === total + ' sur ' + total,
+    await page.locator('.compteur').innerText());
+
+  await page.locator('[data-act="manquants"]').click();
+  check('tout coché, « ceux qui manquent » ne montre rien',
+    (await page.locator('.cel').count()) === 0 &&
+    (await page.locator('.rangee-rarete').count()) === 0);
+
+  await page.locator('[data-act="manquants"]').click();
+  for (let i = 0; i < 3; i++) await page.locator('#grid .cel').nth(i).click();
+  await page.locator('[data-act="manquants"]').click();
+  check('il montre exactement les décochés',
+    (await page.locator('.cel').count()) === 3,
+    await page.locator('.cel').count());
+  // Sous le filtre, « 0 sur 1 » doit rester le compte du groupe entier :
+  // afficher le compte de ce qui reste visible serait un mensonge par omission.
+  check('le compte reste celui du groupe entier',
+    /sur\s+1$/.test((await page.locator('.rangee-rarete').first().innerText())
+      .split('\n')[1] || ''),
+    (await page.locator('.rangee-rarete').first().innerText()).replace(/\n/g, ' · '));
+  await page.locator('[data-act="manquants"]').click();
+  await page.locator('[data-act="tout"]').click();
+
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);
 
