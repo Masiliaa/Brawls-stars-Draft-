@@ -151,12 +151,6 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
   overflow:hidden}
 
-.pil{display:inline-flex;align-items:center;gap:8px;background:var(--carte2);border:1px solid var(--trait);
-  border-radius:999px;padding:5px 13px 5px 5px;cursor:pointer;min-height:42px;box-shadow:none;
-  font-family:inherit;text-transform:none;font-size:13.5px;font-weight:500;color:var(--texte)}
-.pil.ban{background:transparent;color:var(--faible)}
-.pil.allie{background:rgba(255,92,57,.1);border-color:rgba(255,92,57,.3)}
-.pil.add{background:transparent;border-style:dashed;color:var(--doux);padding:5px 15px}
 
 /* Le titre d'une section commençait au bord de la page, et le premier
    portrait 40 px plus à droite. Cause : les colonnes valaient « 1fr », donc
@@ -223,6 +217,9 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    de 17 px. Elle passe à la ligne plutôt que de faire glisser la page entière
    — un écran qui se décale sous le pouce pendant un draft est pire qu'un
    compte qui descend d'une ligne. */
+/* En mode analyse la saisie suit directement la ligne de la carte, qui porte
+   déjà son filet : deux traits collés avec du vide entre eux. */
+.ligne-carte + .etat{border-top:none;margin-top:var(--e3);padding-top:0}
 .etat .r{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
 .etat .cle{width:76px;flex:none;font-size:var(--t2);color:var(--faible)}
 .etat .t{position:relative;background:transparent;border:none;padding:0;
@@ -343,36 +340,8 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .reset{margin-top:20px}
 
 /* ============ Mode Analyse ============ */
-.analyse{background:var(--carte);border:1px solid var(--trait);border-radius:14px;
-  padding:13px 14px;margin-bottom:8px}
-.analyse header{display:flex;align-items:center;gap:11px}
-.analyse .rang{font-size:11px;font-weight:700;color:var(--faible);min-width:15px;
-  font-variant-numeric:tabular-nums}
-.analyse .qui{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
-.analyse .qui .nom{font-size:16.5px;font-weight:650;letter-spacing:-.02em;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.analyse .qui .tier{font-size:11px;font-weight:500;color:var(--faible)}
-.analyse .score{display:flex;flex-direction:column;align-items:flex-end;flex:none;line-height:1}
-.analyse .score b{font-size:21px;font-weight:750;letter-spacing:-.03em;
-  font-variant-numeric:tabular-nums}
-.analyse .score i{font-style:normal;font-size:9.5px;font-weight:600;color:var(--faible);
-  text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 
-.analyse .raisons{list-style:none;margin:11px 0 0;padding:0;
-  display:flex;flex-direction:column;gap:5px}
-.analyse .raisons li{font-size:12.5px;line-height:1.4;color:var(--doux);
-  padding-left:13px;position:relative}
-.analyse .raisons li:before{content:"";position:absolute;left:0;top:7px;
-  width:5px;height:5px;border-radius:50%;background:var(--trait)}
-.analyse .raisons li:first-child{color:var(--texte)}
-.analyse .raisons li:first-child:before{background:var(--vif)}
 
-.analyse .calcul{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;
-  padding-top:11px;border-top:1px solid var(--trait)}
-.analyse .calcul span{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:5px;
-  font-variant-numeric:tabular-nums;background:var(--carte2);color:var(--doux)}
-.analyse .calcul .plus{color:#7ee0a8}
-.analyse .calcul .moins{color:#ff8b76}
 
 /* Les bans conseillés reprennent la ligne des suggestions, mais en retrait :
    c'est une information de contexte, pas la décision principale. */
@@ -444,18 +413,6 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    Trois lignes pleines coûtaient 195 px et repoussaient la saisie hors de
    l'écran. La bande en coûte 60. Elle déborde des marges pour que le pouce
    sente qu'il y a une suite, et se cale sur les bords à l'arrêt. */
-.replis{display:flex;gap:7px;overflow-x:auto;padding:0 16px 2px;
-  margin:0 -16px;scrollbar-width:none;
-  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-.replis::-webkit-scrollbar{display:none}
-.repli{flex:none;scroll-snap-align:start;display:inline-flex;align-items:center;gap:8px;
-  background:var(--carte2);border:1px solid var(--trait);border-radius:12px;
-  padding:6px 12px 6px 6px;font:inherit;color:var(--texte);cursor:pointer;
-  min-height:44px;-webkit-appearance:none}
-.repli:active{background:#232327}
-.repli .txt{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.2}
-.repli .n{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
-.repli .d{font-size:10.5px;color:var(--faible);font-variant-numeric:tabular-nums}
 
 /* Un intitulé serré : 24 px de marge haute × 3 intitulés, c'était 141 px
    rien qu'en blancs sur un écran qui doit en tenir 844. */
@@ -469,58 +426,87 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   letter-spacing:0;text-transform:none;font-weight:500}
 .lab-avec-action .compte-ban{font-variant-numeric:tabular-nums;color:var(--faible);
   letter-spacing:.04em}
-.rangee-bans{align-items:center;gap:var(--e2)}
 /* La croix se pose PAR-DESSUS le portrait : elle dit « retirable » sans
    coûter un pixel de hauteur, ce qui était tout l'enjeu de cette rangée. */
-.jeton-ctx{position:relative}
 /* La croix se posait a -3 px du BOUTON — or le bouton porte 7 px de
    rembourrage pour offrir une zone tactile de 40 px. Elle se retrouvait donc
    10 px au-dessus du portrait, c'est-a-dire par-dessus l'intitule de la
    rangee. Decalee de la valeur du rembourrage, elle revient sur le dessin. */
-.jeton-ctx .croix{position:absolute;top:var(--e1);right:var(--e1);width:14px;height:14px;
-  border-radius:50%;background:var(--fond);border:1px solid var(--trait);
-  color:var(--doux);font-size:8px;line-height:12px;text-align:center;
-  pointer-events:none}
-.jeton-ctx.ban{opacity:.6}
-.jeton-ctx.ban:active{opacity:1}
 
 /* ============ Contexte du mode analyse ============
    La même information sur une ligne, en tête d'écran. Elle était sous dix
    fiches : corriger un ennemi demandait trois écrans de défilement. */
-.contexte{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;
-  padding-bottom:var(--e3);border-bottom:1px solid var(--trait);margin-bottom:var(--e3)}
 /* Pas de margin-left:auto : à trois groupes, le bouton passe de toute façon
    à la ligne, et collé à droite il flottait seul dans le vide. */
-.contexte .relancer{font-size:12px;padding:6px 12px;
-  min-height:34px;letter-spacing:0;text-transform:none;font-weight:500}
-.contexte .groupe{display:flex;align-items:center;gap:4px}
-.contexte .et{font-size:9.5px;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--faible);margin-right:2px}
 /* Le dessin fait 26 px, la zone sensible 40 : le rembourrage est repris par
    une marge negative, donc rien ne bouge a l'oeil et le pouce trouve. */
-.jeton-ctx{background:transparent;border:none;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;line-height:0;
-  padding:7px;margin:-7px}
-.jeton-ctx.ban{opacity:.45}
-.jeton-ctx.allie .port{box-shadow:0 0 0 2px var(--vif)}
 /* Le contour fait 26 px, la zone sensible 40 : les dimensions passent sur un
    trait interieur, sinon elles annulaient le rembourrage pose plus haut. */
-.jeton-ctx.vide{border-radius:7px;box-shadow:inset 0 0 0 1px var(--trait);
-  color:var(--faible);font-size:14px;line-height:1;
-  width:40px;height:40px;background-clip:content-box;padding:7px;margin:-7px}
-.jeton-ctx.vide:active{box-shadow:inset 0 0 0 1px var(--vif);color:var(--vif)}
+
+/* ============ Le classement du mode Analyse ============
+   Il était fait de cartes : fond, contour, coins arrondis, et en bas des
+   pastilles vertes et rouges sur fond gris. Quatre surfaces empilées avant
+   d'arriver au premier mot, dans une app qui n'en emploie plus nulle part
+   ailleurs. Ce sont des rangées séparées par un filet, comme partout.
+
+   La barre, elle, n'est pas une décoration : les points s'additionnent
+   exactement — 82 + 15 + 12 − 2 = 107 — donc la découper en parts montre
+   D'OÙ vient le score sans rien inventer. Sa longueur totale dit l'ampleur
+   du calcul, ses parts disent sa composition. */
+.classement{display:flex;flex-direction:column}
+.analyse{padding:var(--e3) 0;border-bottom:1px solid #17171b}
+.analyse .tete{display:flex;align-items:center;gap:var(--e2)}
+.analyse .rang{width:18px;flex:none;font-size:var(--t2);color:var(--faible);
+  font-variant-numeric:tabular-nums}
+.analyse .nom{font-size:16.5px;font-weight:650;letter-spacing:-.02em;
+  margin-left:var(--e1)}
+.analyse .tier{font-size:var(--t2);color:var(--faible)}
+.analyse .score{margin-left:auto;flex:none}
+.analyse .score b{font-size:20px;font-weight:750;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums}
+/* « SCORE » écrit sous chaque nombre, dix fois de suite, n'apprenait rien à
+   personne après la première. Le mot reste pour qui écoute la page. */
+.analyse .score .lu{position:absolute;width:1px;height:1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap}
+
+.piste-jauge{display:block;height:8px;margin:var(--e3) 0 0 26px;
+  background:#141418;border-radius:4px;overflow:hidden}
+.jauge-score{display:flex;height:100%;border-radius:4px;overflow:hidden}
+.jauge-score i{display:block;height:100%}
+.part-tier{background:#4c6ef5}
+.part-carte{background:#2f9e6e}
+.part-ennemis{background:#c2a33a}
+.part-allies{background:#8a5cd6}
+.part-risque{background:#c98a7e}
+/* Ce qui est retranché se dessine en creux : c'est ce qu'on perd, pas ce
+   qu'on gagne, et ça ne doit pas ressembler à un gain de plus. */
+.retire{background:repeating-linear-gradient(135deg,#4a3733 0 3px,#241c1a 3px 6px)}
+
+.analyse .calcul{display:flex;flex-wrap:wrap;gap:var(--e1) var(--e3);
+  margin:var(--e2) 0 0 26px;font-size:12px;color:var(--faible);
+  font-variant-numeric:tabular-nums}
+.analyse .calcul span{display:inline-flex;align-items:center;gap:5px}
+.analyse .calcul b{width:7px;height:7px;border-radius:2px;flex:none}
+.analyse .calcul .moins{color:#c98a7e}
+.analyse .pourquoi{margin:var(--e2) 0 0 26px;font-size:13.5px;color:var(--texte);
+  line-height:1.45}
+.analyse .raisons{list-style:none;margin:var(--e2) 0 0 26px;padding:0;
+  display:flex;flex-direction:column;gap:3px}
+.analyse .raisons li{font-size:12.5px;color:var(--faible);line-height:1.4}
+
+/* Téléphone couché, mode Analyse : la pire case du tableau, près de six
+   écrans à faire défiler. 390 px de haut ne permettent pas de poser le
+   conseil et le classement côte à côte, mais 844 px de large permettent deux
+   colonnes DE classement — la même place, employée autrement. */
+@media (max-height:520px) and (min-width:700px){
+  .classement{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--e6)}
+}
 
 /* La barre sous le score : dix nombres à trois chiffres ne se classent pas
    à l'œil, dix barres si. Longueur relative au premier, pas à un maximum
    théorique — c'est un écart réel, jamais une note sur 100. */
-.analyse .jauge-score{display:block;width:62px;height:3px;margin-top:4px;
-  background:var(--trait);border-radius:2px;overflow:hidden}
 /* Le <i> de la jauge est la barre elle-même, pas l'étiquette « score » :
    il ne doit pas hériter du style de celle-ci. */
-.analyse .jauge-score i{display:block;height:100%;width:auto;background:var(--faible);
-  border-radius:2px;margin:0;font-size:0;letter-spacing:0}
-.analyse.premier{border-color:color-mix(in srgb,var(--vif) 34%,var(--trait))}
-.analyse.premier .jauge-score i{background:var(--vif)}
 
 /* ============ Deux colonnes ============
    Sur un portable, la colonne unique laissait 64 % de l'écran vide et
@@ -614,9 +600,7 @@ body.clavier .inp:focus-visible{outline:none;border-color:var(--texte)}
    plus haut, elles étaient annulées sans bruit par les valeurs normales. */
 @media (max-height:520px){
   .lab.serre{margin:9px 0 5px}
-  .rangee-bans{gap:6px}
-  .replis{padding-bottom:0}
-}
+    }
 
 /* Le drapeau du menu des langues : on le repère avant de lire, ce qui est
    tout l'intérêt quand la liste est écrite dans une langue qu'on ne lit pas

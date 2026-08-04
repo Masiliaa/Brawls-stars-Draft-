@@ -230,7 +230,7 @@ function cellules(liste, usage) {
    rangées, trois boutons « ajouter » : la moitié de la hauteur de l'écran
    rapide pour de la saisie, et le nom conseillé sortait du champ dès qu'on
    descendait taper. Elles sont regroupées plus bas, à la densité du mode :
-   blocSaisieCompacte() pour le rapide, blocContexte() pour l'analyse. */
+   blocSaisieCompacte(), la même dans les deux modes. */
 
 
 /* ============ Écran 1 — mes persos ============ */
@@ -589,48 +589,82 @@ function surLaCarte(cle, carte) {
    Même calcul que le mode rapide, mais on montre tout : le classement
    complet, chaque raison retenue, et d'où viennent les points. */
 
-function ligneAnalyse(x, rang, meilleurScore) {
-  var parts = [
-    [t("libTier"), x.detail.tier],
-    [t("libCarte"), x.detail.carte],
-    [t("libEnnemis"), x.detail.ennemis],
-    [t("libRisque"), x.detail.risque],
-    [t("libAllies"), x.detail.allies]
-  ].filter(function (p) { return p[1]; });
+/* Les parts d'un score, dans l'ordre où elles se lisent. La clé sert aussi
+   de classe CSS : une couleur par nature de point, et une seule fois. */
+var PARTS_SCORE = ["tier", "carte", "ennemis", "allies", "risque"];
 
-  /* Une barre sous le score : dix nombres à trois chiffres ne se classent
-     pas à l'œil, dix barres si. La longueur est relative au premier, jamais
-     à un maximum théorique — c'est un écart réel, pas une note sur 100. */
-  var part = meilleurScore > 0
-           ? Math.max(4, Math.round((x.score / meilleurScore) * 100)) : 0;
+/* Ce qui compose un score, et de combien. Les points s'additionnent
+   exactement — 82 + 15 + 12 − 2 = 107 — donc on peut le dessiner sans rien
+   inventer : c'est une décomposition juste, pas une estimation. */
+function partsDuScore(x) {
+  var positives = [], negatives = [], total = 0;
+  PARTS_SCORE.forEach(function (cle) {
+    var v = Math.round(x.detail[cle] || 0);
+    if (!v) return;
+    total += Math.abs(v);
+    (v > 0 ? positives : negatives).push({ cle: cle, valeur: v });
+  });
+  /* Les négatives en dernier : ce qu'on perd se lit au bout de ce qu'on
+     gagne, pas au milieu. */
+  return { liste: positives.concat(negatives), total: total };
+}
+
+/* Le libellé traduit d'une part. */
+function nomPart(cle) {
+  return t({ tier: "libTier", carte: "libCarte", ennemis: "libEnnemis",
+             allies: "libAllies", risque: "libRisque" }[cle]);
+}
+
+function ligneAnalyse(x, rang, ampleurMax) {
+  var parts = partsDuScore(x);
+
+  /* La longueur totale de la barre dit l'ampleur du calcul ; ses parts
+     disent d'où vient le score. Sans la première, dix barres de même
+     longueur pour 107, 105 et 102 laisseraient croire que les trois se
+     valent — une barre normalisée qui ressemble à une barre de score est un
+     mensonge par la forme. */
+  var largeur = ampleurMax > 0
+    ? Math.max(6, Math.round((parts.total / ampleurMax) * 100)) : 0;
 
   var html = '<article class="analyse' + (rang === 1 ? " premier" : "") + '">'
-           + '<header>'
+           + '<div class="tete">'
            + '<span class="rang">' + rang + "</span>"
-           + portrait(x.b, 38, false)
-           + '<span class="qui"><span class="nom">' + echapper(x.nom) + "</span>"
-           + '<span class="tier">' + echapper(t("tier", { tier: x.tier })) + "</span></span>"
+           + portrait(x.b, 34, false)
+           + '<span class="nom">' + echapper(x.nom) + "</span>"
+           + '<span class="tier">' + echapper(t("tier", { tier: x.tier })) + "</span>"
            + '<span class="score"><b>' + Math.round(x.score) + "</b>"
-           + "<i>" + echapper(t("libScore")) + "</i>"
-           + '<span class="jauge-score"><i style="width:' + part + '%"></i></span>'
-           + "</span>"
-           + "</header>";
+           + '<i class="lu">' + echapper(t("libScore")) + "</i></span>"
+           + "</div>";
 
-  html += '<ul class="raisons">';
-  x.raisons.forEach(function (r) {
-    html += "<li>" + echapper(r) + "</li>";
-  });
-  html += "</ul>";
-
-  if (parts.length) {
-    html += '<footer class="calcul">';
-    parts.forEach(function (p) {
-      var signe = p[1] > 0 ? "+" : "";
-      html += '<span class="' + (p[1] > 0 ? "plus" : "moins") + '">'
-            + echapper(p[0]) + " " + signe + Math.round(p[1]) + "</span>";
+  if (parts.total) {
+    html += '<span class="piste-jauge"><span class="jauge-score" style="width:'
+          + largeur + '%">';
+    parts.liste.forEach(function (p) {
+      var pourcent = (Math.abs(p.valeur) / parts.total) * 100;
+      html += '<i class="part-' + p.cle + (p.valeur < 0 ? " retire" : "")
+            + '" style="width:' + pourcent.toFixed(2) + '%"></i>';
     });
-    html += "</footer>";
+    html += "</span></span>";
+
+    html += '<div class="calcul">';
+    parts.liste.forEach(function (p) {
+      html += '<span class="' + (p.valeur > 0 ? "plus" : "moins") + '">'
+            + '<b class="part-' + p.cle + (p.valeur < 0 ? " retire" : "")
+            + '" aria-hidden="true"></b>'
+            + echapper(nomPart(p.cle)) + " "
+            + (p.valeur > 0 ? "" : "−") + Math.abs(p.valeur) + "</span>";
+    });
+    html += "</div>";
   }
+
+  /* La première raison est celle qui a été retenue pour le conseil : elle se
+     lit en clair, les autres en retrait. */
+  x.raisons.forEach(function (r, i) {
+    html += i === 0
+      ? '<p class="pourquoi">' + echapper(r) + "</p>"
+      : (i === 1 ? '<ul class="raisons"><li>' : "<li>") + echapper(r) + "</li>";
+  });
+  if (x.raisons.length > 1) html += "</ul>";
 
   return html + "</article>";
 }
@@ -649,9 +683,21 @@ function blocAnalyse(carte) {
     : "";
 
   html += '<p class="intro">' + echapper(t("analyseIntro", { n: liste.length })) + "</p>";
-  var meilleur = liste[0].score;
-  liste.forEach(function (x, i) { html += ligneAnalyse(x, i + 1, meilleur); });
-  return html;
+
+  /* L'échelle des barres est commune à toute la liste, sinon comparer deux
+     lignes ne voudrait rien dire. On prend la plus grande ampleur affichée,
+     pas un maximum théorique : c'est un écart réel entre ces brawlers-là. */
+  var ampleurMax = 0;
+  liste.forEach(function (x) {
+    ampleurMax = Math.max(ampleurMax, partsDuScore(x).total);
+  });
+
+  /* Le conteneur porte la mise en page : une colonne partout, deux quand
+     l'écran est large et bas — un téléphone couché, la position où l'on joue,
+     et la pire case du tableau avec près de six écrans à faire défiler. */
+  html += '<div class="classement">';
+  liste.forEach(function (x, i) { html += ligneAnalyse(x, i + 1, ampleurMax); });
+  return html + "</div>";
 }
 
 
@@ -661,35 +707,18 @@ function blocAnalyse(carte) {
    ensemble. Le mode analyse se lit sans chrono, mais son contexte était
    sous dix fiches — il remonte donc tout en haut, en bande d'une ligne. */
 
-/* Une pastille compacte : portrait, nom, croix. */
-function pastille(cle, classe, action, taille) {
-  return '<button class="pil ' + classe + '" data-act="' + action
-       + '" data-v="' + cle + '">'
-       + portrait(brawler(cle), taille || 32, false)
-       + echapper(nomBrawler(cle)) + " ✕</button>";
-}
+/* Une seule saisie pour les deux modes.
+   ------------------------------------------------------------------------
+   Il y en avait deux : des pastilles avec le nom écrit pour le mode rapide,
+   et une bande de portraits nus pour le mode analyse. Deux dessins pour la
+   même chose, donc deux fois les corrections — et celui du mode analyse
+   avait un défaut que l'autre n'avait pas : ses tuiles se RECOUVRAIENT de
+   10 px, cinq fois par écran (mesuré), parce que sa zone tactile de 40 px
+   venait d'une marge négative de 7 px que l'écart entre éléments ne
+   compensait pas.
 
-/* Un ban ne se lit pas, il se compte : c'est un brawler retiré du choix, pas
-   un adversaire à jouer contre. Six noms écrits en toutes lettres faisaient
-   déborder la rangée sur une deuxième ligne. Réduit au portrait, il garde sa
-   place et son geste — et il a la même tête dans les deux modes. */
-function jetonBan(cle) {
-  /* Sans croix, six portraits grisés ressemblaient à de la décoration : rien
-     ne disait qu'ils étaient bannis, ni qu'on pouvait les retirer. La croix
-     est posée par-dessus, donc elle ne coûte pas un pixel de hauteur. */
-  return '<button class="jeton-ctx ban" data-act="rmb" data-v="' + cle + '"'
-       + ' title="' + echapper(t("retirerBan", { nom: nomBrawler(cle) })) + '">'
-       + portrait(brawler(cle), 28, false)
-       + '<span class="croix" aria-hidden="true">✕</span></button>';
-}
-
-function boutonAjout(action, libelle) {
-  return '<button class="pil add" data-act="' + action + '">'
-       + echapper(libelle || t("ajouter")) + "</button>";
-}
-
-/* Mode rapide — deux rangées au lieu de trois sections. « Nouveau draft »
-   se range au bout du premier intitulé : il ne coûte plus une ligne. */
+   Elles n'en font plus qu'une. Trois aides ne servaient plus qu'à l'ancienne
+   version — pastille(), jetonBan(), boutonAjout() — et sont parties avec. */
 function blocSaisieCompacte() {
   /* Trois intitulés en capitales grises espacées, chacun sur sa ligne, et
      sous chacun une rangée de pastilles de largeurs toutes différentes :
@@ -734,33 +763,6 @@ function blocSaisieCompacte() {
        + rangee("saisieBans", bans, "ban", "rmb", "addB", MAX_BANS, compte)
        + "</div>";
 }
-
-/* Mode analyse — la même information sur une seule ligne, en tête d'écran :
-   c'est la seule chose qu'on modifie pendant qu'on lit le classement. */
-function blocContexte() {
-  function groupe(cleTitre, cles, classe, actionRetirer, actionAjouter, maximum) {
-    var html = '<span class="groupe"><span class="et">'
-             + echapper(t(cleTitre)) + "</span>";
-    cles.forEach(function (cle) {
-      html += '<button class="jeton-ctx ' + classe + '" data-act="' + actionRetirer
-            + '" data-v="' + cle + '" title="' + echapper(nomBrawler(cle)) + '">'
-            + portrait(brawler(cle), 26, false) + "</button>";
-    });
-    if (cles.length < maximum) {
-      html += '<button class="jeton-ctx vide" data-act="' + actionAjouter
-            + '" title="' + echapper(t("ajouter")) + '">+</button>';
-    }
-    return html + "</span>";
-  }
-
-  return '<div class="contexte">'
-       + groupe("ctxFace", ennemis, "", "rme", "addE", MAX_ENNEMIS)
-       + groupe("ctxAvec", allies, "allie", "rma", "addA", MAX_ALLIES)
-       + groupe("ctxBan", bans, "ban", "rmb", "addB", MAX_BANS)
-       + '<button class="b alt sm relancer" data-act="reset">'
-       + echapper(t("nouveauDraft")) + "</button></div>";
-}
-
 
 /* ============ Bans conseillés ============
    Les bans se jouent avant les picks : dès qu'un pick est saisi, la phase
@@ -836,7 +838,7 @@ function ecranDraft() {
   }
 
   if (mode === "analyse") {
-    html += blocContexte();
+    html += blocSaisieCompacte();
     html += ligneSituation();
     return html + blocAnalyse(carte) + noteHTML();
   }

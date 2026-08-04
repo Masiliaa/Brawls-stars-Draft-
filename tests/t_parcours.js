@@ -332,11 +332,28 @@ const check = (nom, cond, detail = '') => {
     await page.locator('.analyse').count());
   check('le score porte une jauge',
     (await page.locator('.analyse .jauge-score').count()) > 1);
-  check('le contexte est remonté au-dessus du classement',
+  // La saisie du mode analyse était une bande à part — trois portraits nus
+  // sous des capitales grises — dont les tuiles se recouvraient de 10 px,
+  // cinq fois par écran. C'est maintenant la MÊME saisie que le mode rapide,
+  // au même endroit : au-dessus du classement, puisque c'est la seule chose
+  // qu'on modifie pendant qu'on le lit.
+  check('la saisie est remontée au-dessus du classement',
     await page.evaluate(() => {
-      const c = document.querySelector('.contexte');
+      const c = document.querySelector('.etat');
       const a = document.querySelector('.analyse');
       return !!c && !!a && c.getBoundingClientRect().top < a.getBoundingClientRect().top;
+    }));
+  check('et rien ne s\'y recouvre',
+    await page.evaluate(() => {
+      let n = 0;
+      document.querySelectorAll('.etat .r').forEach(r => {
+        const e = [...r.children];
+        for (let i = 0; i < e.length - 1; i++) {
+          const a = e[i].getBoundingClientRect(), b = e[i + 1].getBoundingClientRect();
+          if (Math.abs(a.top - b.top) < 5 && b.left < a.right - 0.5) n++;
+        }
+      });
+      return n === 0;
     }));
 
   await page.locator('.retour-conseil').click();
