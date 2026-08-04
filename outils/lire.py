@@ -54,6 +54,45 @@ def titre_page(html):
     return couper(re.sub(r"\s+", " ", m.group(1))) if m else "(sans titre)"
 
 
+def structure(valeur, chemin="", lignes=None, profondeur=0):
+    """Décrit la forme d'un JSON plutôt que son contenu.
+
+    Une réponse d'API fait souvent des centaines de milliers de caractères.
+    Ce qu'on veut savoir tient en dix lignes : quels champs existent, et de
+    quel type. On imprime donc le squelette, avec un exemple par feuille.
+    """
+    if lignes is None:
+        lignes = []
+    if profondeur > 4:
+        return lignes
+
+    if isinstance(valeur, dict):
+        for cle in valeur:
+            structure(valeur[cle], chemin + "." + str(cle), lignes, profondeur + 1)
+    elif isinstance(valeur, list):
+        lignes.append("%-46s liste de %d" % (chemin or ".", len(valeur)))
+        if valeur:
+            # Un seul élément suffit à montrer la forme : les suivants ont
+            # la même, et les imprimer tous noie ce qu'on cherche.
+            structure(valeur[0], chemin + "[0]", lignes, profondeur + 1)
+    else:
+        lignes.append("%-46s %s = %s"
+                      % (chemin or ".", type(valeur).__name__, couper(valeur, 40)))
+    return lignes
+
+
+def lire_json(url, texte):
+    """Imprime la forme d'une réponse JSON, et non ses 300 000 caractères."""
+    import json
+    donnees = json.loads(texte)
+    titre("%s\n(JSON)" % url)
+    print("%d caractères" % len(texte))
+    titre("STRUCTURE")
+    for ligne in structure(donnees):
+        print("  " + ligne)
+    return 0
+
+
 def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False):
     net = R.Reseau(cache=not sans_cache)
     try:
@@ -80,6 +119,16 @@ def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False):
             except PermissionError as e:
                 print("REFUSÉ : %s" % e)
                 return 2
+
+        # Une API ne renvoie pas une page : la découper en titres et en liens
+        # ne donnerait rien. On imprime sa forme, qui est ce qu'on vient
+        # chercher quand on veut savoir quels champs elle expose.
+        depart = html.lstrip()[:1]
+        if depart in ("{", "["):
+            try:
+                return lire_json(url, html)
+            except ValueError:
+                pass    # ça y ressemblait sans en être : on repart en HTML
 
         titre("%s\n%s" % (url, titre_page(html)))
         print("lu %s · %d caractères"
