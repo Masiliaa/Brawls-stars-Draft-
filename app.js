@@ -20,6 +20,16 @@ if (AU_CLAVIER) document.body.classList.add("clavier");
 function render() {
   conteneur.innerHTML = vueHTML();
 
+  /* La largeur utile dépend du mode, et la feuille de style ne peut pas le
+     savoir : on le lui dit ici.
+     ----------------------------------------------------------------------
+     Sans ça, le mode rapide sur un écran de 1440 px donnait quatre bords
+     droits différents sur la même page — mesuré : la ligne de la carte et le
+     pied de page s'arrêtaient à 1282 px, tout le contenu à 778. Les filets
+     ne suivaient pas ce qu'ils étaient censés séparer. Le mode analyse, lui,
+     a besoin de toute la place pour son classement. */
+  conteneur.dataset.mode = (ecran === "draft") ? modeEffectif() : "";
+
   /* Ouvrir un écran de recherche et devoir cliquer dans le champ avant de
      taper, c'est un geste de trop quand on a un clavier sous les doigts. */
   if (!AU_CLAVIER) return;

@@ -539,8 +539,31 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    La condition de hauteur est indispensable : sans elle, cette limite
    écrasait la mise en page du téléphone couché, qui pose justement le
    conseil et la saisie côte à côte sur 844 px. */
+/* Le mode rapide sur un grand écran.
+   ------------------------------------------------------------------------
+   Il donnait quatre bords droits différents sur la même page — mesuré : la
+   ligne de la carte et le pied de page s'arrêtaient à 1282 px, tout le
+   contenu à 778. Les filets ne suivaient pas ce qu'ils étaient censés
+   séparer, et 55 % de l'écran restait vide.
+
+   Premier essai : borner toute la page à 760 px. Un seul bord, mais 60 % de
+   l'écran perdu sur 1920 — et un test écrit il y a longtemps l'a refusé, à
+   raison. Il n'y a rien à inventer pour remplir cette place : il suffit d'y
+   poser ce qui était en dessous. Le conseil et ses remplaçants à gauche, la
+   saisie à droite, tout dans les bords de la page.
+
+   C'est la même mise en page que le téléphone couché, qui fait exactement ça
+   depuis longtemps pour la même raison : de la largeur, pas de la hauteur. */
 @media (min-width:820px) and (min-height:600px){
-  .rapide-corps{max-width:620px}
+  #app[data-mode="rapide"] .rapide-corps{display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);
+    gap:var(--e7);align-items:start}
+  /* Le filet qui séparait la saisie du reste n'a plus rien à séparer : elle
+     est à côté, pas en dessous. */
+  #app[data-mode="rapide"] .part-saisie .etat{margin-top:0;padding-top:0;
+    border-top:none}
+  /* 46 px est une taille de pouce, pas une taille d'écran. */
+  #app[data-mode="rapide"] .name{font-size:56px}
 }
 .col-conseil{position:sticky;top:18px}
 .col-detail{min-width:0}
