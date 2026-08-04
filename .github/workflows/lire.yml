@@ -33,6 +33,10 @@ on:
         description: "Nombre de liens à imprimer"
         type: string
         default: "60"
+      entier:
+        description: "Ne rien couper (pour lire un texte juridique)"
+        type: boolean
+        default: false
 
 # Lecture seule : ce flux ne commite rien et n'a rien à modifier.
 permissions:
@@ -62,4 +66,5 @@ jobs:
         run: |
           python3 outils/lire.py "${{ inputs.url }}" \
             --liens "${{ inputs.liens }}" --sans-cache \
-            ${{ inputs.brut == true && '--brut' || '' }}
+            ${{ inputs.brut == true && '--brut' || '' }} \
+            ${{ inputs.entier == true && '--entier' || '' }}

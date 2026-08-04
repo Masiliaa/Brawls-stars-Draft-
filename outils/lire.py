@@ -26,6 +26,7 @@ import argparse
 import os
 import re
 import sys
+import textwrap
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RACINE)
@@ -53,7 +54,7 @@ def titre_page(html):
     return couper(re.sub(r"\s+", " ", m.group(1))) if m else "(sans titre)"
 
 
-def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False):
+def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False):
     net = R.Reseau(cache=not sans_cache)
     try:
         html = None
@@ -93,8 +94,17 @@ def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False):
         for b in titres[:120]:
             print("  " + couper(b["texte"]))
 
+        # Couper à 92 caractères convient pour repérer une page ; pour lire
+        # une clause de contrat, c'est exactement le mot qui manque. D'où
+        # --entier, qui replie les longs blocs au lieu de les trancher.
         titre("TEXTE VISIBLE — %d bloc(s)" % len(textes))
         for b in textes[:TEXTE_MAX]:
+            if entier:
+                plein = " ".join(str(b["texte"]).split())
+                if plein:
+                    print("  " + textwrap.fill(plein, LARGEUR - 4,
+                                               subsequent_indent="    "))
+                continue
             t = couper(b["texte"])
             if t:
                 print("  " + t)
@@ -133,6 +143,9 @@ def main():
                     help="nombre de liens imprimés (défaut %d)" % LIENS_MAX)
     ap.add_argument("--sans-cache", action="store_true",
                     help="ignorer le cache disque")
+    ap.add_argument("--entier", action="store_true",
+                    help="ne rien couper : indispensable pour lire un texte "
+                         "juridique, où le mot coupé est celui qui compte")
     a = ap.parse_args()
 
     if not re.match(r"^https?://", a.url):
@@ -140,7 +153,8 @@ def main():
         return 2
 
     try:
-        return lire(a.url, brut=a.brut, liens_max=a.liens, sans_cache=a.sans_cache)
+        return lire(a.url, brut=a.brut, liens_max=a.liens,
+                    sans_cache=a.sans_cache, entier=a.entier)
     except Exception as e:
         # Un échec de lecture n'est pas un incident : c'est une réponse.
         # Elle doit rester lisible dans le journal, sans traceback.
