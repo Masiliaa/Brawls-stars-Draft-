@@ -746,6 +746,53 @@ const check = (nom, cond, detail = '') => {
   check('au premier lancement, aucun rappel',
     (await page.locator('.rappel').count()) === 0);
 
+  // ── Le catalogue ne bouge pas sous le doigt ────────────────────────────
+  // Bug signalé : « j'ai coché douze brawlers, au moment de la draft je
+  // n'avais même pas les mêmes ». Cause : le rangement par rareté a besoin de
+  // l'API ; tant qu'elle n'a pas répondu la grille est alphabétique, et quand
+  // elle répond TOUT se réorganise — sous le doigt de quelqu'un qui coche.
+  //
+  // Une première correction posait un drapeau « redessin en attente » avec
+  // une liste d'actions à ne pas solder. Le drapeau n'était jamais lu : le
+  // bug restait entier. Ce test-ci continue de cocher APRÈS l'arrivée du
+  // catalogue — c'est exactement ce que la première correction laissait
+  // passer, et ce qu'aucun test ne vérifiait.
+  console.log('\n== le catalogue ne bouge pas sous le doigt ==');
+  await page.locator('[data-act="roster"]').first().click();
+  await page.locator('[data-act="rien"]').click();
+  for (let i = 0; i < 6; i++) await page.locator('#grid .cel').nth(i).click();
+  const casesAvant = await page.evaluate(() =>
+    [...document.querySelectorAll('#grid .cel')].slice(0, 8)
+      .map(e => e.querySelector('b').textContent));
+
+  await page.evaluate(() => {
+    const liste = brawlers.map((b, i) => ({ nom: b.nom, k: b.k, img: null,
+      couleur: '#ff0000', classe: 'Tank',
+      rarete: { id: [1, 2, 3, 4, 5, 6, 7][i % 7], nom: 'R' } }))
+      .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+    catalogueEnAttente = liste; etatApi = 'ok';
+    if (ecran !== 'roster') { soldeCatalogue(); render(); }
+  });
+  await page.locator('#grid .cel').nth(6).click();
+  await page.locator('#grid .cel').nth(7).click();
+  const casesApres = await page.evaluate(() =>
+    [...document.querySelectorAll('#grid .cel')].slice(0, 8)
+      .map(e => e.querySelector('b').textContent));
+  check('les cases ne bougent pas pendant qu\'on coche',
+    JSON.stringify(casesAvant) === JSON.stringify(casesApres),
+    { avant: casesAvant.slice(0, 4), apres: casesApres.slice(0, 4) });
+  check('et les huit cochés sont bien les huit touchés',
+    (await page.evaluate(() => roster.size)) === 8);
+
+  await page.locator('.bar .actions [data-act="draft"]').click();
+  check('le catalogue s\'applique dès qu\'on quitte l\'écran',
+    await page.evaluate(() => catalogueEnAttente === null && !!brawlers[0].rarete));
+  await page.locator('[data-act="roster"]').first().click();
+  check('et la grille est alors rangée par rareté',
+    (await page.locator('.rangee-rarete').count()) >= 6);
+  check('sans avoir rien perdu du roster',
+    (await page.evaluate(() => roster.size)) === 8);
+
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);
 

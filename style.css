@@ -123,9 +123,6 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   align-self:center;line-height:1}
 .retour-conseil{margin-bottom:14px}
 .hero .in{position:relative;display:flex;align-items:flex-end;gap:var(--e3)}
-.ribbon{display:inline-block;background:transparent;color:var(--vif);border:none;border-radius:0;
-  font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:800;letter-spacing:.2em;
-  padding:0;box-shadow:none;margin-bottom:var(--e2)}
 .name{font-size:clamp(34px,11.5vw,46px);font-weight:800;letter-spacing:-.045em;
   word-break:break-word;line-height:.88;display:block}
 /* Le tier et le taux sont deux chiffres de même nature : ils vont ensemble,
@@ -134,8 +131,6 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   font-size:var(--t2);color:var(--doux);font-variant-numeric:tabular-nums}
 .hero .chip{border:1px solid var(--trait);border-radius:var(--r3);
   padding:2px 9px;font-size:12px;flex:none}
-.tierb{font-family:inherit;font-size:11px;font-weight:600;color:var(--doux);background:transparent;
-  border:1px solid var(--trait);border-radius:999px;padding:4px 10px;position:absolute;top:18px;right:18px;z-index:2}
 .why{position:relative;display:block;margin-top:var(--e3);background:transparent;
   border:none;border-radius:0;padding:0;font-size:var(--t2);font-weight:400;
   color:var(--doux);line-height:1.5}
@@ -280,8 +275,7 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   #app{max-width:960px}
   .rapide-corps{display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,1fr);
     gap:22px;align-items:start}
-  .part-saisie .lab:first-child{margin-top:0}
-}
+  }
 
 /* Fenêtre basse — un téléphone tenu en paysage, une fenêtre écrasée. Le
    conseil occupait 225 px sur 390 de haut : le nom reste le plus gros
@@ -318,23 +312,11 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Le filet coloré du mode reste sur l'invitation, qui est un bloc ; sur la
    ligne d'une carte déjà choisie il pendait dans le vide, aligné avec rien. */
-.carte-active.vide{margin-bottom:var(--e3);border-left:3px solid var(--m)}
 /* Le bandeau vide est l'écran d'accueil à lui seul : il porte la consigne et
    le seul geste possible. Il reste étroit même sur un grand écran — une
    phrase de vingt mots étalée sur 1500 px ne se lit pas, elle se subit. */
 /* display:flex et non inline-flex : hérité de .b, l'inline empêchait les
    marges automatiques de centrer la carte sur un grand écran. */
-.carte-active.vide{display:flex;align-items:flex-start;padding:18px 18px 20px;
-  max-width:560px;margin-inline:auto}
-.carte-active.vide .deux-lignes{gap:3px}
-.carte-active.vide .aide{margin-top:8px;font-size:13px;font-weight:400;
-  color:var(--doux);line-height:1.5;white-space:normal}
-.carte-active.vide .fleche{color:var(--faible);font-size:20px;align-self:center;flex:none}
-.carte-active .deux-lignes{display:flex;flex-direction:column;gap:1px;min-width:0}
-.carte-active .sur{font-size:11px;font-weight:600;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--m)}
-.carte-active .nom{font-size:19px}
-.carte-active .action{font-size:12.5px;color:var(--faible);flex:none}
 
 .barre-outils{margin-bottom:12px}
 .reset{margin-top:20px}
@@ -416,16 +398,10 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 /* Un intitulé serré : 24 px de marge haute × 3 intitulés, c'était 141 px
    rien qu'en blancs sur un écran qui doit en tenir 844. */
-.lab.serre{margin:14px 0 7px}
 
 /* ============ Saisie du mode rapide ============
    Deux rangées au lieu de trois sections. « Nouveau draft » se range au
    bout du premier intitulé : il ne coûte plus une ligne à lui seul. */
-.lab-avec-action{display:flex;align-items:center;justify-content:space-between;gap:var(--e3)}
-.lab-avec-action .relancer{margin:0;font-size:12px;padding:6px 12px;min-height:34px;
-  letter-spacing:0;text-transform:none;font-weight:500}
-.lab-avec-action .compte-ban{font-variant-numeric:tabular-nums;color:var(--faible);
-  letter-spacing:.04em}
 /* La croix se pose PAR-DESSUS le portrait : elle dit « retirable » sans
    coûter un pixel de hauteur, ce qui était tout l'enjeu de cette rangée. */
 /* La croix se posait a -3 px du BOUTON — or le bouton porte 7 px de
@@ -541,15 +517,15 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    C'est la même mise en page que le téléphone couché, qui fait exactement ça
    depuis longtemps pour la même raison : de la largeur, pas de la hauteur. */
 @media (min-width:820px) and (min-height:600px){
-  #app[data-mode="rapide"] .rapide-corps{display:grid;
+  .rapide-corps{display:grid;
     grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);
     gap:var(--e7);align-items:start}
   /* Le filet qui séparait la saisie du reste n'a plus rien à séparer : elle
      est à côté, pas en dessous. */
-  #app[data-mode="rapide"] .part-saisie .etat{margin-top:0;padding-top:0;
+  .part-saisie .etat{margin-top:0;padding-top:0;
     border-top:none}
   /* 46 px est une taille de pouce, pas une taille d'écran. */
-  #app[data-mode="rapide"] .name{font-size:56px}
+  .part-verdict .name{font-size:56px}
 }
 .col-conseil{position:sticky;top:18px}
 .col-detail{min-width:0}
@@ -599,8 +575,7 @@ body.clavier .inp:focus-visible{outline:none;border-color:var(--texte)}
    spécificité égale c'est la dernière règle écrite qui gagne : déclarées
    plus haut, elles étaient annulées sans bruit par les valeurs normales. */
 @media (max-height:520px){
-  .lab.serre{margin:9px 0 5px}
-    }
+      }
 
 /* Le drapeau du menu des langues : on le repère avant de lire, ce qui est
    tout l'intérêt quand la liste est écrite dans une langue qu'on ne lit pas

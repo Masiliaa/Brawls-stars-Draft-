@@ -26,11 +26,12 @@
    nécessaire pour donnees.js, qui passe par le réseau en premier de toute
    façon ; c'est nécessaire pour que les anciens caches soient nettoyés. */
 
-var VERSION = "manager-v1";
+var VERSION = "manager-v2";
 
 var COQUILLE = [
   "./",
   "./index.html",
+  "./manifest.webmanifest",
   "./style.css",
   "./outils.js",
   "./langues.js",
@@ -40,6 +41,13 @@ var COQUILLE = [
   "./vues.js",
   "./app.js"
 ];
+
+/* Les chemins de la coquille, tels qu'ils arriveront dans le fetch handler.
+   Comparés à l'URL complète : « ./app.js » et « /app.js » doivent désigner la
+   même chose selon l'endroit où le site est servi (racine ou sous-dossier). */
+var URLS_COQUILLE = COQUILLE.map(function (c) {
+  return new URL(c, self.location).href;
+});
 
 self.addEventListener("install", function (e) {
   /* On n'attend pas la fermeture des anciens onglets : il n'y a rien à
@@ -70,11 +78,22 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   var req = e.request;
 
-  /* Ni les requêtes d'écriture, ni ce qui vient d'ailleurs : les portraits
-     des brawlers sont sur un autre domaine, et un cache d'images grossirait
-     sans limite. Leur absence gêne l'œil, pas le conseil. */
+  /* On ne garde QUE la coquille, nommée fichier par fichier — et non « tout
+     ce qui vient du même domaine ».
+     ----------------------------------------------------------------------
+     Le critère « même domaine » semblait équivalent, il ne l'est pas :
+     donnees.js porte ASSETS_LOCAUX, que refresh.py bascule à true dès qu'il a
+     récupéré le jeu complet d'images. Ce jour-là, 3,5 Mo de portraits
+     deviennent du même domaine, passent par ici et se mettent en cache sans
+     limite ni expiration — exactement ce que ce fichier annonce comme exclu.
+     Et personne ne regarderait sw.js ce jour-là.
+
+     La liste manquait déjà manifest.webmanifest, ajouté par le même commit
+     que ce fichier : hors ligne, l'app se lançait sans son identité
+     d'application installée. */
   if (req.method !== "GET") return;
-  if (new URL(req.url).origin !== self.location.origin) return;
+  if (URLS_COQUILLE.indexOf(req.url.split("?")[0]) < 0
+      && req.mode !== "navigate") return;
 
   e.respondWith(
     fetch(req).then(function (reponse) {

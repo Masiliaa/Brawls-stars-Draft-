@@ -227,15 +227,6 @@ var OUVRENT_UN_MENU = ["ouvrirLangue", "ouvrirMode"];
 conteneur.addEventListener("click", function (e) {
   var bouton = e.target.closest("[data-act]");
 
-  /* Le catalogue est peut-être arrivé pendant qu'on cochait : on l'applique
-     au premier geste qui nous fait quitter l'écran des brawlers. */
-  if (redessinEnAttente && bouton && ecran === "roster"
-      && bouton.dataset.act !== "toggle" && bouton.dataset.act !== "tout"
-      && bouton.dataset.act !== "rien" && bouton.dataset.act !== "groupe"
-      && bouton.dataset.act !== "manquants") {
-    redessinEnAttente = false;
-  }
-
   /* Cliquer à côté referme le menu ouvert, comme partout ailleurs. */
   if (!bouton) {
     if (menuOuvert) { menuOuvert = null; render(); }
@@ -249,7 +240,12 @@ conteneur.addEventListener("click", function (e) {
   /* Toute action autre que l'ouverture d'un menu le referme. */
   if (OUVRENT_UN_MENU.indexOf(nom) < 0) menuOuvert = null;
 
+  var ecranAvant = ecran;
   action(bouton.getAttribute("data-v"));
+  /* Le catalogue attendait peut-être qu'on quitte l'écran des brawlers.
+     On teste le CHANGEMENT D'ÉCRAN, pas une liste d'actions à tenir à jour :
+     ajouter demain un tri ou un filtre à cet écran ne rouvrira pas le bug. */
+  if (ecranAvant === "roster" && ecran !== "roster") soldeCatalogue();
   render();
 });
 
@@ -318,22 +314,38 @@ document.addEventListener("keydown", function (e) {
 chargerLangue();
 render();
 
-/* Quand le catalogue arrive, on redessine — SAUF si l'écran des brawlers est
-   ouvert. Là, redessiner réorganise la grille par rareté sous le doigt de
+/* Le catalogue arrive : on l'applique — SAUF si l'écran des brawlers est
+   ouvert. Là, le remplacer réorganise la grille par rareté sous le doigt de
    quelqu'un en train de cocher : les cases changent de place, et on voit
    d'autres noms cochés que ceux qu'on vient de toucher. Aucune information ne
-   vaut ça. L'écran se met à jour dès qu'on le quitte.
+   vaut ça ; il attend qu'on quitte l'écran.
 
-   Grâce au catalogue gardé, ce cas ne se présente qu'au tout premier
-   lancement — les fois suivantes, la grille est déjà la bonne au premier
-   dessin et rien ne bouge. */
-var redessinEnAttente = false;
+   Une première version notait « redessin en attente » et énumérait les
+   actions à ne pas solder. Le drapeau n'était jamais lu, la liste ne
+   protégeait rien, et le bug restait entier au premier lancement — le seul
+   cas où ce garde-fou devait servir. Ce qui se garde ici n'est pas un
+   drapeau, c'est le catalogue lui-même : tant qu'il n'est pas posé, rien ne
+   peut bouger. */
+var catalogueEnAttente = null;
+
+function soldeCatalogue() {
+  if (!catalogueEnAttente) return;
+  appliquerCatalogue(catalogueEnAttente);
+  catalogueEnAttente = null;
+}
 
 /* Les icônes des modes se chargent à part : elles ne conditionnent aucun
-   calcul, donc leur arrivée n'a pas à retarder le premier dessin. */
-chargerModes().then(function () { if (ecran === "cartes") render(); });
+   calcul, donc leur arrivée n'a pas à retarder le premier dessin. Et on ne
+   les redemande pas quand on les a déjà : elles ne changent pour ainsi dire
+   jamais, alors qu'un appel réseau de plus au démarrage se dispute la bande
+   passante avec donnees.js sur le lien 4G où l'app doit répondre en 25 s. */
+if (!Object.keys(IMAGES_MODES).length) {
+  chargerModes().then(function () { if (ecran === "cartes") render(); });
+}
 
-chargerBrawlers().then(function () {
-  if (ecran === "roster") { redessinEnAttente = true; return; }
+chargerBrawlers().then(function (liste) {
+  catalogueEnAttente = liste;
+  if (ecran === "roster") return;
+  soldeCatalogue();
   render();
 });

@@ -179,10 +179,7 @@ indexerBrawlers();
 
    Relu tout de suite, l'écran est le même du premier au dernier instant pour
    quiconque a déjà ouvert l'app une fois. */
-/* (relireCatalogue est déclarée plus bas ; une déclaration de fonction est
-   utilisable avant sa ligne, c'est ce qui permet de garder la définition
-   auprès de sa jumelle garderCatalogue().) */
-relireCatalogue();
+
 
 /* Le brawler correspondant à une clé. Renvoie un objet minimal plutôt que
    null si la clé est inconnue, pour que l'affichage ne casse jamais. */
@@ -211,15 +208,11 @@ function nomBrawler(cle) {
 var CLE_CATALOGUE = "manager:catalogue";
 
 function garderCatalogue() {
-  try {
-    localStorage.setItem(CLE_CATALOGUE, JSON.stringify(brawlers));
-  } catch (e) { /* stockage plein : tant pis, l'app marche quand même */ }
+  ecrireJSON(CLE_CATALOGUE, brawlers);
 }
 
 function relireCatalogue() {
-  var lu;
-  try { lu = JSON.parse(localStorage.getItem(CLE_CATALOGUE) || "null"); }
-  catch (e) { return false; }
+  var lu = lireJSON(CLE_CATALOGUE, null);
   /* On refuse une liste vide ou trop courte : mieux vaut la liste de secours,
      qui est au moins cohérente, qu'un catalogue tronqué par un stockage plein. */
   if (!lu || lu.length < 40) return false;
@@ -227,6 +220,16 @@ function relireCatalogue() {
   indexerBrawlers();
   return true;
 }
+
+/* Relu ICI, et pas plus haut : une fonction est utilisable avant sa ligne,
+   mais « var CLE_CATALOGUE » ne l'est pas — elle vaudrait undefined, et on
+   lirait la clé « undefined ». Piège classique, attrapé par les tests.
+
+   Relu AVANT le premier dessin : sans ça l'app démarrait sur la liste de
+   secours (pas de rareté, donc grille alphabétique), puis l'API répondait et
+   la grille se réorganisait par rareté sous le doigt de quelqu'un en train
+   de cocher. */
+var CATALOGUE_GARDE = relireCatalogue();
 
 /* ============ Les images des modes de jeu ============
    Les six modes n'avaient qu'une couleur. Dans le jeu ils ont chacun leur
@@ -239,9 +242,7 @@ function relireCatalogue() {
 var CLE_MODES = "manager:modes";
 var IMAGES_MODES = {};
 
-try {
-  IMAGES_MODES = JSON.parse(localStorage.getItem(CLE_MODES) || "{}") || {};
-} catch (e) { IMAGES_MODES = {}; }
+IMAGES_MODES = lireJSON(CLE_MODES, {});
 
 function chargerModes() {
   return fetch("https://api.brawlapi.com/v1/gamemodes")
@@ -264,11 +265,22 @@ function chargerModes() {
          doit pas effacer les icônes de la dernière fois. */
       if (Object.keys(trouve).length) {
         IMAGES_MODES = trouve;
-        try { localStorage.setItem(CLE_MODES, JSON.stringify(trouve)); }
-        catch (e) { /* ignoré */ }
+        ecrireJSON(CLE_MODES, trouve);
       }
     })
     .catch(function () { /* on garde ce qu'on avait, ou rien */ });
+}
+
+/* Pose un catalogue fraîchement reçu. Séparé de sa récupération : c'est
+   l'appelant qui choisit le moment, voir chargerBrawlers(). */
+function appliquerCatalogue(liste) {
+  if (!liste || !liste.length) return false;
+  brawlers = liste;
+  indexerBrawlers();
+  garderCatalogue();
+  noterCatalogueVu();
+  recalculerNouveaux();
+  return true;
 }
 
 /* Complète le catalogue avec l'API : vraies URL d'image, couleur de rareté
@@ -277,7 +289,7 @@ function chargerBrawlers() {
   return fetch("https://api.brawlapi.com/v1/brawlers")
     .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
     .then(function (donnees) {
-      brawlers = (donnees.list || [])
+      var liste = (donnees.list || [])
         .filter(function (b) { return b.released !== false; })
         .map(function (b) {
           return {
@@ -297,16 +309,24 @@ function chargerBrawlers() {
           };
         })
         .sort(function (a, b) { return a.nom.localeCompare(b.nom, "fr"); });
-      indexerBrawlers();
-      garderCatalogue();
+      /* On NE POSE PAS le catalogue ici. C'est l'appelant qui décide QUAND
+         l'appliquer — parce que le remplacer pendant que l'écran des
+         brawlers est ouvert réorganise la grille sous le doigt de quelqu'un
+         en train de cocher. La règle est un invariant, pas une liste de cas :
+         « le catalogue ne change pas tant que cet écran est dessiné ». */
       etatApi = "ok";
+      return liste;
     })
     /* Pas de réseau, ou une réponse illisible : si le catalogue de la
        dernière fois est là, l'app garde ses portraits ET ses classes. On dit
        quand même « hors », parce que le pied de page doit rester exact : ce
        qui est affiché ne vient pas d'un appel réussi aujourd'hui. */
+    /* relireCatalogue() a déjà été appelée au chargement : la rappeler ici
+       relirait 20 Ko et réindexerait 107 entrées pour rien, sur la branche
+       hors ligne — précisément celle où les secondes comptent. */
     .catch(function () {
-      etatApi = relireCatalogue() ? "garde" : "hors";
+      etatApi = CATALOGUE_GARDE ? "garde" : "hors";
+      return null;
     });
 }
 
@@ -317,11 +337,19 @@ function chargerBrawlers() {
    l'utilisateur, et le renommer le ferait disparaître. */
 var CLE_ROSTER = "manager:roster";
 
-var roster = new Set();
-try {
-  var enregistre = localStorage.getItem(CLE_ROSTER);
-  if (enregistre) roster = new Set(JSON.parse(enregistre));
-} catch (e) { /* navigation privée ou stockage plein : on part à vide */ }
+var roster = new Set(lireJSON(CLE_ROSTER, []));
+
+/* La carte d'un identifiant. Cette boucle était écrite trois fois — ici,
+   dans relireCarte() et dans carteActive() de moteur.js. MAPS est régénéré à
+   chaque saison par refresh.py : trois copies, c'est trois occasions
+   d'oublier, et l'oubli est silencieux. */
+function carteParId(id) {
+  if (!id) return null;
+  for (var i = 0; i < MAPS.length; i++) {
+    if (MAPS[i].id === id) return MAPS[i];
+  }
+  return null;
+}
 
 /* Les brawlers connus au moment où le roster a été revu la dernière fois.
    Sert à repérer ceux que Supercell a sortis depuis — la seule chose qu'on
@@ -331,25 +359,36 @@ try {
 var CLE_VUS = "manager:vus";
 
 function sauverRoster() {
-  try {
-    localStorage.setItem(CLE_ROSTER, JSON.stringify(Array.from(roster)));
-    localStorage.setItem(CLE_VUS, JSON.stringify(brawlers.map(function (b) {
-      return b.k;
-    })));
-  } catch (e) { /* échec silencieux : mieux vaut une app qui marche */ }
+  ecrireJSON(CLE_ROSTER, Array.from(roster));
+}
+
+/* « Vus » décrit le CATALOGUE, pas le roster. Les coupler était un raccourci,
+   et il produisait un mensonge : au premier lancement en réseau lent, la
+   liste de secours (105 noms reconstruits depuis les tier lists) était
+   enregistrée comme « ce que l'utilisateur a vu » ; l'API arrivait avec ses
+   107, et l'app annonçait « 2 nouveaux brawlers » alors que rien n'était
+   nouveau — ils manquaient simplement au repli. On n'enregistre donc que
+   lorsque la source fait autorité.
+
+   Au passage, c'était aussi 818 octets ré-écrits à CHAQUE case cochée : 54 Ko
+   pour remplir un roster, en écriture bloquante sur le fil principal. */
+function noterCatalogueVu() {
+  if (etatApi !== "ok" && etatApi !== "garde") return;
+  ecrireJSON(CLE_VUS, brawlers.map(function (b) { return b.k; }));
 }
 
 /* Les brawlers apparus depuis la dernière visite de l'écran « Mes brawlers ».
-   Au tout premier lancement la liste des vus est vide : on ne crie pas
-   « 107 nouveaux », on note ce qu'on connaît et on se tait. */
-function brawlersNouveaux() {
-  var vus;
-  try { vus = JSON.parse(localStorage.getItem(CLE_VUS) || "null"); }
-  catch (e) { vus = null; }
-  if (!vus || !vus.length) return [];
+   Calculé une fois, pas à chaque dessin : le résultat ne peut changer qu'à
+   l'arrivée du catalogue. Au tout premier lancement la liste des vus est
+   vide : on ne crie pas « 107 nouveaux », on se tait. */
+var nouveauxBrawlers = [];
+
+function recalculerNouveaux() {
+  var vus = lireJSON(CLE_VUS, null);
+  if (!vus || !vus.length) { nouveauxBrawlers = []; return; }
   var connus = {};
   vus.forEach(function (k) { connus[k] = true; });
-  return brawlers.filter(function (b) { return !connus[b.k]; });
+  nouveauxBrawlers = brawlers.filter(function (b) { return !connus[b.k]; });
 }
 
 /* ============ 3 bis. La carte en cours ============
@@ -369,49 +408,34 @@ var CLE_CARTE = "manager:carte";
 var CLE_RECENTES = "manager:recentes";
 var MAX_RECENTES = 4;
 
+/* Filtrées sur le pool en cours : la rotation change à chaque saison, et
+   proposer une carte qui n'existe plus serait pire que ne rien proposer. */
 function cartesRecentes() {
-  var lu;
-  try { lu = JSON.parse(localStorage.getItem(CLE_RECENTES) || "[]"); }
-  catch (e) { return []; }
-  if (!lu || !lu.length) return [];
-  /* Filtrées sur le pool en cours : la rotation change à chaque saison, et
-     proposer une carte qui n'existe plus serait pire que ne rien proposer. */
-  return lu.map(function (id) {
-    for (var i = 0; i < MAPS.length; i++) if (MAPS[i].id === id) return MAPS[i];
-    return null;
-  }).filter(Boolean);
+  return lireJSON(CLE_RECENTES, []).map(carteParId).filter(Boolean);
 }
 
 function noterCarteRecente(id) {
   if (!id) return;
-  var liste = cartesRecentes().map(function (c) { return c.id; });
-  liste = [id].concat(liste.filter(function (x) { return x !== id; }));
-  try {
-    localStorage.setItem(CLE_RECENTES,
-      JSON.stringify(liste.slice(0, MAX_RECENTES)));
-  } catch (e) { /* ignoré */ }
+  /* On travaille sur les identifiants bruts : résoudre les cartes pour ne
+     garder que leur id ensuite, c'est balayer MAPS pour rien. */
+  var liste = lireJSON(CLE_RECENTES, []).filter(function (x) { return x !== id; });
+  ecrireJSON(CLE_RECENTES, [id].concat(liste).slice(0, MAX_RECENTES));
 }
 
 function sauverCarte() {
-  try {
-    if (carteId) localStorage.setItem(CLE_CARTE, carteId);
-    else localStorage.removeItem(CLE_CARTE);
-  } catch (e) { /* ignoré */ }
+  ecrireTexte(CLE_CARTE, carteId);
 }
 
 /* Relue seulement si la carte est encore en rotation : le pool change à
    chaque saison, et rouvrir sur une carte qui n'existe plus serait pire que
    de ne rien retenir. */
 function relireCarte() {
-  var id;
-  try { id = localStorage.getItem(CLE_CARTE); } catch (e) { return null; }
-  if (!id) return null;
-  for (var i = 0; i < MAPS.length; i++) {
-    if (MAPS[i].id === id) return id;
-  }
-  return null;
+  return carteParId(lireTexte(CLE_CARTE, null)) ? lireTexte(CLE_CARTE, null) : null;
 }
 
 /* La carte en cours est relue ici, en fin de fichier : relireCarte() a besoin
    de MAPS, et l'état doit être complet avant que app.js ne dessine. */
 carteId = relireCarte();
+
+/* Ce qui est apparu depuis la dernière visite, calculé une fois. */
+recalculerNouveaux();

@@ -182,11 +182,22 @@ function barreHaut() {
 /* La grille de brawlers, en deux usages :
    "roster" — on coche ceux qu'on sait jouer, tous affichés
    "choix"  — on désigne un pick, limité aux 60 premiers pour rester fluide */
-function grilleBrawlers(usage) {
+/* Les brawlers qui correspondent au champ de recherche. Écrit une fois : la
+   même boucle était en tête de grilleBrawlers() ET de corpsRoster(), donc
+   améliorer la recherche n'aurait marché que sur un écran sur deux.
+   Champ vide : on rend la liste telle quelle plutôt que de normaliser 107
+   noms en Unicode pour ne rien filtrer — ce qui arrivait à chaque case
+   cochée, soit ~7 000 normalisations pour remplir un roster. */
+function brawlersCherches() {
   var filtre = sansAccents(recherche.trim());
-  var liste = brawlers.filter(function (b) {
+  if (!filtre) return brawlers;
+  return brawlers.filter(function (b) {
     return sansAccents(b.nom).indexOf(filtre) > -1;
   });
+}
+
+function grilleBrawlers(usage) {
+  var liste = brawlersCherches();
 
   if (usage === "choix") {
     /* Ceux qui sont déjà bannis ou déjà pris ne peuvent plus l'être : les
@@ -263,11 +274,13 @@ function groupesParRarete(liste) {
 /* Le nom d'une rareté, traduit si on la connaît, tel que l'API l'annonce
    sinon. Supercell peut en ajouter une demain : mieux vaut un mot anglais
    qu'un trou, et surtout pas un nom qu'on aurait inventé. */
+/* t() renvoie la clé elle-même quand elle est inconnue : c'est exactement le
+   test qu'on refaisait ici en allant fouiller dans LANGUES — le seul endroit
+   du dépôt, hors langues.js, qui connaissait sa structure interne. */
 function nomRarete(g) {
   var cle = "rarete" + g.id;
-  var connue = LANGUES[langue].txt[cle] !== undefined
-            || LANGUES[LANGUE_DEFAUT].txt[cle] !== undefined;
-  return connue ? t(cle) : g.nom;
+  var nom = t(cle);
+  return nom === cle ? g.nom : nom;
 }
 
 function blocRarete(g) {
@@ -302,9 +315,7 @@ function blocRarete(g) {
    redessine que lui, sinon le champ perdrait le focus à chaque lettre. */
 function corpsRoster() {
   var filtre = sansAccents(recherche.trim());
-  var liste = brawlers.filter(function (b) {
-    return sansAccents(b.nom).indexOf(filtre) > -1;
-  });
+  var liste = brawlersCherches();
   var groupes = groupesParRarete(liste);
   /* Pendant une recherche, découper trois résultats en sept intitulés ne
      range rien. Et si l'API n'a pas répondu, aucune rareté n'est connue :
@@ -595,8 +606,9 @@ function blocConseils(liste, couleurMode, cote) {
      chiffres alignés. */
   html += '<div class="listes" aria-label="' + echapper(t("sinon")) + '">';
 
+  var carteEnCours = carteActive();
   liste.slice(1).forEach(function (x) {
-    var s = surLaCarte(x.k, carteActive());
+    var s = surLaCarte(x.k, carteEnCours);
     /* Quand la seule chose à dire est le rang sur la carte, la phrase
        répéterait le taux affiché juste à droite — et avec deux décimales
        contre une, ce qui se lit comme deux chiffres différents. On garde
@@ -630,16 +642,19 @@ function surLaCarte(cle, carte) {
    Même calcul que le mode rapide, mais on montre tout : le classement
    complet, chaque raison retenue, et d'où viennent les points. */
 
-/* Les parts d'un score, dans l'ordre où elles se lisent. La clé sert aussi
-   de classe CSS : une couleur par nature de point, et une seule fois. */
-var PARTS_SCORE = ["tier", "carte", "ennemis", "allies", "risque"];
+/* Les parts d'un score, dans l'ordre où elles se lisent : la clé sert de
+   classe CSS, la valeur de clé de traduction. Une seule liste — il y en avait
+   deux à garder synchronisées, et l'objet des libellés était reconstruit à
+   chaque appel. */
+var PARTS_SCORE = { tier: "libTier", carte: "libCarte", ennemis: "libEnnemis",
+                    allies: "libAllies", risque: "libRisque" };
 
 /* Ce qui compose un score, et de combien. Les points s'additionnent
    exactement — 82 + 15 + 12 − 2 = 107 — donc on peut le dessiner sans rien
    inventer : c'est une décomposition juste, pas une estimation. */
 function partsDuScore(x) {
   var positives = [], negatives = [], total = 0;
-  PARTS_SCORE.forEach(function (cle) {
+  Object.keys(PARTS_SCORE).forEach(function (cle) {
     var v = Math.round(x.detail[cle] || 0);
     if (!v) return;
     total += Math.abs(v);
@@ -652,12 +667,10 @@ function partsDuScore(x) {
 
 /* Le libellé traduit d'une part. */
 function nomPart(cle) {
-  return t({ tier: "libTier", carte: "libCarte", ennemis: "libEnnemis",
-             allies: "libAllies", risque: "libRisque" }[cle]);
+  return t(PARTS_SCORE[cle]);
 }
 
-function ligneAnalyse(x, rang, ampleurMax) {
-  var parts = partsDuScore(x);
+function ligneAnalyse(x, rang, ampleurMax, parts) {
 
   /* La longueur totale de la barre dit l'ampleur du calcul ; ses parts
      disent d'où vient le score. Sans la première, dix barres de même
@@ -734,23 +747,28 @@ function blocAnalyse(carte) {
   /* L'échelle des barres est commune à toute la liste, sinon comparer deux
      lignes ne voudrait rien dire. On prend la plus grande ampleur affichée,
      pas un maximum théorique : c'est un écart réel entre ces brawlers-là. */
+  var partsDeChacun = liste.map(partsDuScore);
   var ampleurMax = 0;
-  liste.forEach(function (x) {
-    ampleurMax = Math.max(ampleurMax, partsDuScore(x).total);
+  partsDeChacun.forEach(function (p) {
+    ampleurMax = Math.max(ampleurMax, p.total);
   });
 
   /* Le conteneur porte la mise en page : une colonne partout, deux quand
      l'écran est large et bas — un téléphone couché, la position où l'on joue,
      et la pire case du tableau avec près de six écrans à faire défiler. */
   html += '<div class="classement">';
-  montres.forEach(function (x, i) { html += ligneAnalyse(x, i + 1, ampleurMax); });
+  montres.forEach(function (x, i) {
+    html += ligneAnalyse(x, i + 1, ampleurMax, partsDeChacun[i]);
+  });
   html += "</div>";
 
-  if (restants > 0 || analyseTout) {
+  /* « restants > 0 || analyseTout » : quand analyseTout est vrai, restants
+     vaut forcément 0 — les deux moitiés disaient la même chose. */
+  if (liste.length > NB_ANALYSE_COURT) {
     html += '<button class="b alt sm plus-classement" data-act="plusAnalyse">'
-          + echapper(restants > 0
-              ? t("voirPlus", { n: restants })
-              : t("voirMoins", { n: NB_ANALYSE_COURT }))
+          + echapper(analyseTout
+              ? t("voirMoins", { n: NB_ANALYSE_COURT })
+              : t("voirPlus", { n: restants }))
           + "</button>";
   }
   return html;
@@ -856,11 +874,11 @@ function blocBans() {
    apparu au catalogue depuis ta dernière visite — c'est la seule chose
    honnête à signaler, et c'est déjà de quoi proposer d'aller voir. */
 function rappelNouveaux() {
-  var nouveaux = brawlersNouveaux();
-  if (!nouveaux.length) return "";
-  var cle = pluriel(nouveaux.length) ? "nouveauxN" : "nouveaux1";
+  var n = nouveauxBrawlers.length;
+  if (!n) return "";
+  var cle = pluriel(n) ? "nouveauxN" : "nouveaux1";
   return '<button class="rappel" data-act="roster">'
-       + "<span>" + echapper(t(cle, { n: nouveaux.length })) + "</span>"
+       + "<span>" + echapper(t(cle, { n: n })) + "</span>"
        + '<span class="aller">' + echapper(t("allerVoir")) + " ›</span></button>";
 }
 

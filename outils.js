@@ -60,3 +60,41 @@ function teinte(cle) {
   }
   return "hsl(" + somme + " 62% 55%)";
 }
+
+
+/* ============ Le stockage du navigateur, en un seul endroit ============
+   Il y avait huit clés, douze try/catch recopiés et quatre façons différentes
+   d'échouer : false, null, [], {}, ou le silence. Chaque nouvelle clé rajoutait
+   son bloc, et la politique « stockage plein / navigation privée » se
+   retrouvait écrite onze fois — donc impossible à faire évoluer d'un coup.
+
+   Une seule paire, une seule convention : en lecture on rend la valeur par
+   défaut si quoi que ce soit se passe mal, en écriture on échoue en silence.
+   Une app qui marche vaut mieux qu'une app qui a raison. */
+function lireJSON(cle, defaut) {
+  try {
+    var brut = localStorage.getItem(cle);
+    if (brut === null) return defaut;
+    var lu = JSON.parse(brut);
+    return (lu === null || lu === undefined) ? defaut : lu;
+  } catch (e) { return defaut; }
+}
+
+function ecrireJSON(cle, valeur) {
+  try { localStorage.setItem(cle, JSON.stringify(valeur)); }
+  catch (e) { /* stockage plein ou navigation privée : tant pis */ }
+}
+
+function lireTexte(cle, defaut) {
+  try {
+    var brut = localStorage.getItem(cle);
+    return brut === null ? defaut : brut;
+  } catch (e) { return defaut; }
+}
+
+function ecrireTexte(cle, valeur) {
+  try {
+    if (valeur) localStorage.setItem(cle, valeur);
+    else localStorage.removeItem(cle);
+  } catch (e) { /* ignoré */ }
+}
