@@ -47,9 +47,14 @@ var ACTIONS = {
   mode: function (v) { definirMode(v); },
 
   /* — Navigation — */
-  roster: function () { ecran = "roster"; recherche = ""; },
+  roster: function () { ecran = "roster"; recherche = ""; vueAnalyse = false; },
   draft: function () { ecran = "draft"; recherche = ""; cibleAjout = null; },
   cartes: function () { ecran = "cartes"; recherche = ""; modeOuvert = null; },
+
+  /* Taper le nom conseillé ouvre le calcul, retaper referme. Le même bouton
+     dans les deux sens : c'est un aller-retour, pas un changement de mode.
+     modeAffichage n'est pas touché — on repart toujours de son réglage. */
+  detail: function () { vueAnalyse = !vueAnalyse; },
 
   /* Déplier un mode sur l'écran des cartes. Un seul à la fois : deux modes
      ouverts, et on retombe dans la liste à rallonge qu'on vient de fermer. */
@@ -60,6 +65,7 @@ var ACTIONS = {
     carteId = v;
     ennemis = []; bans = []; allies = [];
     cibleAjout = null;
+    vueAnalyse = false;
     ecran = "draft";
   },
 
@@ -106,6 +112,7 @@ var ACTIONS = {
   reset: function () {
     ennemis = []; bans = []; allies = [];
     cibleAjout = null;
+    vueAnalyse = false;
   }
 };
 

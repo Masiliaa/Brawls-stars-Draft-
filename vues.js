@@ -164,25 +164,12 @@ function grilleBrawlers(usage) {
   }).join("");
 }
 
-/* Les trois listes « Mon équipe », « Pris en face » et « Bannis » ont
-   exactement la même forme : des pastilles retirables, plus un bouton
-   d'ajout tant que la limite n'est pas atteinte. */
-function sectionPastilles(titre, cles, classe, actionRetirer, actionAjouter, maximum) {
-  var html = '<div class="lab">' + echapper(titre) + '</div><div class="wrap">';
-
-  cles.forEach(function (cle) {
-    html += '<button class="pil ' + classe + '"'
-          + ' data-act="' + actionRetirer + '" data-v="' + cle + '">'
-          + portrait(brawler(cle), 32, false)
-          + echapper(nomBrawler(cle)) + " ✕</button>";
-  });
-
-  if (cles.length < maximum) {
-    html += '<button class="pil add" data-act="' + actionAjouter + '">'
-          + echapper(t("ajouter")) + "</button>";
-  }
-  return html + "</div>";
-}
+/* Les trois listes « Pris en face », « Mon équipe » et « Bannis » avaient
+   ici une section chacune, empilées sous le conseil. Trois intitulés, trois
+   rangées, trois boutons « ajouter » : la moitié de la hauteur de l'écran
+   rapide pour de la saisie, et le nom conseillé sortait du champ dès qu'on
+   descendait taper. Elles sont regroupées plus bas, à la densité du mode :
+   blocSaisieCompacte() pour le rapide, blocContexte() pour l'analyse. */
 
 
 /* ============ Écran 1 — mes persos ============ */
@@ -300,13 +287,26 @@ function boutonCarte(carte, couleur) {
 
 /* Où en est le draft : combien de picks adverses viendront encore après le
    tien. L'app le déduit de l'ordre fixe du classé ; l'afficher évite que le
-   joueur se demande pourquoi les conseils changent de ton. */
+   joueur se demande pourquoi les conseils changent de ton.
+
+   Les traits devant la phrase montrent la même chose en forme : un trait
+   plein par pick adverse déjà saisi, un trait creux par pick qui peut encore
+   tomber. C'est ce que les autres outils affichent comme une séquence de
+   draft — sauf qu'ici rien n'est deviné : on ne sait pas qui pique en
+   premier, donc on ne le dessine pas. Seul ce qui est saisi est plein. */
 function ligneSituation() {
   var restantes = reponsesRestantes();
   var cle = !restantes ? "pickDernier"
           : (restantes === 1 ? "pickExpose1" : "pickExposeN");
+
+  var traits = "";
+  for (var i = 0; i < MAX_ENNEMIS; i++) {
+    traits += '<span class="' + (i < ennemis.length ? "fait" : "") + '"></span>';
+  }
+
   return '<p class="situation' + (restantes ? "" : " libre") + '">'
-       + echapper(t(cle, { n: restantes })) + "</p>";
+       + '<span class="tour" aria-hidden="true">' + traits + "</span>"
+       + "<span>" + echapper(t(cle, { n: restantes })) + "</span></p>";
 }
 
 function encadre(message, action, libelle) {
@@ -320,28 +320,60 @@ function blocConseils(liste, couleurMode) {
     return '<div class="box"><p>' + echapper(t("tousBannis")) + "</p></div>";
   }
 
+  /* Le bloc entier est un bouton : taper le nom ouvre le calcul. C'est la
+     porte vers le mode analyse, à un geste au lieu de deux dans un menu. */
   var premier = liste[0];
-  var html = '<div class="hero" style="--r:' + (premier.b.couleur || couleurMode) + '">'
+  var html = '<button class="hero" data-act="detail"'
+           + ' title="' + echapper(t("voirCalcul")) + '"'
+           + ' style="--r:' + (premier.b.couleur || couleurMode) + '">'
            + '<span class="tierb">' + echapper(t("tier", { tier: premier.tier })) + "</span>"
            + '<div class="in">' + portrait(premier.b, 84, true)
            + '<span><span class="ribbon">' + echapper(t("prends")) + "</span>"
-           + '<div class="tt name">' + echapper(premier.nom) + "</div></span></div>"
-           + '<div class="why">' + echapper(premier.raison) + "</div></div>";
+           + '<div class="tt name">' + echapper(premier.nom) + "</div></span>"
+           + '<span class="vers-detail" aria-hidden="true">›</span></div>'
+           + '<div class="why">' + echapper(premier.raison) + "</div></button>";
+
+  /* Les suivants tenaient sur trois lignes pleines, raison comprise : 195 px,
+     le plus gros poste de l'écran après le conseil lui-même, et c'est lui qui
+     poussait la saisie hors du champ. Ils passent en bande qui se fait
+     glisser du pouce. Ce qu'ils perdent — la phrase qui explique pourquoi —
+     est précisément ce que le mode analyse existe pour montrer, à un geste
+     d'ici. Le rang et le taux, eux, restent : ce sont des mesures. */
+  html += '<div class="lab serre">' + echapper(t("sinon")) + "</div>"
+        + '<div class="replis">';
 
   liste.slice(1).forEach(function (x) {
-    html += '<div class="row">' + portrait(x.b, 40, false)
-          + '<span class="n">' + echapper(x.nom) + "</span>"
-          + '<span class="w">' + echapper(x.raison) + "</span></div>";
+    var sur = surLaCarte(x.k, carteActive());
+    var detail = sur
+      ? t("altRang", { rang: sur.rang, wr: virgule(sur.wr.toFixed(1)) })
+      : t("tier", { tier: x.tier });
+
+    html += '<button class="repli" data-act="detail">'
+          + portrait(x.b, 28, false)
+          + '<span class="txt"><span class="n">' + echapper(x.nom) + "</span>"
+          + '<span class="d">' + echapper(detail) + "</span></span></button>";
   });
 
-  return html;
+  return html + "</div>";
+}
+
+/* Rang et taux de victoire d'un brawler sur la carte en cours, ou null s'il
+   n'y figure pas. Lu directement dans les données relevées — jamais estimé. */
+function surLaCarte(cle, carte) {
+  if (!carte) return null;
+  for (var i = 0; i < carte.top.length; i++) {
+    if (clef(carte.top[i][0]) === cle) {
+      return { rang: i + 1, wr: carte.top[i][1] };
+    }
+  }
+  return null;
 }
 
 /* ============ Écran 4 bis — analyse détaillée ============
    Même calcul que le mode rapide, mais on montre tout : le classement
    complet, chaque raison retenue, et d'où viennent les points. */
 
-function ligneAnalyse(x, rang) {
+function ligneAnalyse(x, rang, meilleurScore) {
   var parts = [
     [t("libTier"), x.detail.tier],
     [t("libCarte"), x.detail.carte],
@@ -350,14 +382,22 @@ function ligneAnalyse(x, rang) {
     [t("libAllies"), x.detail.allies]
   ].filter(function (p) { return p[1]; });
 
-  var html = '<article class="analyse">'
+  /* Une barre sous le score : dix nombres à trois chiffres ne se classent
+     pas à l'œil, dix barres si. La longueur est relative au premier, jamais
+     à un maximum théorique — c'est un écart réel, pas une note sur 100. */
+  var part = meilleurScore > 0
+           ? Math.max(4, Math.round((x.score / meilleurScore) * 100)) : 0;
+
+  var html = '<article class="analyse' + (rang === 1 ? " premier" : "") + '">'
            + '<header>'
            + '<span class="rang">' + rang + "</span>"
            + portrait(x.b, 38, false)
            + '<span class="qui"><span class="nom">' + echapper(x.nom) + "</span>"
            + '<span class="tier">' + echapper(t("tier", { tier: x.tier })) + "</span></span>"
            + '<span class="score"><b>' + Math.round(x.score) + "</b>"
-           + "<i>" + echapper(t("libScore")) + "</i></span>"
+           + "<i>" + echapper(t("libScore")) + "</i>"
+           + '<span class="jauge-score"><i style="width:' + part + '%"></i></span>'
+           + "</span>"
            + "</header>";
 
   html += '<ul class="raisons">';
@@ -384,10 +424,103 @@ function blocAnalyse(carte) {
   if (!liste.length) {
     return '<div class="box"><p>' + echapper(t("analyseVide")) + "</p></div>";
   }
-  var html = '<p class="intro">'
-           + echapper(t("analyseIntro", { n: liste.length })) + "</p>";
-  liste.forEach(function (x, i) { html += ligneAnalyse(x, i + 1); });
+
+  /* On n'arrive ici depuis le mode rapide qu'en tapant le nom : il faut donc
+     de quoi remonter, au même endroit et aussi visible que la porte d'entrée. */
+  var html = vueAnalyse
+    ? '<button class="b alt sm retour-conseil" data-act="detail">‹ '
+      + echapper(t("retourConseil")) + "</button>"
+    : "";
+
+  html += '<p class="intro">' + echapper(t("analyseIntro", { n: liste.length })) + "</p>";
+  var meilleur = liste[0].score;
+  liste.forEach(function (x, i) { html += ligneAnalyse(x, i + 1, meilleur); });
   return html;
+}
+
+
+/* ============ Les picks saisis, deux densités ============
+   Le mode rapide se joue contre le chrono : les trois listes tiennent en
+   deux rangées, pour que le nom conseillé et la saisie restent visibles
+   ensemble. Le mode analyse se lit sans chrono, mais son contexte était
+   sous dix fiches — il remonte donc tout en haut, en bande d'une ligne. */
+
+/* Une pastille compacte : portrait, nom, croix. */
+function pastille(cle, classe, action, taille) {
+  return '<button class="pil ' + classe + '" data-act="' + action
+       + '" data-v="' + cle + '">'
+       + portrait(brawler(cle), taille || 32, false)
+       + echapper(nomBrawler(cle)) + " ✕</button>";
+}
+
+/* Un ban ne se lit pas, il se compte : c'est un brawler retiré du choix, pas
+   un adversaire à jouer contre. Six noms écrits en toutes lettres faisaient
+   déborder la rangée sur une deuxième ligne. Réduit au portrait, il garde sa
+   place et son geste — et il a la même tête dans les deux modes. */
+function jetonBan(cle) {
+  return '<button class="jeton-ctx ban" data-act="rmb" data-v="' + cle + '"'
+       + ' title="' + echapper(nomBrawler(cle)) + '">'
+       + portrait(brawler(cle), 26, false) + "</button>";
+}
+
+function boutonAjout(action, libelle) {
+  return '<button class="pil add" data-act="' + action + '">'
+       + echapper(libelle || t("ajouter")) + "</button>";
+}
+
+/* Mode rapide — deux rangées au lieu de trois sections. « Nouveau draft »
+   se range au bout du premier intitulé : il ne coûte plus une ligne. */
+function blocSaisieCompacte() {
+  var html = '<div class="lab serre lab-avec-action">'
+           + "<span>" + echapper(t("prisEnFace")) + "</span>"
+           + '<button class="b alt sm relancer" data-act="reset">'
+           + echapper(t("nouveauDraft")) + "</button></div>"
+           + '<div class="wrap">';
+
+  ennemis.forEach(function (cle) { html += pastille(cle, "", "rme"); });
+  if (ennemis.length < MAX_ENNEMIS) html += boutonAjout("addE");
+  html += "</div>";
+
+  html += '<div class="lab serre">' + echapper(t("equipeEtBans")) + "</div>"
+        + '<div class="wrap rangee-double">';
+
+  allies.forEach(function (cle) { html += pastille(cle, "allie", "rma"); });
+  if (allies.length < MAX_ALLIES) html += boutonAjout("addA");
+
+  html += '<span class="separateur" aria-hidden="true"></span>';
+  bans.forEach(function (cle) { html += jetonBan(cle); });
+  if (bans.length < MAX_BANS) {
+    html += '<button class="jeton-ctx vide" data-act="addB"'
+          + ' title="' + echapper(t("ajouterBan")) + '">+</button>';
+  }
+
+  return html + "</div>";
+}
+
+/* Mode analyse — la même information sur une seule ligne, en tête d'écran :
+   c'est la seule chose qu'on modifie pendant qu'on lit le classement. */
+function blocContexte() {
+  function groupe(cleTitre, cles, classe, actionRetirer, actionAjouter, maximum) {
+    var html = '<span class="groupe"><span class="et">'
+             + echapper(t(cleTitre)) + "</span>";
+    cles.forEach(function (cle) {
+      html += '<button class="jeton-ctx ' + classe + '" data-act="' + actionRetirer
+            + '" data-v="' + cle + '" title="' + echapper(nomBrawler(cle)) + '">'
+            + portrait(brawler(cle), 26, false) + "</button>";
+    });
+    if (cles.length < maximum) {
+      html += '<button class="jeton-ctx vide" data-act="' + actionAjouter
+            + '" title="' + echapper(t("ajouter")) + '">+</button>';
+    }
+    return html + "</span>";
+  }
+
+  return '<div class="contexte">'
+       + groupe("ctxFace", ennemis, "", "rme", "addE", MAX_ENNEMIS)
+       + groupe("ctxAvec", allies, "allie", "rma", "addA", MAX_ALLIES)
+       + groupe("ctxBan", bans, "ban", "rmb", "addB", MAX_BANS)
+       + '<button class="b alt sm relancer" data-act="reset">'
+       + echapper(t("nouveauDraft")) + "</button></div>";
 }
 
 
@@ -426,21 +559,26 @@ function ecranDraft() {
     return html + encadre(t("inviteRoster"), "roster", t("cocherMesBrawlers")) + noteHTML();
   }
 
-  html += ligneSituation();
-  html += (modeAffichage === "analyse")
-        ? blocAnalyse(carte)
-        : blocConseils(conseils(), couleur);
+  /* Les deux modes ne sont plus la même page avec un bloc échangé.
+     ----------------------------------------------------------------------
+     ANALYSE — on la lit sans chrono, elle a le droit d'être longue. Son
+     contexte remonte en tête : il était sous dix fiches, à trois écrans de
+     défilement de ce qu'on voulait corriger.
 
-  /* Les picks adverses viennent juste après le conseil, avant tout le reste.
-     C'est le geste qu'on refait à chaque tour du draft : l'adversaire pick,
-     on le saisit, le conseil se met à jour au-dessus. Plus bas, il fallait
-     descendre pour taper puis remonter pour lire, à chaque fois. */
-  html += sectionPastilles(t("prisEnFace"), ennemis, "", "rme", "addE", MAX_ENNEMIS);
+     RAPIDE — elle se joue contre le chrono. Tout ce qu'exige un tour de
+     draft tient d'un seul regard : le nom, sa raison, et la saisie juste
+     dessous. L'adversaire pick, on le tape, le nom change au-dessus sans
+     que rien ne bouge sous le pouce. */
+  if (modeEffectif() === "analyse") {
+    html += blocContexte();
+    html += ligneSituation();
+    return html + blocAnalyse(carte) + noteHTML();
+  }
+
+  html += ligneSituation();
+  html += blocConseils(conseils(), couleur);
+  html += blocSaisieCompacte();
   if (phaseDeBan()) html += blocBans();
-  html += sectionPastilles(t("monEquipe"), allies, "allie", "rma", "addA", MAX_ALLIES);
-  html += sectionPastilles(t("bannis"), bans, "ban", "rmb", "addB", MAX_BANS);
-  html += '<button class="b alt sm reset" data-act="reset">'
-        + echapper(t("nouveauDraft")) + "</button>";
 
   return html + noteHTML();
 }

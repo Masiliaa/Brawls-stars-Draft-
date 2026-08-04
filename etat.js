@@ -32,6 +32,21 @@ function definirMode(m) {
   try { localStorage.setItem(CLE_MODE_AFFICHAGE, m); } catch (e) { /* ignoré */ }
 }
 
+/* Descente ponctuelle dans le détail, depuis le mode rapide.
+   ------------------------------------------------------------------------
+   Changer de mode demandait deux gestes dans un menu, et c'était un réglage
+   qu'on oubliait d'avoir mis — pendant un draft, deux gestes de trop. On ne
+   change donc plus de mode : on tape le nom conseillé pour voir le calcul,
+   on retape pour revenir.
+
+   Volontairement NON enregistré : c'est un aller-retour, pas une préférence.
+   modeAffichage reste le mode de départ, et n'est pas touché. */
+var vueAnalyse = false;
+
+function modeEffectif() {
+  return vueAnalyse ? "analyse" : modeAffichage;
+}
+
 /* Menu déroulant ouvert dans la barre du haut : null, "langue" ou "mode".
    Un seul à la fois, et il se referme au moindre clic ailleurs. */
 var menuOuvert = null;

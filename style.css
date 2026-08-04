@@ -50,8 +50,16 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .vig{display:block;flex:none;overflow:hidden;border-radius:8px;border:none;background:#151517;box-shadow:none}
 .vig img{width:100%;height:100%;object-fit:cover;display:block}
 
+/* Le hero est un bouton depuis qu'il ouvre le calcul : il faut donc annuler
+   ce que le navigateur met sur un <button> et rendre le texte alignable. */
 .hero{position:relative;background:var(--carte);border:1px solid var(--trait);border-radius:20px;
-  padding:26px 20px 20px;margin-bottom:12px;overflow:hidden;box-shadow:none}
+  padding:26px 20px 20px;margin-bottom:12px;overflow:hidden;box-shadow:none;
+  display:block;width:100%;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;-webkit-appearance:none}
+.hero:active{background:var(--carte2)}
+.hero .vers-detail{margin-left:auto;flex:none;color:var(--faible);font-size:22px;
+  align-self:center;line-height:1}
+.retour-conseil{margin-bottom:14px}
 .hero:before{content:"";position:absolute;top:-40%;left:-10%;width:120%;height:180%;
   background:radial-gradient(closest-side,color-mix(in srgb,var(--r) 22%,transparent),transparent 68%);pointer-events:none}
 .hero .in{position:relative;display:flex;align-items:center;gap:18px}
@@ -162,12 +170,15 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .row.conseil-ban .n{font-size:15.5px;font-weight:550}
 
 .situation{margin:0 0 12px;font-size:11.5px;font-weight:600;color:var(--doux);
-  letter-spacing:.01em;display:flex;align-items:center;gap:7px}
-.situation::before{content:"";width:6px;height:6px;border-radius:50%;
-  background:var(--doux);flex:none}
+  letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+/* Un trait par pick adverse : plein s'il est saisi, creux s'il peut encore
+   tomber. Rien n'est deviné — on ne sait pas qui pique en premier. */
+.situation .tour{display:flex;align-items:center;gap:3px;flex:none}
+.situation .tour span{width:13px;height:3px;border-radius:2px;background:var(--trait)}
+.situation .tour span.fait{background:var(--doux)}
 /* Dernier pick : plus rien ne peut te punir, on le signale en couleur. */
 .situation.libre{color:var(--vif)}
-.situation.libre::before{background:var(--vif)}
+.situation.libre .tour span.fait{background:var(--vif)}
 
 .b.declenche{color:var(--doux);gap:5px}
 /* Petit chevron : signale qu'un choix s'ouvre, au lieu d'une bascule aveugle. */
@@ -207,6 +218,69 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   letter-spacing: 0;
 }
 .titre-mode-b.ouvert { border-color: var(--m); }
+
+/* ============ Les suivants, en bande qui se fait glisser ============
+   Trois lignes pleines coûtaient 195 px et repoussaient la saisie hors de
+   l'écran. La bande en coûte 60. Elle déborde des marges pour que le pouce
+   sente qu'il y a une suite, et se cale sur les bords à l'arrêt. */
+.replis{display:flex;gap:7px;overflow-x:auto;padding:0 16px 2px;
+  margin:0 -16px;scrollbar-width:none;
+  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.replis::-webkit-scrollbar{display:none}
+.repli{flex:none;scroll-snap-align:start;display:inline-flex;align-items:center;gap:8px;
+  background:var(--carte2);border:1px solid var(--trait);border-radius:12px;
+  padding:6px 12px 6px 6px;font:inherit;color:var(--texte);cursor:pointer;
+  min-height:44px;-webkit-appearance:none}
+.repli:active{background:#232327}
+.repli .txt{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.2}
+.repli .n{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.repli .d{font-size:10.5px;color:var(--faible);font-variant-numeric:tabular-nums}
+
+/* Un intitulé serré : 24 px de marge haute × 3 intitulés, c'était 141 px
+   rien qu'en blancs sur un écran qui doit en tenir 844. */
+.lab.serre{margin:14px 0 7px}
+
+/* ============ Saisie du mode rapide ============
+   Deux rangées au lieu de trois sections. « Nouveau draft » se range au
+   bout du premier intitulé : il ne coûte plus une ligne à lui seul. */
+.lab-avec-action{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lab-avec-action .relancer{margin:0;font-size:12px;padding:6px 12px;min-height:34px;
+  letter-spacing:0;text-transform:none;font-weight:500}
+.rangee-double{align-items:center;gap:7px}
+.rangee-double .separateur{width:1px;height:26px;background:var(--trait);
+  margin:0 2px;flex:none}
+
+/* ============ Contexte du mode analyse ============
+   La même information sur une ligne, en tête d'écran. Elle était sous dix
+   fiches : corriger un ennemi demandait trois écrans de défilement. */
+.contexte{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  padding-bottom:13px;border-bottom:1px solid var(--trait);margin-bottom:14px}
+/* Pas de margin-left:auto : à trois groupes, le bouton passe de toute façon
+   à la ligne, et collé à droite il flottait seul dans le vide. */
+.contexte .relancer{font-size:12px;padding:6px 12px;
+  min-height:34px;letter-spacing:0;text-transform:none;font-weight:500}
+.contexte .groupe{display:flex;align-items:center;gap:4px}
+.contexte .et{font-size:9.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faible);margin-right:2px}
+.jeton-ctx{background:transparent;border:none;padding:0;cursor:pointer;
+  display:inline-flex;align-items:center;line-height:0}
+.jeton-ctx.ban{opacity:.45}
+.jeton-ctx.allie .port{box-shadow:0 0 0 2px var(--vif)}
+.jeton-ctx.vide{width:26px;height:26px;border-radius:7px;
+  border:1px dashed var(--trait);color:var(--faible);font-size:14px;
+  justify-content:center;line-height:1}
+
+/* La barre sous le score : dix nombres à trois chiffres ne se classent pas
+   à l'œil, dix barres si. Longueur relative au premier, pas à un maximum
+   théorique — c'est un écart réel, jamais une note sur 100. */
+.analyse .jauge-score{display:block;width:62px;height:3px;margin-top:4px;
+  background:var(--trait);border-radius:2px;overflow:hidden}
+/* Le <i> de la jauge est la barre elle-même, pas l'étiquette « score » :
+   il ne doit pas hériter du style de celle-ci. */
+.analyse .jauge-score i{display:block;height:100%;width:auto;background:var(--faible);
+  border-radius:2px;margin:0;font-size:0;letter-spacing:0}
+.analyse.premier{border-color:color-mix(in srgb,var(--vif) 34%,var(--trait))}
+.analyse.premier .jauge-score i{background:var(--vif)}
 
 /* Pied de page : les sources se replient, la mention Supercell reste. */
 .note .supercell{margin-top:9px}

@@ -110,11 +110,17 @@ const check = (nom, cond, detail = '') => {
   check('un brawler est conseillé', await page.locator('.hero .name').isVisible());
   check('le mode est affiché',
     (await page.locator('.b.full').first().textContent()).includes('Braquage'));
-  // Les bans conseillés partagent la classe .row : on ne compte que les picks.
-  check('3 suggestions de repli',
-    (await page.locator('.row:not(.conseil-ban)').count()) === 3);
+  // Les suggestions de repli ne sont plus des lignes pleines mais une bande
+  // qui se fait glisser : elles coûtaient 195 px et repoussaient la saisie
+  // hors de l'écran. Le nombre affiché, lui, n'a pas changé.
+  check('3 suggestions de repli', (await page.locator('.repli').count()) === 3);
   check('et 3 bans conseillés pendant la phase de ban',
     (await page.locator('.conseil-ban').count()) === 3);
+  // Une bande qui déborde doit défiler dans sa propre boîte : si elle fait
+  // glisser la page entière, on perd le nom conseillé en cherchant un repli.
+  check('la bande ne fait pas déborder la page',
+    await page.evaluate(() =>
+      document.documentElement.scrollWidth <= window.innerWidth));
 
   console.log('\n== ajouter des picks, jusqu\'aux limites ==');
   async function ajouter(bouton, combien) {
@@ -144,6 +150,49 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="addB"]').count()) === 0);
 
   check('un brawler est toujours conseillé', await page.locator('.hero .name').isVisible());
+
+  // ── Le mode rapide tient sur un écran ──────────────────────────────────
+  // C'est la raison d'être du mode : pendant un draft, descendre pour taper
+  // un ennemi faisait sortir le nom conseillé du champ de vision. On mesure
+  // ici le cas chargé — 2 ennemis, 2 alliés, 6 bans — parce que c'est celui
+  // qui débordait. Sans ce contrôle, la propriété se reperdra au premier
+  // bloc ajouté.
+  console.log('\n== le mode rapide tient sur une hauteur d\'iPhone ==');
+  const basUtile = await page.evaluate(() => {
+    const l = document.querySelectorAll('.wrap');
+    return l.length ? Math.round(l[l.length - 1].getBoundingClientRect().bottom) : 1e9;
+  });
+  check('saisie comprise, tout tient sous 844 px', basUtile <= 844, basUtile);
+  check('et la page ne déborde pas en largeur',
+    await page.evaluate(() =>
+      document.documentElement.scrollWidth <= window.innerWidth));
+
+  // ── Descendre dans le détail, et remonter ──────────────────────────────
+  // Changer de mode demandait deux gestes dans un menu, et c'était un
+  // réglage qu'on oubliait d'avoir mis. Un geste à l'aller, un au retour —
+  // et le mode de départ ne doit pas bouger, sinon le draft suivant s'ouvre
+  // sur l'écran long sans qu'on ait rien demandé.
+  console.log('\n== taper le nom ouvre le calcul, retaper referme ==');
+  await page.locator('.hero').click();
+  check('le classement détaillé s\'ouvre',
+    (await page.locator('.analyse').count()) > 1,
+    await page.locator('.analyse').count());
+  check('le score porte une jauge',
+    (await page.locator('.analyse .jauge-score').count()) > 1);
+  check('le contexte est remonté au-dessus du classement',
+    await page.evaluate(() => {
+      const c = document.querySelector('.contexte');
+      const a = document.querySelector('.analyse');
+      return !!c && !!a && c.getBoundingClientRect().top < a.getBoundingClientRect().top;
+    }));
+
+  await page.locator('.retour-conseil').click();
+  check('un geste suffit à revenir au conseil',
+    await page.locator('.hero .name').isVisible());
+  check('le mode de départ n\'a pas été touché',
+    (await page.evaluate(() => modeAffichage)) === 'rapide');
+  check('et rien n\'a été enregistré dans le navigateur',
+    (await page.evaluate(() => localStorage.getItem('manager:mode'))) !== 'analyse');
 
   console.log('\n== annuler un choix ==');
   await page.locator('[data-act="rmb"]').first().click();
