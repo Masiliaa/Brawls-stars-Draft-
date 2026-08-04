@@ -110,6 +110,9 @@ function menuDeroulant(nom, libelleBouton, titre, action, options) {
             + ' class="' + (o.actif ? "actif" : "") + '"'
             + ' data-act="' + action + '" data-v="' + o.valeur + '">'
             + '<span class="coche">' + (o.actif ? "✓" : "") + "</span>"
+            + (o.drapeau
+               ? '<span class="drapeau" aria-hidden="true">' + o.drapeau + "</span>"
+               : "")
             + echapper(o.libelle) + "</button>";
     });
     html += "</div>";
@@ -144,21 +147,30 @@ function barreHaut() {
       };
     }));
 
+  /* Le drapeau se repère avant d'être lu — c'est tout l'intérêt quand on
+     cherche sa langue dans une liste écrite dans une langue qu'on ne lit
+     pas encore. Le nom reste à côté : un drapeau seul est ambigu. */
   var menuLangue = menuDeroulant(
-    "Langue", LANGUES[langue].etiquette, t("choisirLangue"), "langue",
+    "Langue", LANGUES[langue].drapeau + " " + LANGUES[langue].etiquette,
+    t("choisirLangue"), "langue",
     ORDRE_LANGUES.map(function (l) {
-      return { valeur: l, actif: l === langue, libelle: LANGUES[l].nom };
+      return {
+        valeur: l, actif: l === langue,
+        libelle: LANGUES[l].nom, drapeau: LANGUES[l].drapeau
+      };
     }));
 
-  /* Le nom du produit ramène à l'accueil : c'est le réflexe de n'importe quel
-     site, et il était mort ici. Mais sur l'accueil lui-même il n'a nulle part
-     où aller : un bouton qui ne fait rien est pire que pas de bouton, alors
-     il redevient un simple titre. Ce qui répond au doigt fait quelque chose,
-     toujours. */
-  var logo = surLeDraft
-    ? '<span class="tt logo">Le Manager</span>'
-    : '<button class="tt logo" data-act="draft" title="'
-      + echapper(t("retourAccueil")) + '">Le Manager</button>';
+  /* Le nom du produit ramène à l'accueil, sur TOUS les écrans sans exception.
+     ----------------------------------------------------------------------
+     Il a d'abord été mort partout. Puis je l'ai rendu inerte sur l'écran de
+     draft, en me disant qu'on y était déjà — sauf que c'est l'écran où l'on
+     passe sa vie, donc il paraissait cassé une fois sur deux. Un logo qui
+     répond ici et pas là est pire que les deux.
+
+     Sur l'accueil d'un site, cliquer le logo ne change rien à l'écran, et
+     personne ne s'en plaint : ce qui compte, c'est qu'il réponde toujours. */
+  var logo = '<button class="tt logo" data-act="draft" title="'
+           + echapper(t("retourAccueil")) + '">Le Manager</button>';
 
   return '<div class="bar">' + logo
        + '<div class="actions">' + menuMode + menuLangue

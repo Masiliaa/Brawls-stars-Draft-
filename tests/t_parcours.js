@@ -49,10 +49,11 @@ const check = (nom, cond, detail = '') => {
   check('un seul chemin vers la liste des cartes',
     (await page.locator('[data-act="cartes"]').count()) === 1,
     await page.locator('[data-act="cartes"]').count());
-  // Sur l'accueil, le nom du produit n'a nulle part où mener : il redevient
-  // un titre. Ce qui répond au doigt doit faire quelque chose.
-  check('et le nom du produit n\'est pas un bouton qui ne fait rien',
-    (await page.locator('.logo[data-act]').count()) === 0);
+  // Le nom du produit répond sur TOUS les écrans, accueil compris. Le rendre
+  // inerte là où l'on est déjà semblait logique et se voyait cassé une fois
+  // sur deux, puisque c'est l'écran où l'on passe sa vie.
+  check('le nom du produit est cliquable, ici comme ailleurs',
+    (await page.locator('.logo[data-act="draft"]').count()) === 1);
 
   console.log('\n== mes persos : cocher, chercher, décocher ==');
   await page.locator('[data-act="roster"]').click();
@@ -408,7 +409,9 @@ const check = (nom, cond, detail = '') => {
   console.log('\n== changement de langue ==');
   await page.locator('[data-act="draft"], [data-act="roster"]').first().waitFor();
   const codeDepart = await page.locator('[data-act="ouvrirLangue"]').textContent();
-  check('démarre en français (locale fr-FR)', codeDepart === 'FR', codeDepart);
+  check('démarre en français (locale fr-FR)',
+    codeDepart.includes('FR'), codeDepart);
+  check('et le drapeau est là', codeDepart.includes('🇫🇷'), codeDepart);
 
   await page.locator('[data-act="ouvrirLangue"]').click();
   check('les trois langues sont proposées',
@@ -420,7 +423,7 @@ const check = (nom, cond, detail = '') => {
   // On va directement à l'espagnol, sans passer par l'anglais.
   await page.locator('.menu [data-act="langue"][data-v="es"]').click();
   check('choix direct de l’espagnol',
-    (await page.locator('[data-act="ouvrirLangue"]').textContent()) === 'ES');
+    (await page.locator('[data-act="ouvrirLangue"]').textContent()).includes('ES'));
   check('les textes suivent',
     await page.getByText('Mis brawlers').first().isVisible());
   check('l’attribut lang de la page suit',
@@ -428,12 +431,12 @@ const check = (nom, cond, detail = '') => {
 
   await page.reload({ waitUntil: 'networkidle' });
   check('la langue survit au rechargement',
-    (await page.locator('[data-act="ouvrirLangue"]').textContent()) === 'ES');
+    (await page.locator('[data-act="ouvrirLangue"]').textContent()).includes('ES'));
 
   await page.locator('[data-act="ouvrirLangue"]').click();
   await page.locator('.menu [data-act="langue"][data-v="fr"]').click();
   check('retour direct au français',
-    (await page.locator('[data-act="ouvrirLangue"]').textContent()) === 'FR');
+    (await page.locator('[data-act="ouvrirLangue"]').textContent()).includes('FR'));
   check('plus aucune trace de « persos »',
     !(await page.locator('#app').innerText()).toLowerCase().includes('persos'));
 

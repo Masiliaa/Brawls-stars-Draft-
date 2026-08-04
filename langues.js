@@ -16,6 +16,7 @@ var LANGUES = {
   fr: {
     nom: "Français",
     etiquette: "FR",
+    drapeau: "🇫🇷",
     decimal: ",",
     /* En français, seul ce qui dépasse 1 prend la marque du pluriel. */
     pluriel: function (n) { return n > 1; },
@@ -135,6 +136,7 @@ var LANGUES = {
   en: {
     nom: "English",
     etiquette: "EN",
+    drapeau: "🇬🇧",
     decimal: ".",
     pluriel: function (n) { return n !== 1; },
     txt: {
@@ -253,6 +255,7 @@ var LANGUES = {
   es: {
     nom: "Español",
     etiquette: "ES",
+    drapeau: "🇪🇸",
     decimal: ",",
     pluriel: function (n) { return n !== 1; },
     txt: {

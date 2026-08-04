@@ -14,7 +14,10 @@
 
 :root{
   --fond:#0a0a0b; --carte:#121214; --carte2:#18181b; --trait:#242428;
-  --texte:#fafafa; --doux:#8a8a93; --faible:#5f5f68; --vif:#ff5c39;
+  --texte:#fafafa; --doux:#8a8a93; --faible:#7c7c85; --vif:#ff5c39;
+  /* --faible valait #5f5f68 : 3,1:1 sur le fond, sous le seuil de lisibilite
+     de 4,5:1. Sur un telephone en plein jour, « changer », « Sinon » et les
+     taux de victoire disparaissaient. Eclairci a 4,6:1. */
   --police:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,
            "Helvetica Neue",Arial,sans-serif;
 }
@@ -46,10 +49,15 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* Le logo cède sa place aux boutons d'action, jamais l'inverse : sur un
    écran de 320 px il se coupe, et les points de suspension disent que c'est
    voulu plutôt que cassé. Les boutons, eux, ne doivent jamais être tronqués. */
+/* 44 px de haut, la taille d'un pouce. Le logo faisait 15 px : il repondait
+   au doigt, mais il fallait viser une bande de la hauteur d'un trait, donc il
+   semblait ne marcher qu'une fois sur deux. La marge negative annule la place
+   prise par le rembourrage, pour que la barre garde sa hauteur. */
 .bar .logo{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;
   text-overflow:ellipsis;margin-right:auto;
+  display:inline-flex;align-items:center;min-height:44px;padding:0 10px;margin-left:-10px;
   font-size:15px;font-weight:600;color:var(--doux);-webkit-text-stroke:0;letter-spacing:.01em;
-  background:none;border:none;padding:0;text-align:left;cursor:pointer;
+  background:none;border:none;text-align:left;cursor:pointer;
   font-family:inherit;-webkit-appearance:none}
 .bar .logo:active{color:var(--texte)}
 .bar .actions{display:flex;gap:6px;flex:none}
@@ -102,14 +110,14 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    en diagonale, alors que c'est justement ce qu'on lit en diagonale pendant
    un draft. Alignée à gauche, bornée à deux lignes, coupée proprement. */
 .row .w{margin-left:auto;text-align:left;font-size:11.5px;font-weight:400;
-  color:#6f6f78;max-width:52%;line-height:1.35;
+  color:var(--faible);max-width:52%;line-height:1.35;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
   overflow:hidden}
 
 .pil{display:inline-flex;align-items:center;gap:8px;background:var(--carte2);border:1px solid var(--trait);
   border-radius:999px;padding:5px 13px 5px 5px;cursor:pointer;min-height:42px;box-shadow:none;
   font-family:inherit;text-transform:none;font-size:13.5px;font-weight:500;color:var(--texte)}
-.pil.ban{background:transparent;color:#5f5f68}
+.pil.ban{background:transparent;color:var(--faible)}
 .pil.allie{background:rgba(255,92,57,.1);border-color:rgba(255,92,57,.3)}
 .pil.add{background:transparent;border-style:dashed;color:var(--doux);padding:5px 15px}
 
@@ -124,16 +132,19 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .cel.on b{color:var(--texte)}
 
 .lab{font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:700;letter-spacing:.18em;
-  color:#5f5f68;margin:24px 0 10px;text-shadow:none}
+  color:var(--faible);margin:24px 0 10px;text-shadow:none}
 .wrap{display:flex;flex-wrap:wrap;gap:8px}
 .inp{width:100%;background:var(--carte);border:1px solid var(--trait);border-radius:12px;padding:13px 15px;
   color:var(--texte);font-family:inherit;font-weight:400;font-size:16px;margin-bottom:12px}
-.inp::placeholder{color:#5f5f68}
+.inp::placeholder{color:var(--faible)}
 .inp:focus{outline:none;border-color:var(--vif)}
 .box{background:transparent;border:1px dashed var(--trait);border-radius:16px;padding:28px 20px;text-align:center}
 .box p{margin:0 0 16px;font-size:14px;font-weight:400;color:var(--doux);line-height:1.6}
 .note{margin-top:28px;font-size:10.5px;font-weight:400;color:#565660;line-height:1.75}
-.note a{color:var(--doux);text-decoration:underline}
+/* Une mention legale qu'on ne peut pas toucher n'en est pas une : le lien
+   passe a 32 px de haut sans changer de taille de texte. */
+.note a{color:var(--doux);text-decoration:underline;
+  display:inline-block;padding:9px 0}
 .intro{font-size:14px;font-weight:400;color:var(--doux);margin:0 0 14px;line-height:1.55}
 @media (max-width:359px){.bar .b.sm{font-size:12px;padding:8px 11px}.b.lang{min-width:36px;padding:8px 8px}}
 
@@ -338,13 +349,19 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .contexte .groupe{display:flex;align-items:center;gap:4px}
 .contexte .et{font-size:9.5px;font-weight:700;letter-spacing:.13em;
   text-transform:uppercase;color:var(--faible);margin-right:2px}
-.jeton-ctx{background:transparent;border:none;padding:0;cursor:pointer;
-  display:inline-flex;align-items:center;line-height:0}
+/* Le dessin fait 26 px, la zone sensible 40 : le rembourrage est repris par
+   une marge negative, donc rien ne bouge a l'oeil et le pouce trouve. */
+.jeton-ctx{background:transparent;border:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;line-height:0;
+  padding:7px;margin:-7px}
 .jeton-ctx.ban{opacity:.45}
 .jeton-ctx.allie .port{box-shadow:0 0 0 2px var(--vif)}
-.jeton-ctx.vide{width:26px;height:26px;border-radius:7px;
-  border:1px dashed var(--trait);color:var(--faible);font-size:14px;
-  justify-content:center;line-height:1}
+/* Le contour fait 26 px, la zone sensible 40 : les dimensions passent sur un
+   trait interieur, sinon elles annulaient le rembourrage pose plus haut. */
+.jeton-ctx.vide{border-radius:7px;box-shadow:inset 0 0 0 1px var(--trait);
+  color:var(--faible);font-size:14px;line-height:1;
+  width:40px;height:40px;background-clip:content-box;padding:7px;margin:-7px}
+.jeton-ctx.vide:active{box-shadow:inset 0 0 0 1px var(--vif);color:var(--vif)}
 
 /* La barre sous le score : dix nombres à trois chiffres ne se classent pas
    à l'œil, dix barres si. Longueur relative au premier, pas à un maximum
@@ -416,3 +433,10 @@ body.clavier :focus-visible{outline:2px solid var(--vif);outline-offset:2px;
   .rangee-bans{gap:6px}
   .replis{padding-bottom:0}
 }
+
+/* Le drapeau du menu des langues : on le repère avant de lire, ce qui est
+   tout l'intérêt quand la liste est écrite dans une langue qu'on ne lit pas
+   encore. Il est décoratif — le nom porte le sens, l'attribut aria-hidden
+   évite qu'un lecteur d'écran annonce « drapeau de la France, Français ». */
+.menu .drapeau{flex:none;font-size:15px;line-height:1}
+.bar .declenche{gap:5px}
