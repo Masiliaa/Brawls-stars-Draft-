@@ -81,19 +81,58 @@ def structure(valeur, chemin="", lignes=None, profondeur=0):
     return lignes
 
 
-def lire_json(url, texte):
+def suivre(valeur, chemin):
+    """Toutes les valeurs trouvées à un chemin pointé, « [] » = chaque élément.
+
+        list[].rarity.name  →  la rareté de chacun des 107 brawlers
+
+    Sert à répondre à « quelles valeurs cette API emploie-t-elle vraiment ? ».
+    Sans ça, on écrit la liste de mémoire — et écrire de mémoire, c'est
+    inventer.
+    """
+    trouve = [valeur]
+    for morceau in chemin.strip(".").split("."):
+        suite = []
+        liste = morceau.endswith("[]")
+        cle = morceau[:-2] if liste else morceau
+        for v in trouve:
+            if cle:
+                if not isinstance(v, dict) or cle not in v:
+                    continue
+                v = v[cle]
+            if liste:
+                suite.extend(v if isinstance(v, list) else [])
+            else:
+                suite.append(v)
+        trouve = suite
+    return trouve
+
+
+def lire_json(url, texte, chemin=None):
     """Imprime la forme d'une réponse JSON, et non ses 300 000 caractères."""
     import json
     donnees = json.loads(texte)
     titre("%s\n(JSON)" % url)
     print("%d caractères" % len(texte))
+
+    if chemin:
+        titre("VALEURS DISTINCTES — %s" % chemin)
+        compte = {}
+        for v in suivre(donnees, chemin):
+            k = json.dumps(v, ensure_ascii=False, sort_keys=True)
+            compte[k] = compte.get(k, 0) + 1
+        for k in sorted(compte, key=lambda x: (-compte[x], x)):
+            print("  %4d ×  %s" % (compte[k], couper(k, 80)))
+        return 0
+
     titre("STRUCTURE")
     for ligne in structure(donnees):
         print("  " + ligne)
     return 0
 
 
-def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False):
+def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False,
+         valeurs=None):
     net = R.Reseau(cache=not sans_cache)
     try:
         html = None
@@ -126,7 +165,7 @@ def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False):
         depart = html.lstrip()[:1]
         if depart in ("{", "["):
             try:
-                return lire_json(url, html)
+                return lire_json(url, html, chemin=valeurs)
             except ValueError:
                 pass    # ça y ressemblait sans en être : on repart en HTML
 
@@ -192,6 +231,9 @@ def main():
                     help="nombre de liens imprimés (défaut %d)" % LIENS_MAX)
     ap.add_argument("--sans-cache", action="store_true",
                     help="ignorer le cache disque")
+    ap.add_argument("--valeurs", default=None, metavar="CHEMIN",
+                    help="sur une réponse JSON : les valeurs distinctes "
+                         "trouvées à ce chemin, par exemple list[].rarity")
     ap.add_argument("--entier", action="store_true",
                     help="ne rien couper : indispensable pour lire un texte "
                          "juridique, où le mot coupé est celui qui compte")
@@ -203,7 +245,8 @@ def main():
 
     try:
         return lire(a.url, brut=a.brut, liens_max=a.liens,
-                    sans_cache=a.sans_cache, entier=a.entier)
+                    sans_cache=a.sans_cache, entier=a.entier,
+                    valeurs=a.valeurs)
     except Exception as e:
         # Un échec de lecture n'est pas un incident : c'est une réponse.
         # Elle doit rester lisible dans le journal, sans traceback.

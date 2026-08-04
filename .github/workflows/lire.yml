@@ -37,6 +37,10 @@ on:
         description: "Ne rien couper (pour lire un texte juridique)"
         type: boolean
         default: false
+      valeurs:
+        description: "JSON : valeurs distinctes à ce chemin (ex. list[].rarity)"
+        type: string
+        default: ""
 
 # Lecture seule : ce flux ne commite rien et n'a rien à modifier.
 permissions:
@@ -67,4 +71,5 @@ jobs:
           python3 outils/lire.py "${{ inputs.url }}" \
             --liens "${{ inputs.liens }}" --sans-cache \
             ${{ inputs.brut == true && '--brut' || '' }} \
-            ${{ inputs.entier == true && '--entier' || '' }}
+            ${{ inputs.entier == true && '--entier' || '' }} \
+            ${{ inputs.valeurs != '' && format('--valeurs {0}', inputs.valeurs) || '' }}
