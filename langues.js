@@ -56,6 +56,7 @@ var LANGUES = {
 
       etape1: "Étape 1",
       choisirCarte: "Choisir la carte",
+      cartesRecentes: "Reprendre",
       changer: "changer",
       inviteCarte: "Ouvre la carte annoncée au début du draft. Tu auras un nom tout de suite.",
       inviteRoster: "Coche d'abord tes brawlers, sinon impossible de te conseiller un perso jouable.",
@@ -196,6 +197,7 @@ var LANGUES = {
 
       etape1: "Step 1",
       choisirCarte: "Choose the map",
+      cartesRecentes: "Play again",
       changer: "change",
       inviteCarte: "Open the map announced at the start of the draft. You'll get a name straight away.",
       inviteRoster: "Tick your brawlers first, otherwise there's no way to suggest one you can actually play.",
@@ -336,6 +338,7 @@ var LANGUES = {
 
       etape1: "Paso 1",
       choisirCarte: "Elegir el mapa",
+      cartesRecentes: "Volver a jugar",
       changer: "cambiar",
       inviteCarte: "Abre el mapa anunciado al empezar el draft. Tendrás un nombre enseguida.",
       inviteRoster: "Marca primero tus brawlers; si no, no hay forma de recomendarte uno que puedas jugar.",

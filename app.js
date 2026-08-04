@@ -147,6 +147,7 @@ var ACTIONS = {
     }
     carteId = v;
     sauverCarte();
+    noterCarteRecente(v);
     cibleAjout = null;
     vueAnalyse = false;
     ecran = "draft";
@@ -225,6 +226,15 @@ var OUVRENT_UN_MENU = ["ouvrirLangue", "ouvrirMode"];
 
 conteneur.addEventListener("click", function (e) {
   var bouton = e.target.closest("[data-act]");
+
+  /* Le catalogue est peut-être arrivé pendant qu'on cochait : on l'applique
+     au premier geste qui nous fait quitter l'écran des brawlers. */
+  if (redessinEnAttente && bouton && ecran === "roster"
+      && bouton.dataset.act !== "toggle" && bouton.dataset.act !== "tout"
+      && bouton.dataset.act !== "rien" && bouton.dataset.act !== "groupe"
+      && bouton.dataset.act !== "manquants") {
+    redessinEnAttente = false;
+  }
 
   /* Cliquer à côté referme le menu ouvert, comme partout ailleurs. */
   if (!bouton) {
@@ -307,4 +317,23 @@ document.addEventListener("keydown", function (e) {
 
 chargerLangue();
 render();
-chargerBrawlers().then(render);
+
+/* Quand le catalogue arrive, on redessine — SAUF si l'écran des brawlers est
+   ouvert. Là, redessiner réorganise la grille par rareté sous le doigt de
+   quelqu'un en train de cocher : les cases changent de place, et on voit
+   d'autres noms cochés que ceux qu'on vient de toucher. Aucune information ne
+   vaut ça. L'écran se met à jour dès qu'on le quitte.
+
+   Grâce au catalogue gardé, ce cas ne se présente qu'au tout premier
+   lancement — les fois suivantes, la grille est déjà la bonne au premier
+   dessin et rien ne bouge. */
+var redessinEnAttente = false;
+
+/* Les icônes des modes se chargent à part : elles ne conditionnent aucun
+   calcul, donc leur arrivée n'a pas à retarder le premier dessin. */
+chargerModes().then(function () { if (ecran === "cartes") render(); });
+
+chargerBrawlers().then(function () {
+  if (ecran === "roster") { redessinEnAttente = true; return; }
+  render();
+});

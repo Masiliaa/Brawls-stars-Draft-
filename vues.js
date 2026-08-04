@@ -343,6 +343,16 @@ function ecranRoster() {
 
 /* ============ Écran 2 — choisir la carte ============ */
 
+/* L'icône d'un mode, ou rien. Les six modes n'avaient qu'une couleur ; dans
+   le jeu on les reconnaît à leur icône. Elle vient de l'API, jamais d'un
+   identifiant écrit en dur — et son absence ne casse rien. */
+function iconeMode(mode) {
+  var url = IMAGES_MODES[mode];
+  if (!url) return "";
+  return '<img class="ico-mode" src="' + echapper(url) + '" alt="" '
+       + 'loading="lazy" onerror="this.remove()">';
+}
+
 /* Une carte de la liste. */
 function ligneCarte(carte) {
   return '<button class="b full carte-choix" data-act="carte" data-v="' + carte.id + '">'
@@ -400,8 +410,8 @@ function listeCartesHTML() {
     html += '<section class="groupe-mode" style="--m:' + MODES[mode].c + '">'
           + '<button class="b full titre-mode-b' + (ouvert ? " ouvert" : "")
           + '" data-act="ouvrirModeCarte" data-v="' + mode + '">'
-          + '<span class="gauche"><span class="nom">' + echapper(nomMode(mode))
-          + '</span></span>'
+          + '<span class="gauche">' + iconeMode(mode)
+          + '<span class="nom">' + echapper(nomMode(mode)) + "</span></span>"
           + '<span class="compte">' + cartes.length + "</span>"
           + '<span class="fleche">' + (ouvert ? "⌄" : "›") + "</span></button>";
 
@@ -449,14 +459,17 @@ function boutonCarte(carte, couleur) {
      « Choisir la carte ». Et le bandeau proposait « changer » alors qu'il
      n'y avait rien à changer. Deux fois le même geste, un mot qui ment. */
   if (!carte) {
-    return '<button class="b full carte-active vide" data-act="cartes"'
-         + ' style="--m:' + couleur + '">'
-         + '<span class="deux-lignes">'
-         + '<span class="sur">' + echapper(t("etape1")) + "</span>"
-         + '<span class="nom">' + echapper(t("choisirCarte")) + "</span>"
-         + '<span class="aide">' + echapper(t("inviteCarte")) + "</span>"
-         + "</span>"
-         + '<span class="fleche" aria-hidden="true">›</span></button>';
+    /* L'invitation parlait encore l'ancienne langue : une grosse carte à
+       contour, « ÉTAPE 1 » en capitales orange, une flèche flottante. Plus
+       rien d'autre dans l'app n'a cette tête. Elle devient une phrase et un
+       bouton — et, quand il y a des cartes récentes, elle passe SOUS elles :
+       la reprise est le geste courant, le choix complet est l'exception. */
+    var invite = '<button class="b full invite-carte" data-act="cartes">'
+               + '<span class="nom">' + echapper(t("choisirCarte")) + "</span>"
+               + '<span class="fleche" aria-hidden="true">›</span></button>'
+               + '<p class="aide-carte">' + echapper(t("inviteCarte")) + "</p>";
+    var recentes = bandeRecentes();
+    return recentes ? recentes + invite : invite;
   }
 
   /* Une carte déjà choisie n'est plus une décision, c'est un rappel : elle
@@ -470,6 +483,29 @@ function boutonCarte(carte, couleur) {
        + '<span class="mode">' + echapper(nomMode(carte.mode)) + "</span>"
        + '<span class="nom">' + echapper(nomCarte(carte)) + "</span>"
        + '<span class="action">' + echapper(t("changer")) + "</span></button>";
+}
+
+/* Les dernières cartes jouées, en une bande sous l'invitation.
+   ------------------------------------------------------------------------
+   Le chemin coûtait trois gestes : ouvrir la liste, déplier le mode, toucher
+   la carte — à chaque partie, avant même de commencer. On ne joue pourtant
+   pas 27 cartes au hasard : on enchaîne quelques parties sur la rotation du
+   moment. Une carte déjà jouée est donc à UN geste, et la liste complète
+   reste juste au-dessus pour les autres. */
+function bandeRecentes() {
+  var recentes = cartesRecentes();
+  if (!recentes.length) return "";
+
+  var html = '<div class="titre-doux">' + echapper(t("cartesRecentes")) + "</div>"
+           + '<div class="recentes">';
+  recentes.forEach(function (c) {
+    html += '<button class="recente" data-act="carte" data-v="' + c.id + '"'
+          + ' style="--m:' + MODES[c.mode].c + '">'
+          + (iconeMode(c.mode) || vignette(c, 34))
+          + '<span class="txt"><span class="n">' + echapper(nomCarte(c)) + "</span>"
+          + '<span class="m">' + echapper(nomMode(c.mode)) + "</span></span></button>";
+  });
+  return html + "</div>";
 }
 
 /* Où en est le draft : combien de picks adverses viendront encore après le

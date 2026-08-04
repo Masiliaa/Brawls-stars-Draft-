@@ -166,6 +166,24 @@ function indexerBrawlers() {
 }
 indexerBrawlers();
 
+/* Le catalogue gardé est relu ICI, avant le premier dessin — et non pas
+   seulement quand l'appel réseau échoue.
+   ------------------------------------------------------------------------
+   Sans ça, l'app démarrait sur la liste de secours (pas de rareté, donc
+   grille alphabétique), puis l'API répondait et la grille se réorganisait
+   PAR RARETÉ, sous le doigt de quelqu'un en train de cocher. Les brawlers
+   cochés restaient cochés, mais ailleurs : à l'écran on voyait d'autres noms
+   cochés que ceux qu'on venait de toucher. Signalé, reproduit, mesuré — les
+   douze premières cases passaient de « 8-Bit, Alli, Amber… » à « 8-Bit,
+   Belle, Bull, Chuck… » sans que personne n'ait rien demandé.
+
+   Relu tout de suite, l'écran est le même du premier au dernier instant pour
+   quiconque a déjà ouvert l'app une fois. */
+/* (relireCatalogue est déclarée plus bas ; une déclaration de fonction est
+   utilisable avant sa ligne, c'est ce qui permet de garder la définition
+   auprès de sa jumelle garderCatalogue().) */
+relireCatalogue();
+
 /* Le brawler correspondant à une clé. Renvoie un objet minimal plutôt que
    null si la clé est inconnue, pour que l'affichage ne casse jamais. */
 function brawler(cle) {
@@ -208,6 +226,49 @@ function relireCatalogue() {
   brawlers = lu;
   indexerBrawlers();
   return true;
+}
+
+/* ============ Les images des modes de jeu ============
+   Les six modes n'avaient qu'une couleur. Dans le jeu ils ont chacun leur
+   icône, et c'est à elle qu'on les reconnaît — pas à un nom écrit.
+
+   Les identifiants d'image ne sont PAS écrits en dur : on les lit, comme le
+   reste. Les deviner reviendrait à inventer une valeur, et une icône fausse
+   est pire qu'une icône absente. Le rapprochement se fait sur le nom
+   normalisé — « Brawl-Ball » et « brawlBall » donnent la même clé. */
+var CLE_MODES = "manager:modes";
+var IMAGES_MODES = {};
+
+try {
+  IMAGES_MODES = JSON.parse(localStorage.getItem(CLE_MODES) || "{}") || {};
+} catch (e) { IMAGES_MODES = {}; }
+
+function chargerModes() {
+  return fetch("https://api.brawlapi.com/v1/gamemodes")
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (donnees) {
+      var parClefMode = {};
+      (donnees.list || []).forEach(function (m) {
+        var img = m.imageUrl || m.imageUrl2;
+        if (!img) return;
+        [m.hash, m.name, m.scHash].forEach(function (nom) {
+          if (nom) parClefMode[clef(nom)] = img;
+        });
+      });
+      var trouve = {};
+      Object.keys(MODES).forEach(function (mode) {
+        var img = parClefMode[clef(mode)];
+        if (img) trouve[mode] = img;
+      });
+      /* On ne remplace que si on a trouvé quelque chose : une réponse vide ne
+         doit pas effacer les icônes de la dernière fois. */
+      if (Object.keys(trouve).length) {
+        IMAGES_MODES = trouve;
+        try { localStorage.setItem(CLE_MODES, JSON.stringify(trouve)); }
+        catch (e) { /* ignoré */ }
+      }
+    })
+    .catch(function () { /* on garde ce qu'on avait, ou rien */ });
 }
 
 /* Complète le catalogue avec l'API : vraies URL d'image, couleur de rareté
@@ -297,6 +358,39 @@ function brawlersNouveaux() {
    l'on était — dans une app qui vise moins de 25 secondes. Incohérent, et
    c'est l'incohérence qui se remarque. */
 var CLE_CARTE = "manager:carte";
+
+/* Les dernières cartes jouées, la plus récente en tête.
+   ------------------------------------------------------------------------
+   Choisir une carte coûtait trois gestes : ouvrir la liste, déplier le mode,
+   toucher la carte — à chaque partie, avant même de commencer. Or on ne joue
+   pas 27 cartes au hasard : on enchaîne quelques parties sur la rotation du
+   moment. Les dernières jouées suffisent donc presque toujours, et elles
+   ramènent le choix à UN geste, depuis l'écran de draft. */
+var CLE_RECENTES = "manager:recentes";
+var MAX_RECENTES = 4;
+
+function cartesRecentes() {
+  var lu;
+  try { lu = JSON.parse(localStorage.getItem(CLE_RECENTES) || "[]"); }
+  catch (e) { return []; }
+  if (!lu || !lu.length) return [];
+  /* Filtrées sur le pool en cours : la rotation change à chaque saison, et
+     proposer une carte qui n'existe plus serait pire que ne rien proposer. */
+  return lu.map(function (id) {
+    for (var i = 0; i < MAPS.length; i++) if (MAPS[i].id === id) return MAPS[i];
+    return null;
+  }).filter(Boolean);
+}
+
+function noterCarteRecente(id) {
+  if (!id) return;
+  var liste = cartesRecentes().map(function (c) { return c.id; });
+  liste = [id].concat(liste.filter(function (x) { return x !== id; }));
+  try {
+    localStorage.setItem(CLE_RECENTES,
+      JSON.stringify(liste.slice(0, MAX_RECENTES)));
+  } catch (e) { /* ignoré */ }
+}
 
 function sauverCarte() {
   try {
