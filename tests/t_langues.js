@@ -129,12 +129,16 @@ const check = (nom, cond, detail = '') => {
   const contient = (foin, aiguille) =>
     foin.toLowerCase().includes(aiguille.toLowerCase());
   const TEMOINS = {
+    // Le témoin de l'écran de conseil était l'étiquette « Prends », en
+    // capitales orange au-dessus du nom : elle a disparu avec la carte qui
+    // la portait. On prend les intitulés de la saisie, qui sont maintenant
+    // les mots traduits les plus sûrement présents sur cet écran.
     fr: { draft: 'Choisir la carte', roster: 'Tout cocher', cartes: 'Razzia de gemmes',
-          conseil: 'Prends', note: 'jugement d\'experts' },
+          conseil: 'avec toi', note: 'jugement d\'experts' },
     en: { draft: 'Choose the map', roster: 'Select all', cartes: 'Gem Grab',
-          conseil: 'Pick', note: 'expert judgement' },
+          conseil: 'your team', note: 'expert judgement' },
     es: { draft: 'Elegir el mapa', roster: 'Marcar todos', cartes: 'Atrapagemas',
-          conseil: 'Elige', note: 'criterio de expertos' }
+          conseil: 'tu equipo', note: 'criterio de expertos' }
   };
 
   for (const l of ['fr', 'en', 'es']) {

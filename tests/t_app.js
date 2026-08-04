@@ -462,7 +462,11 @@ const check = (nom, cond, detail = '') => {
   check('liste des cartes affichée', await page.getByText('Safe Zone').first().isVisible());
   await page.getByText('Safe Zone').first().click();
   check('hero affiché après choix', await page.locator('.hero .name').first().isVisible());
-  check('bouton "Prends" présent', (await page.locator('.ribbon').first().textContent()) === 'Prends');
+  // L'étiquette « Prends » en capitales orange a disparu avec la carte qui la
+  // portait. Ce qui doit rester vérifié, c'est que le verdict porte sa mesure :
+  // un nom sans son tier ni son taux serait une affirmation sans source.
+  check('le verdict porte sa mesure',
+    /Tier/.test(await page.locator('.hero .mesure').first().textContent()));
   await page.locator('[data-act="addE"]').click();
   check('grille de choix ennemi', await page.locator('#grid .cel').first().isVisible());
   await page.locator('#grid .cel').first().click();

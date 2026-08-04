@@ -459,12 +459,16 @@ function boutonCarte(carte, couleur) {
          + '<span class="fleche" aria-hidden="true">›</span></button>';
   }
 
-  return '<button class="b full carte-active" data-act="cartes" style="--m:' + couleur + '">'
-       + '<span class="gauche">' + vignette(carte, 32)
-       + '<span class="deux-lignes">'
-       + '<span class="sur">' + echapper(nomMode(carte.mode)) + "</span>"
+  /* Une carte déjà choisie n'est plus une décision, c'est un rappel : elle
+     tenait sur un bandeau de 72 px avec vignette, mode au-dessus, nom en
+     dessous et « changer » à droite — la place d'un titre pour un rappel.
+     Elle tient sur une ligne, où le nom de la carte est le seul mot en
+     blanc. La vignette part avec : on ne cherche pas sa carte ici, on
+     vérifie qu'on ne s'est pas trompé, et un nom suffit à ça. */
+  return '<button class="ligne-carte carte-active" data-act="cartes"'
+       + ' style="--m:' + couleur + '">'
+       + '<span class="mode">' + echapper(nomMode(carte.mode)) + "</span>"
        + '<span class="nom">' + echapper(nomCarte(carte)) + "</span>"
-       + "</span></span>"
        + '<span class="action">' + echapper(t("changer")) + "</span></button>";
 }
 
@@ -518,36 +522,52 @@ function blocConseils(liste, couleurMode, cote) {
       + ' title="' + echapper(t("voirCalcul")) + '"'
       + ' style="--r:' + (premier.b.couleur || couleurMode) + '">';
 
-  html += '<span class="tierb">' + echapper(t("tier", { tier: premier.tier })) + "</span>"
-        + '<div class="in">' + portrait(premier.b, 84, true)
-        + '<span><span class="ribbon">' + echapper(t("prends")) + "</span>"
-        + '<div class="tt name">' + echapper(premier.nom) + "</div></span>"
-        + (cote ? "" : '<span class="vers-detail" aria-hidden="true">›</span>')
-        + "</div>"
-        + '<div class="why">' + echapper(premier.raison) + "</div>"
+  /* Le verdict tenait dans une carte : fond, contour, halo, une étiquette
+     « PICK » en capitales orange, et le tier en pastille flottante en haut à
+     droite, alignée avec rien. Cinq objets pour dire un nom.
+     Il ne reste que le nom, posé à côté de son portrait sur le fond de la
+     page, et une ligne de mesure en dessous. Le tier y rejoint le taux :
+     ce sont deux chiffres de même nature, ils vont ensemble. */
+  var sur = surLaCarte(premier.k, carteActive());
+  html += '<span class="in">' + portrait(premier.b, 60, false)
+        + '<span class="tt name">' + echapper(premier.nom) + "</span></span>"
+        + '<span class="mesure"><span class="chip">'
+        + echapper(t("tier", { tier: premier.tier })) + "</span>"
+        + (sur ? "<span>" + echapper(t("surCetteCarte",
+            { wr: virgule(sur.wr.toFixed(1)) })) + "</span>" : "")
+        + "</span>"
+        + '<span class="why">' + echapper(premier.raison) + "</span>"
         + (cote ? "</div>" : "</button>");
 
   if (cote) return html;
 
-  /* Les suivants tenaient sur trois lignes pleines, raison comprise : 195 px,
-     le plus gros poste de l'écran après le conseil lui-même, et c'est lui qui
-     poussait la saisie hors du champ. Ils passent en bande qui se fait
-     glisser du pouce. Ce qu'ils perdent — la phrase qui explique pourquoi —
-     est précisément ce que le mode analyse existe pour montrer, à un geste
-     d'ici. Le rang et le taux, eux, restent : ce sont des mesures. */
-  html += '<div class="lab serre">' + echapper(t("sinon")) + "</div>"
-        + '<div class="replis">';
+  /* Les remplaçants ont fait trois allers-retours, et voici pourquoi.
+     ----------------------------------------------------------------------
+     Trois lignes pleines avec leur raison : 195 px, ils poussaient la saisie
+     hors de l'écran. Réduits à une bande qui glisse : la place gagnée, mais
+     la phrase perdue — or c'est elle qui permet de choisir entre eux.
+
+     Mesuré depuis : une fois l'écran vraiment rangé, il restait environ
+     300 px de vide au milieu. La place existait, elle était simplement
+     entassée là où elle ne servait à rien. Elle leur revient, la phrase
+     avec — et le taux tombe en colonne à droite, ce à quoi servent des
+     chiffres alignés. */
+  html += '<div class="listes" aria-label="' + echapper(t("sinon")) + '">';
 
   liste.slice(1).forEach(function (x) {
-    var sur = surLaCarte(x.k, carteActive());
-    var detail = sur
-      ? t("altRang", { rang: sur.rang, wr: virgule(sur.wr.toFixed(1)) })
-      : t("tier", { tier: x.tier });
-
-    html += '<button class="repli" data-act="detail">'
-          + portrait(x.b, 28, false)
+    var s = surLaCarte(x.k, carteActive());
+    /* Quand la seule chose à dire est le rang sur la carte, la phrase
+       répéterait le taux affiché juste à droite — et avec deux décimales
+       contre une, ce qui se lit comme deux chiffres différents. On garde
+       alors le rang seul ; sinon la phrase, qui dit quelque chose. */
+    var sous = (x.raisonEstLeRang && s) ? t("rangCarte", { rang: s.rang }) : x.raison;
+    html += '<button class="autre" data-act="detail">'
+          + portrait(x.b, 38, false)
           + '<span class="txt"><span class="n">' + echapper(x.nom) + "</span>"
-          + '<span class="d">' + echapper(detail) + "</span></span></button>";
+          + '<span class="p">' + echapper(sous) + "</span></span>"
+          + '<span class="v">'
+          + echapper(s ? virgule(s.wr.toFixed(1)) + " %" : t("tier", { tier: x.tier }))
+          + "</span></button>";
   });
 
   return html + "</div>";
@@ -671,38 +691,48 @@ function boutonAjout(action, libelle) {
 /* Mode rapide — deux rangées au lieu de trois sections. « Nouveau draft »
    se range au bout du premier intitulé : il ne coûte plus une ligne. */
 function blocSaisieCompacte() {
-  var html = '<div class="lab serre lab-avec-action">'
-           + "<span>" + echapper(t("prisEnFace")) + "</span>"
-           + '<button class="b alt sm relancer" data-act="reset">'
-           + echapper(t("nouveauDraft")) + "</button></div>"
-           + '<div class="wrap">';
+  /* Trois intitulés en capitales grises espacées, chacun sur sa ligne, et
+     sous chacun une rangée de pastilles de largeurs toutes différentes :
+     six lignes pour trois informations, et rien qui s'aligne.
 
-  ennemis.forEach(function (cle) { html += pastille(cle, "", "rme"); });
-  if (ennemis.length < MAX_ENNEMIS) html += boutonAjout("addE");
-  html += "</div>";
-
-  html += '<div class="lab serre">' + echapper(t("monEquipe")) + "</div>"
-        + '<div class="wrap">';
-  allies.forEach(function (cle) { html += pastille(cle, "allie", "rma"); });
-  if (allies.length < MAX_ALLIES) html += boutonAjout("addA");
-  html += "</div>";
-
-  /* Les bans avaient leur propre section, puis ont été collés à la suite des
-     alliés pour gagner de la hauteur. Résultat : un intitulé pour deux
-     choses différentes, et six portraits sans nom qui débordaient sur une
-     deuxième ligne. Ils reprennent leur intitulé, avec le compte — c'est ce
-     qu'on veut savoir d'un coup d'œil, pas qui exactement. */
-  html += '<div class="lab serre lab-avec-action">'
-        + "<span>" + echapper(t("bannis")) + "</span>"
-        + '<span class="compte-ban">' + bans.length + "/" + MAX_BANS + "</span></div>"
-        + '<div class="wrap rangee-bans">';
-  bans.forEach(function (cle) { html += jetonBan(cle); });
-  if (bans.length < MAX_BANS) {
-    html += '<button class="jeton-ctx vide" data-act="addB"'
-          + ' title="' + echapper(t("ajouterBan")) + '">+</button>';
+     Une rangée par liste. L'intitulé passe en minuscules dans une colonne de
+     largeur fixe — c'est elle qui met les portraits en colonne droite, ce
+     qui manquait le plus. Un seul « + » par rangée : quatre carrés en
+     pointillés vides faisaient formulaire à remplir, alors qu'un compte dit
+     la même chose sans occuper l'écran. */
+  function rangee(cleLibelle, cles, classe, actionRetirer, actionAjouter,
+                  maximum, fin) {
+    var html = '<div class="r' + (classe ? " " + classe : "") + '">'
+             + '<span class="cle">' + echapper(t(cleLibelle)) + "</span>";
+    cles.forEach(function (cle) {
+      html += '<button class="t" data-act="' + actionRetirer + '" data-v="' + cle
+            + '" title="' + echapper(t("retirer", { nom: nomBrawler(cle) })) + '">'
+            + portrait(brawler(cle), 36, false)
+            + '<span class="croix" aria-hidden="true">✕</span></button>';
+    });
+    if (cles.length < maximum) {
+      html += '<button class="plus" data-act="' + actionAjouter
+            + '" title="' + echapper(t("ajouter")) + '">+</button>';
+    }
+    return html + (fin || "") + "</div>";
   }
 
-  return html + "</div>";
+  /* « Nouveau draft » se range au bout de la première rangée : c'est un geste
+     rare, il ne mérite pas une ligne à lui. */
+  var relance = '<button class="b alt sm relancer" data-act="reset">'
+              + echapper(t("nouveauDraft")) + "</button>";
+  /* Le compte s'affiche TOUJOURS, y compris à zéro. Une fois les six bans
+     posés le « + » disparaît de lui-même, et sans le compte plus rien
+     n'expliquait pourquoi : « 0 restants » est justement la réponse. */
+  var compte = '<span class="reste">'
+             + echapper(t("bansRestants", { n: MAX_BANS - bans.length }))
+             + "</span>";
+
+  return '<div class="etat">'
+       + rangee("saisieFace", ennemis, "", "rme", "addE", MAX_ENNEMIS, relance)
+       + rangee("saisieAvec", allies, "allie", "rma", "addA", MAX_ALLIES)
+       + rangee("saisieBans", bans, "ban", "rmb", "addB", MAX_BANS, compte)
+       + "</div>";
 }
 
 /* Mode analyse — la même information sur une seule ligne, en tête d'écran :
@@ -748,7 +778,9 @@ function blocBans() {
      chercher le nom, le taper, le désigner. Le conseil et le geste étaient
      séparés par cinq actions. Chaque ligne est maintenant le bouton qui
      l'exécute. */
-  var html = '<div class="lab serre">' + echapper(t("aBannir")) + "</div>";
+  /* Même intitulé que la saisie : en minuscules, sans capitales espacées.
+     Sept intitulés criés sur un écran, c'était sept fois personne. */
+  var html = '<div class="titre-doux">' + echapper(t("aBannir")) + "</div>";
   liste.forEach(function (x) {
     html += '<button class="row conseil-ban" data-act="banConseil" data-v="'
           + x.k + '" title="' + echapper(t("bannirCelui", { nom: x.nom })) + '">'

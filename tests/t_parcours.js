@@ -144,11 +144,15 @@ const check = (nom, cond, detail = '') => {
   await page.getByText('Safe Zone').first().click();
   check('un brawler est conseillé', await page.locator('.hero .name').isVisible());
   check('le mode est affiché',
-    (await page.locator('.b.full').first().textContent()).includes('Braquage'));
-  // Les suggestions de repli ne sont plus des lignes pleines mais une bande
-  // qui se fait glisser : elles coûtaient 195 px et repoussaient la saisie
-  // hors de l'écran. Le nombre affiché, lui, n'a pas changé.
-  check('3 suggestions de repli', (await page.locator('.repli').count()) === 3);
+    (await page.locator('.carte-active').first().textContent()).includes('Braquage'));
+  // Les remplaçants ont fait trois allers-retours : trois lignes pleines
+  // (195 px, la saisie sortait de l'écran), puis une bande qui glissait (la
+  // place gagnée, la phrase perdue), puis de nouveau une liste — parce qu'une
+  // fois l'écran rangé il restait 300 px de vide au milieu. La place existait.
+  check('3 remplaçants proposés', (await page.locator('.autre').count()) === 3);
+  check('et chacun dit pourquoi',
+    (await page.locator('.autre .p').count()) === 3 &&
+    (await page.locator('.autre .p').first().textContent()).trim().length > 0);
   check('et 3 bans conseillés pendant la phase de ban',
     (await page.locator('.conseil-ban').count()) === 3);
   // Une bande qui déborde doit défiler dans sa propre boîte : si elle fait
@@ -292,10 +296,10 @@ const check = (nom, cond, detail = '') => {
   // retirables — ils ressemblaient à de la décoration.
   console.log('\n== les bans ==');
   check('chaque ban banni porte une croix',
-    (await page.locator('.jeton-ctx.ban .croix').count()) ===
+    (await page.locator('.etat .ban .t .croix').count()) ===
     (await page.evaluate(() => bans.length)));
   check('et le compte est affiché',
-    (await page.locator('.compte-ban').textContent()).includes('/'));
+    /\d/.test(await page.locator('.etat .reste').textContent()));
 
 
   // ── Le mode rapide tient sur un écran ──────────────────────────────────
@@ -305,8 +309,10 @@ const check = (nom, cond, detail = '') => {
   // qui débordait. Sans ce contrôle, la propriété se reperdra au premier
   // bloc ajouté.
   console.log('\n== le mode rapide tient sur une hauteur d\'iPhone ==');
+  // La saisie n'est plus faite de « .wrap » empilés mais d'une rangée par
+  // liste, dans « .etat ». La dernière est celle des bans.
   const basUtile = await page.evaluate(() => {
-    const l = document.querySelectorAll('.wrap');
+    const l = document.querySelectorAll('.etat .r');
     return l.length ? Math.round(l[l.length - 1].getBoundingClientRect().bottom) : 1e9;
   });
   check('saisie comprise, tout tient sous 844 px', basUtile <= 844, basUtile);
@@ -356,7 +362,7 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="rma"]').count()) === 0 &&
     (await page.locator('[data-act="rmb"]').count()) === 0);
   check('la carte est conservée',
-    (await page.locator('.b.full').first().textContent()).includes('Safe Zone'));
+    (await page.locator('.carte-active').first().textContent()).includes('Safe Zone'));
 
   // Le conseil de ban n'apparaît qu'en phase de ban, c'est-à-dire quand
   // aucun pick n'est encore saisi — donc juste ici.
@@ -411,7 +417,7 @@ const check = (nom, cond, detail = '') => {
   await page.locator('#q').fill('Hot Potato');
   await page.getByText('C\'est chaud patate').first().click();
   check('nouvelle carte affichée sous son nom français',
-    (await page.locator('.b.full').first().textContent()).includes('chaud patate'));
+    (await page.locator('.carte-active').first().textContent()).includes('chaud patate'));
   check('les ennemis ont été vidés', (await page.locator('[data-act="rme"]').count()) === 0);
 
   console.log('\n== roster vide : message d\'invite ==');

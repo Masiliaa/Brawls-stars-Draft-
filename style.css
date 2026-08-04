@@ -99,32 +99,46 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .port{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;
   overflow:hidden;border:none;background:var(--r);border-radius:50%;box-shadow:none}
 .port img{width:112%;height:112%;object-fit:cover;object-position:center 18%;display:block}
-.port em{font-family:inherit;font-style:normal;font-weight:600;color:#0d0d0e;font-size:var(--fs)}
+/* line-height:1 obligatoire : les conteneurs qui portent un portrait mettent
+   souvent line-height:0 pour ne pas gagner de pixels parasites, et l'initiale
+   se retrouvait alors haute de zéro — un carré de couleur vide. */
+.port em{font-family:inherit;font-style:normal;font-weight:600;color:#0d0d0e;
+  font-size:var(--fs);line-height:1}
 .port.tilt{transform:none}
 .vig{display:block;flex:none;overflow:hidden;border-radius:8px;border:none;background:#151517;box-shadow:none}
 .vig img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Le hero est un bouton depuis qu'il ouvre le calcul : il faut donc annuler
    ce que le navigateur met sur un <button> et rendre le texte alignable. */
-.hero{position:relative;background:var(--carte);border:1px solid var(--trait);border-radius:var(--r2);
-  padding:var(--e5) var(--e4) var(--e4);margin-bottom:var(--e3);overflow:hidden;box-shadow:none;
+/* Le verdict tenait dans une carte : fond, contour, halo, une étiquette
+   « PICK » en capitales orange, et le tier en pastille flottante alignée avec
+   rien. Cinq objets pour dire un nom. Il ne reste que le nom, posé sur le fond
+   de la page — et le bord gauche de l'écran est enfin le même pour tous. */
+.hero{position:relative;background:transparent;border:none;border-radius:0;
+  padding:0;margin:var(--e5) 0 var(--e4);overflow:visible;box-shadow:none;
   display:block;width:100%;text-align:left;font:inherit;color:inherit;
   cursor:pointer;-webkit-appearance:none}
-.hero:active{background:var(--carte2)}
+.hero:active .name{color:var(--doux)}
 .hero .vers-detail{margin-left:auto;flex:none;color:var(--faible);font-size:22px;
   align-self:center;line-height:1}
 .retour-conseil{margin-bottom:14px}
-.hero:before{content:"";position:absolute;top:-40%;left:-10%;width:120%;height:180%;
-  background:radial-gradient(closest-side,color-mix(in srgb,var(--r) 22%,transparent),transparent 68%);pointer-events:none}
-.hero .in{position:relative;display:flex;align-items:center;gap:var(--e4)}
+.hero .in{position:relative;display:flex;align-items:flex-end;gap:var(--e3)}
 .ribbon{display:inline-block;background:transparent;color:var(--vif);border:none;border-radius:0;
   font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:800;letter-spacing:.2em;
   padding:0;box-shadow:none;margin-bottom:var(--e2)}
-.name{font-size:clamp(34px,11vw,50px);font-weight:800;letter-spacing:-.045em;word-break:break-word;line-height:.95}
+.name{font-size:clamp(34px,11.5vw,46px);font-weight:800;letter-spacing:-.045em;
+  word-break:break-word;line-height:.88;display:block}
+/* Le tier et le taux sont deux chiffres de même nature : ils vont ensemble,
+   sur une ligne sous le nom. Le tier flottait en pastille en haut à droite. */
+.hero .mesure{display:flex;align-items:baseline;gap:var(--e2);margin-top:var(--e3);
+  font-size:var(--t2);color:var(--doux);font-variant-numeric:tabular-nums}
+.hero .chip{border:1px solid var(--trait);border-radius:var(--r3);
+  padding:2px 9px;font-size:12px;flex:none}
 .tierb{font-family:inherit;font-size:11px;font-weight:600;color:var(--doux);background:transparent;
   border:1px solid var(--trait);border-radius:999px;padding:4px 10px;position:absolute;top:18px;right:18px;z-index:2}
-.why{position:relative;margin-top:18px;background:transparent;border-top:1px solid var(--trait);
-  border-radius:0;padding:var(--e3) 0 0;font-size:var(--t2);font-weight:400;color:var(--doux);line-height:1.5}
+.why{position:relative;display:block;margin-top:var(--e3);background:transparent;
+  border:none;border-radius:0;padding:0;font-size:var(--t2);font-weight:400;
+  color:var(--doux);line-height:1.5}
 
 .row{display:flex;align-items:center;gap:13px;background:transparent;border:none;
   border-bottom:1px solid var(--trait);border-radius:0;padding:12px 2px;margin-bottom:0;box-shadow:none}
@@ -183,6 +197,49 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .titre-rarete{font-size:var(--t2);font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;color:var(--doux)}
 .compte-rarete{font-size:var(--t2);color:var(--faible);margin-right:auto}
+
+/* Un intitulé n'a pas besoin de crier. Sept capitales grises espacées sur un
+   même écran, c'était sept fois personne. */
+.titre-doux{font-size:var(--t2);color:var(--faible);margin:var(--e5) 0 var(--e2)}
+
+.listes{display:flex;flex-direction:column;border-top:1px solid var(--trait);
+  padding-top:var(--e2)}
+.autre{display:flex;align-items:center;gap:13px;width:100%;padding:var(--e2) 0;
+  background:transparent;border:none;font:inherit;color:inherit;text-align:left;
+  cursor:pointer;-webkit-appearance:none;min-height:52px}
+.autre .txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.autre .n{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.autre .p{font-size:12.5px;color:var(--faible);line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.autre .v{margin-left:auto;flex:none;font-size:var(--t2);color:var(--doux);
+  font-variant-numeric:tabular-nums;padding-left:var(--e2)}
+.autre:active{opacity:.6}
+
+/* La saisie : l'intitulé occupe une colonne de largeur fixe, donc les
+   portraits forment une colonne droite — ce qui manquait le plus. */
+.etat{display:flex;flex-direction:column;gap:var(--e3);margin-top:var(--e5);
+  padding-top:var(--e4);border-top:1px solid var(--trait)}
+/* Six bans, plus l'intitulé, plus le compte : en français la rangée dépassait
+   de 17 px. Elle passe à la ligne plutôt que de faire glisser la page entière
+   — un écran qui se décale sous le pouce pendant un draft est pire qu'un
+   compte qui descend d'une ligne. */
+.etat .r{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
+.etat .cle{width:76px;flex:none;font-size:var(--t2);color:var(--faible)}
+.etat .t{position:relative;background:transparent;border:none;padding:0;
+  cursor:pointer;line-height:0;-webkit-appearance:none;flex:none}
+.etat .plus{width:36px;height:36px;flex:none;border-radius:12px;
+  border:1px solid var(--trait);background:transparent;color:var(--faible);
+  font:inherit;font-size:17px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
+.etat .plus:active{border-color:var(--vif);color:var(--vif)}
+.etat .reste{margin-left:auto;font-size:12px;color:var(--faible);
+  font-variant-numeric:tabular-nums}
+.etat .relancer{margin-left:auto;flex:none}
+.etat .ban .t{opacity:.5}
+.etat .t .croix{position:absolute;top:-4px;right:-4px;width:15px;height:15px;
+  border-radius:50%;background:var(--fond);border:1px solid var(--trait);
+  color:var(--doux);font-size:8px;line-height:13px;text-align:center;
+  pointer-events:none}
 
 .lab{font-family:inherit;text-transform:uppercase;font-size:var(--t1);font-weight:700;letter-spacing:.16em;
   color:var(--faible);margin:var(--e5) 0 var(--e3);text-shadow:none}
@@ -244,6 +301,17 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 }
 
 /* ============ Liste des cartes ============ */
+/* La carte en cours : une ligne, où le nom est le seul mot en blanc. */
+.ligne-carte{display:flex;align-items:baseline;gap:var(--e2);width:100%;
+  background:transparent;border:none;padding:var(--e2) 0;min-height:44px;
+  font:inherit;color:var(--doux);font-size:var(--t2);cursor:pointer;
+  text-align:left;-webkit-appearance:none;border-bottom:1px solid var(--trait)}
+.ligne-carte .nom{color:var(--texte);font-weight:650;font-size:var(--t3);
+  letter-spacing:-.015em;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.ligne-carte .action{margin-left:auto;color:var(--faible);flex:none}
+.ligne-carte:active .nom{color:var(--doux)}
+
 .groupe-mode{display:block;margin-bottom:var(--e5)}
 .titre-mode{color:var(--m);margin-top:0}
 .carte-choix{margin-bottom:var(--e2)}
@@ -251,7 +319,9 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .b.full .gauche{display:flex;align-items:center;gap:var(--e3);min-width:0}
 .b.full .nom{font-size:17px;font-weight:600;letter-spacing:-.02em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.carte-active{margin-bottom:14px;border-left:3px solid var(--m)}
+/* Le filet coloré du mode reste sur l'invitation, qui est un bloc ; sur la
+   ligne d'une carte déjà choisie il pendait dans le vide, aligné avec rien. */
+.carte-active.vide{margin-bottom:var(--e3);border-left:3px solid var(--m)}
 /* Le bandeau vide est l'écran d'accueil à lui seul : il porte la consigne et
    le seul geste possible. Il reste étroit même sur un grand écran — une
    phrase de vingt mots étalée sur 1500 px ne se lit pas, elle se subit. */
@@ -317,8 +387,11 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .row.conseil-ban:active{opacity:1;background:var(--carte2)}
 .row.conseil-ban:active .geste{border-style:solid;color:var(--vif);border-color:var(--vif)}
 
-.situation{margin:0 0 12px;font-size:11.5px;font-weight:600;color:var(--doux);
-  letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+/* Elle était en gras, juste sous le nom de la carte : deux lignes fortes
+   collées, dont aucune n'est la réponse. C'est un état, pas un titre. */
+.situation{margin:var(--e3) 0 0;font-size:var(--t2);font-weight:400;
+  color:var(--faible);letter-spacing:0;display:flex;align-items:center;
+  gap:var(--e2)}
 /* Un trait par pick adverse : plein s'il est saisi, creux s'il peut encore
    tomber. Rien n'est deviné — on ne sait pas qui pique en premier. */
 .situation .tour{display:flex;align-items:center;gap:3px;flex:none}

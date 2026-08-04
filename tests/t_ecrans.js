@@ -56,8 +56,10 @@ const PREPARER = () => {
     const vu = await page.evaluate(([hauteur, prep]) => {
       eval('(' + prep + ')()');
       const nomConseil = document.querySelector('.hero .name');
-      const wraps = document.querySelectorAll('.wrap');
-      const dernier = wraps[wraps.length - 1];
+      // La saisie n'est plus faite de « .wrap » empilés mais d'une rangée par
+      // liste, dans « .etat ». On mesure la dernière, qui est celle des bans.
+      const rangees = document.querySelectorAll('.etat .r, .wrap');
+      const dernier = rangees[rangees.length - 1];
       return {
         large: modeEffectif() === 'large',
         deuxCol: !!document.querySelector('.deux-colonnes'),

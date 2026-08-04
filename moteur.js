@@ -164,6 +164,11 @@ function cleSynergie(a, b) {
   return [a, b].sort().join("|");
 }
 
+/* La raison « n°5 sur cette carte, 55,29 % » n'explique rien : elle répète
+   une mesure déjà affichée à côté. La vue a besoin de le savoir pour ne pas
+   imprimer deux fois le même chiffre — d'où cette priorité nommée. */
+var PRIORITE_CARTE = 1;
+
 function raison(priorite, texte) {
   return { priorite: priorite, texte: texte };
 }
@@ -233,7 +238,7 @@ function pointsDeCarte(cle, carte) {
     var tauxVictoire = carte.top[i][1];
     return {
       points: BONUS_CARTE[i] || BONUS_CARTE_RESTE,
-      raisons: [raison(1, t("raisonCarte", {
+      raisons: [raison(PRIORITE_CARTE, t("raisonCarte", {
         rang: i + 1, wr: virgule(tauxVictoire)
       }))]
     };
@@ -518,6 +523,9 @@ function evaluer(cle, carte) {
     k: cle, b: b, nom: b.nom,
     tier: base.tier, score: score,
     raison: raisons[0].texte,
+    /* Vrai quand la seule chose qu'on ait à dire est le rang sur la carte :
+       la vue affiche alors le rang seul, et laisse le taux à sa colonne. */
+    raisonEstLeRang: raisons[0].priorite === PRIORITE_CARTE,
     raisons: raisons.map(function (r) { return r.texte; }),
     detail: detail
   };
