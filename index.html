@@ -6,7 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Le Manager">
-<meta name="theme-color" content="#211545">
+<!-- Le fond réel de l'app, pas une couleur héritée d'une version d'avant :
+     c'est cette teinte que le téléphone met autour de l'écran. -->
+<meta name="theme-color" content="#0a0a0b">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Le Manager — draft Brawl Stars</title>
 <!-- Il y avait ici deux polices Google, Lilita One et Nunito. Vérifié le
      04/08/2026 : plus une seule ligne de style.css ne les appelait. Elles
@@ -43,6 +46,22 @@
 <script src="moteur.js"></script>
 <script src="vues.js"></script>
 <script src="app.js"></script>
+
+<!-- Pour que l'app s'ouvre même sans réseau. Elle s'emploie dans un salon
+     d'attente de 25 secondes, en 4G moyenne : sans ce petit script, une
+     connexion absente au mauvais moment ne dégradait pas l'app, elle
+     l'empêchait de s'ouvrir. Enregistré APRÈS le reste, et sans bloquer :
+     s'il échoue, l'app fonctionne exactement comme avant. -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {
+      /* Navigation privée, page servie en http, navigateur ancien : ce n'est
+         pas un incident, c'est juste l'app sans son filet. */
+    });
+  });
+}
+</script>
 
 </body>
 </html>

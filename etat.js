@@ -79,6 +79,13 @@ var vueAnalyse = false;
    rétrécit à mesure, au lieu de rester à 107 portraits jusqu'au bout. */
 var filtreManquants = false;
 
+/* Le classement du mode Analyse en montre 4, puis tout sur demande.
+   Dix brawlers avec toutes leurs raisons, c'est deux à quatre écrans à faire
+   défiler sur les trois supports — pour n'en jouer qu'un. Ce n'est pas
+   enregistré : c'est une façon de regarder, pas un réglage. */
+var analyseTout = false;
+var NB_ANALYSE_COURT = 4;
+
 function modeEffectif() {
   /* Le mode veut dire la même chose sur tous les écrans : « la réponse » ou
      « la réponse et son calcul ». Seule la forme change avec la place.
@@ -97,6 +104,7 @@ function modeEffectif() {
 var menuOuvert = null;
 var cibleAjout = null;     /* null | "ennemi" | "allie" | "ban" — quand on choisit un brawler */
 var carteId = null;        /* identifiant de la carte sélectionnée */
+/* Relue plus bas, une fois relireCarte() définie et MAPS chargé. */
 /* Mode déplié sur l'écran des cartes. Tout déplier faisait six écrans de
    haut depuis que le pool est passé à 27 cartes : on ne choisit pas sa
    carte en un geste quand il faut faire défiler six fois. */
@@ -169,6 +177,39 @@ function nomBrawler(cle) {
   return brawler(cle).nom;
 }
 
+/* Le catalogue, gardé de côté entre deux ouvertures.
+   ------------------------------------------------------------------------
+   L'app va chercher les portraits, les raretés et les CLASSES sur internet à
+   chaque démarrage. Sans réponse, elle retombait sur une liste de secours
+   reconstruite depuis les tier lists : les noms, et rien d'autre. Or la
+   classe n'est pas de la décoration — c'est elle qui fait marcher la règle
+   d'équilibre des familles du moteur. Autrement dit, sans réseau le conseil
+   n'était plus tout à fait le même conseil.
+
+   Or ce truc s'emploie dans un salon d'attente de 25 secondes, sur un
+   téléphone, en 4G moyenne. Le catalogue est donc gardé dans le navigateur :
+   la prochaine ouverture repart de la dernière version connue, et l'appel
+   réseau ne fait plus que la rafraîchir. */
+var CLE_CATALOGUE = "manager:catalogue";
+
+function garderCatalogue() {
+  try {
+    localStorage.setItem(CLE_CATALOGUE, JSON.stringify(brawlers));
+  } catch (e) { /* stockage plein : tant pis, l'app marche quand même */ }
+}
+
+function relireCatalogue() {
+  var lu;
+  try { lu = JSON.parse(localStorage.getItem(CLE_CATALOGUE) || "null"); }
+  catch (e) { return false; }
+  /* On refuse une liste vide ou trop courte : mieux vaut la liste de secours,
+     qui est au moins cohérente, qu'un catalogue tronqué par un stockage plein. */
+  if (!lu || lu.length < 40) return false;
+  brawlers = lu;
+  indexerBrawlers();
+  return true;
+}
+
 /* Complète le catalogue avec l'API : vraies URL d'image, couleur de rareté
    et classe. La classe est indispensable au cycle de familles du moteur. */
 function chargerBrawlers() {
@@ -196,9 +237,16 @@ function chargerBrawlers() {
         })
         .sort(function (a, b) { return a.nom.localeCompare(b.nom, "fr"); });
       indexerBrawlers();
+      garderCatalogue();
       etatApi = "ok";
     })
-    .catch(function () { etatApi = "hors"; });
+    /* Pas de réseau, ou une réponse illisible : si le catalogue de la
+       dernière fois est là, l'app garde ses portraits ET ses classes. On dit
+       quand même « hors », parce que le pied de page doit rester exact : ce
+       qui est affiché ne vient pas d'un appel réussi aujourd'hui. */
+    .catch(function () {
+      etatApi = relireCatalogue() ? "garde" : "hors";
+    });
 }
 
 
@@ -214,8 +262,62 @@ try {
   if (enregistre) roster = new Set(JSON.parse(enregistre));
 } catch (e) { /* navigation privée ou stockage plein : on part à vide */ }
 
+/* Les brawlers connus au moment où le roster a été revu la dernière fois.
+   Sert à repérer ceux que Supercell a sortis depuis — la seule chose qu'on
+   puisse honnêtement détecter. On ne sait PAS si l'utilisateur a débloqué un
+   brawler ; on sait qu'il en existe un qu'il n'a jamais vu passer, et c'est
+   déjà de quoi lui proposer d'aller voir. */
+var CLE_VUS = "manager:vus";
+
 function sauverRoster() {
   try {
     localStorage.setItem(CLE_ROSTER, JSON.stringify(Array.from(roster)));
+    localStorage.setItem(CLE_VUS, JSON.stringify(brawlers.map(function (b) {
+      return b.k;
+    })));
   } catch (e) { /* échec silencieux : mieux vaut une app qui marche */ }
 }
+
+/* Les brawlers apparus depuis la dernière visite de l'écran « Mes brawlers ».
+   Au tout premier lancement la liste des vus est vide : on ne crie pas
+   « 107 nouveaux », on note ce qu'on connaît et on se tait. */
+function brawlersNouveaux() {
+  var vus;
+  try { vus = JSON.parse(localStorage.getItem(CLE_VUS) || "null"); }
+  catch (e) { vus = null; }
+  if (!vus || !vus.length) return [];
+  var connus = {};
+  vus.forEach(function (k) { connus[k] = true; });
+  return brawlers.filter(function (b) { return !connus[b.k]; });
+}
+
+/* ============ 3 bis. La carte en cours ============
+   La langue, le mode et le roster survivaient au rechargement ; pas la carte.
+   Refermer l'app et la rouvrir coûtait donc trois gestes pour revenir là où
+   l'on était — dans une app qui vise moins de 25 secondes. Incohérent, et
+   c'est l'incohérence qui se remarque. */
+var CLE_CARTE = "manager:carte";
+
+function sauverCarte() {
+  try {
+    if (carteId) localStorage.setItem(CLE_CARTE, carteId);
+    else localStorage.removeItem(CLE_CARTE);
+  } catch (e) { /* ignoré */ }
+}
+
+/* Relue seulement si la carte est encore en rotation : le pool change à
+   chaque saison, et rouvrir sur une carte qui n'existe plus serait pire que
+   de ne rien retenir. */
+function relireCarte() {
+  var id;
+  try { id = localStorage.getItem(CLE_CARTE); } catch (e) { return null; }
+  if (!id) return null;
+  for (var i = 0; i < MAPS.length; i++) {
+    if (MAPS[i].id === id) return id;
+  }
+  return null;
+}
+
+/* La carte en cours est relue ici, en fin de fichier : relireCarte() a besoin
+   de MAPS, et l'état doit être complet avant que app.js ne dessine. */
+carteId = relireCarte();

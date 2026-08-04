@@ -115,6 +115,7 @@ var ACTIONS = {
      « Mes brawlers » ne vide un draft en cours. */
   accueil: function () {
     carteId = null;
+    sauverCarte();
     ennemis = []; bans = []; allies = [];
     cibleAjout = null;
     vueAnalyse = false;
@@ -127,6 +128,9 @@ var ACTIONS = {
      dans les deux sens : c'est un aller-retour, pas un changement de mode.
      modeAffichage n'est pas touché — on repart toujours de son réglage. */
   detail: function () { vueAnalyse = !vueAnalyse; },
+
+  /* Le classement montre quatre brawlers, puis tout sur demande. */
+  plusAnalyse: function () { analyseTout = !analyseTout; },
 
   /* Déplier un mode sur l'écran des cartes. Un seul à la fois : deux modes
      ouverts, et on retombe dans la liste à rallonge qu'on vient de fermer. */
@@ -142,6 +146,7 @@ var ACTIONS = {
       ennemis = []; bans = []; allies = [];
     }
     carteId = v;
+    sauverCarte();
     cibleAjout = null;
     vueAnalyse = false;
     ecran = "draft";
@@ -212,6 +217,7 @@ var ACTIONS = {
     ennemis = []; bans = []; allies = [];
     cibleAjout = null;
     vueAnalyse = false;
+    analyseTout = false;
   }
 };
 

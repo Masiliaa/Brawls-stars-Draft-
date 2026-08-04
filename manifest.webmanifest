@@ -1,0 +1,12 @@
+{
+  "name": "Le Manager",
+  "short_name": "Le Manager",
+  "description": "Quel brawler prendre, en moins de 25 secondes.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "lang": "fr"
+}

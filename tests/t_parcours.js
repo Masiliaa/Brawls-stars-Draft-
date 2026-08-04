@@ -476,8 +476,21 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Analyse');
   check('le menu se referme après le choix',
     (await page.locator('.menu').count()) === 0);
+  // Le classement en montrait dix d'office : deux à quatre écrans à faire
+  // défiler sur tous les supports, pour n'en jouer qu'un. Il en montre quatre,
+  // et propose le reste — les six autres restent atteignables d'un geste.
   const fiches = await page.locator('.analyse').count();
-  check('le mode Analyse détaille plusieurs brawlers', fiches > 4, fiches);
+  check('le mode Analyse détaille plusieurs brawlers', fiches === 4, fiches);
+  check('et propose d\'aller voir les autres',
+    (await page.locator('[data-act="plusAnalyse"]').count()) === 1);
+  await page.locator('[data-act="plusAnalyse"]').click();
+  const toutes = await page.locator('.analyse').count();
+  check('les voir toutes tient en un geste', toutes > 4, toutes);
+  check('et on peut revenir à la liste courte',
+    (await page.locator('[data-act="plusAnalyse"]').count()) === 1);
+  await page.locator('[data-act="plusAnalyse"]').click();
+  check('la liste redevient courte',
+    (await page.locator('.analyse').count()) === 4);
   check('plus de hero en mode Analyse', (await page.locator('.hero').count()) === 0);
   check('chaque fiche montre un score',
     (await page.locator('.analyse .score b').count()) === fiches);
@@ -664,6 +677,74 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('.rangee-rarete').first().innerText()).replace(/\n/g, ' · '));
   await page.locator('[data-act="manquants"]').click();
   await page.locator('[data-act="tout"]').click();
+
+  // ── Les six frictions relevées le 04/08/2026 ───────────────────────────
+  console.log('\n== ce qui survit à une fermeture, et à une coupure ==');
+
+  // Le bloc précédent laisse l'écran des brawlers ouvert.
+  await page.locator('.bar .actions [data-act="draft"]').click();
+
+  // 2. La langue, le mode et le roster survivaient au rechargement ; pas la
+  //    carte. Refermer et rouvrir coûtait trois gestes pour revenir là où on
+  //    était, dans une app qui vise moins de 25 secondes.
+  await page.locator('[data-act="cartes"]').first().click();
+  await page.locator('#q').fill('Safe Zone');
+  await page.getByText('Safe Zone').first().click();
+  const carteAvant = await page.evaluate(() => carteId);
+  await page.reload({ waitUntil: 'networkidle' });
+  check('la carte est retenue d\'une ouverture à l\'autre',
+    (await page.evaluate(() => carteId)) === carteAvant, carteAvant);
+  check('mais pas les picks — une nouvelle ouverture est une nouvelle partie',
+    await page.evaluate(() => !ennemis.length && !allies.length && !bans.length));
+
+  // Et le nom du produit doit toujours pouvoir tout relâcher, enregistrement
+  // compris : sinon la carte reviendrait après l'avoir explicitement quittée.
+  await page.locator('.bar .logo').click();
+  await page.reload({ waitUntil: 'networkidle' });
+  check('repartir de zéro efface aussi la carte retenue',
+    (await page.evaluate(() => carteId)) === null);
+
+  // 1. Sans réseau, l'app retombait sur une liste de secours sans classes —
+  //    or la classe fait marcher la règle d'équilibre des familles. Le
+  //    catalogue est désormais gardé d'une ouverture à l'autre.
+  await page.evaluate(() => {
+    const faux = brawlers.map(b => ({ nom: b.nom, k: b.k, img: null,
+      couleur: '#ff0000', classe: 'Tank', rarete: { id: 4, nom: 'Epic' } }));
+    localStorage.setItem('manager:catalogue', JSON.stringify(faux));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(600);
+  check('sans API, le catalogue de la dernière fois reprend la main',
+    (await page.evaluate(() => etatApi)) === 'garde',
+    await page.evaluate(() => etatApi));
+  check('les classes sont donc toujours là',
+    (await page.evaluate(() => brawlers.filter(b => b.classe).length)) > 40);
+  check('et le pied de page le dit, au lieu de laisser croire que c\'est frais',
+    await page.evaluate(() => {
+      const d = document.querySelector('.note details'); if (d) d.open = true;
+      return /derni[eè]re ouverture/i.test(document.querySelector('.note').innerText);
+    }));
+  await page.evaluate(() => localStorage.removeItem('manager:catalogue'));
+
+  // 5. L'app ne peut pas deviner qu'on a débloqué un brawler. Elle peut voir
+  //    qu'il en est apparu un au catalogue depuis la dernière visite.
+  await page.evaluate(() => {
+    localStorage.setItem('manager:vus',
+      JSON.stringify(brawlers.slice(2).map(b => b.k)));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  check('deux brawlers apparus depuis la dernière visite sont signalés',
+    (await page.locator('.rappel').count()) === 1 &&
+    /2/.test(await page.locator('.rappel').innerText()),
+    await page.locator('.rappel').count());
+  check('et le rappel mène droit à l\'écran des brawlers',
+    (await page.locator('.rappel[data-act="roster"]').count()) === 1);
+  // Au tout premier lancement, rien n'a jamais été vu : on ne crie pas
+  // « 107 nouveaux », on se tait.
+  await page.evaluate(() => localStorage.removeItem('manager:vus'));
+  await page.reload({ waitUntil: 'networkidle' });
+  check('au premier lancement, aucun rappel',
+    (await page.locator('.rappel').count()) === 0);
 
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);

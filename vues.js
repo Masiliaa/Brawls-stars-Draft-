@@ -535,6 +535,11 @@ function blocConseils(liste, couleurMode, cote) {
         + echapper(t("tier", { tier: premier.tier })) + "</span>"
         + (sur ? "<span>" + echapper(t("surCetteCarte",
             { wr: virgule(sur.wr.toFixed(1)) })) + "</span>" : "")
+        /* La flèche vers le calcul avait disparu avec la carte qui la
+           portait : la seule porte restante était le menu du haut. Elle
+           revient au bout d'une ligne qui existe déjà, donc sans coûter un
+           pixel de hauteur — et alignée avec quelque chose, cette fois. */
+        + (cote ? "" : '<span class="vers-detail" aria-hidden="true">›</span>')
         + "</span>"
         + '<span class="why">' + echapper(premier.raison) + "</span>"
         + (cote ? "</div>" : "</button>");
@@ -682,6 +687,12 @@ function blocAnalyse(carte) {
       + echapper(t("retourConseil")) + "</button>"
     : "";
 
+  /* Quatre suffisent pour choisir ; les six autres sont là pour qui veut
+     vérifier. Les montrer d'office coûtait deux à quatre écrans de
+     défilement sur tous les supports, pour n'en jouer qu'un. */
+  var montres = analyseTout ? liste : liste.slice(0, NB_ANALYSE_COURT);
+  var restants = liste.length - montres.length;
+
   html += '<p class="intro">' + echapper(t("analyseIntro", { n: liste.length })) + "</p>";
 
   /* L'échelle des barres est commune à toute la liste, sinon comparer deux
@@ -696,8 +707,17 @@ function blocAnalyse(carte) {
      l'écran est large et bas — un téléphone couché, la position où l'on joue,
      et la pire case du tableau avec près de six écrans à faire défiler. */
   html += '<div class="classement">';
-  liste.forEach(function (x, i) { html += ligneAnalyse(x, i + 1, ampleurMax); });
-  return html + "</div>";
+  montres.forEach(function (x, i) { html += ligneAnalyse(x, i + 1, ampleurMax); });
+  html += "</div>";
+
+  if (restants > 0 || analyseTout) {
+    html += '<button class="b alt sm plus-classement" data-act="plusAnalyse">'
+          + echapper(restants > 0
+              ? t("voirPlus", { n: restants })
+              : t("voirMoins", { n: NB_ANALYSE_COURT }))
+          + "</button>";
+  }
+  return html;
 }
 
 
@@ -795,10 +815,23 @@ function blocBans() {
 }
 
 
+/* Ton roster vieillit sans que l'app le sache : elle ne peut pas deviner que
+   tu as débloqué quelqu'un. Elle peut en revanche voir qu'un brawler est
+   apparu au catalogue depuis ta dernière visite — c'est la seule chose
+   honnête à signaler, et c'est déjà de quoi proposer d'aller voir. */
+function rappelNouveaux() {
+  var nouveaux = brawlersNouveaux();
+  if (!nouveaux.length) return "";
+  var cle = pluriel(nouveaux.length) ? "nouveauxN" : "nouveaux1";
+  return '<button class="rappel" data-act="roster">'
+       + "<span>" + echapper(t(cle, { n: nouveaux.length })) + "</span>"
+       + '<span class="aller">' + echapper(t("allerVoir")) + " ›</span></button>";
+}
+
 function ecranDraft() {
   var carte = carteActive();
   var couleur = carte ? MODES[carte.mode].c : "#FFC93C";
-  var html = barreHaut() + boutonCarte(carte, couleur);
+  var html = barreHaut() + boutonCarte(carte, couleur) + rappelNouveaux();
 
   /* Le bandeau porte déjà l'invitation et le geste : rien à ajouter sous
      lui, sinon on redemande deux fois la même chose. */
@@ -888,7 +921,11 @@ function noteHTML() {
     ? avec(MAJ.synergie, "noteSynergie", "noteSynergieSansDate")
     : t("noteSynergieAbsente");
 
+  /* Le pied de page doit refléter ce qui est RÉELLEMENT chargé. « Gardé »
+     n'est pas « à jour » : les classes sont là, mais elles datent de la
+     dernière ouverture réussie, et ça se dit. */
   if (etatApi === "hors") texte += t("noteApiHors");
+  if (etatApi === "garde") texte += t("noteApiGarde");
 
   /* Les sources se replient : huit lignes qu'on ne lit pas chaque fois et
      qui poussent tout le reste vers le haut. Elles restent à un geste.

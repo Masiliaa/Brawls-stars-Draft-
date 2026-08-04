@@ -636,3 +636,22 @@ body.clavier .inp:focus-visible{outline:none;border-color:var(--texte)}
   .cel{width:96px}
   .cel b{font-size:var(--t2)}
 }
+
+/* ============ Les six frictions relevées le 04/08/2026 ============ */
+
+/* Le rappel des nouveaux brawlers. Discret : c'est une information, pas une
+   alerte — rien n'est cassé si on l'ignore. */
+.rappel{display:flex;align-items:center;gap:var(--e3);width:100%;
+  margin-top:var(--e3);padding:var(--e2) 0;min-height:44px;
+  background:transparent;border:none;border-bottom:1px solid var(--trait);
+  font:inherit;font-size:var(--t2);color:var(--doux);text-align:left;
+  cursor:pointer;-webkit-appearance:none}
+.rappel .aller{margin-left:auto;flex:none;color:var(--vif)}
+
+/* « Voir les 6 autres » : une commande, pas un titre. */
+.plus-classement{margin-top:var(--e4)}
+
+/* La flèche vers le calcul, au bout de la ligne de mesure : elle ne coûte
+   pas un pixel de hauteur, et elle est alignée sur une ligne existante. */
+.hero .mesure .vers-detail{margin-left:auto;color:var(--faible);font-size:19px;
+  line-height:1}
