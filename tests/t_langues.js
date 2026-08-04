@@ -289,7 +289,12 @@ const check = (nom, cond, detail = '') => {
         ennemis = []; allies = []; bans = [];
         ecran = 'draft'; render();
         const bar = document.querySelector('.bar');
-        const boutons = Array.prototype.slice.call(document.querySelectorAll('.bar button'));
+        // Le logo est exclu : il porte le nom du produit, il cède sa place
+        // aux actions et se coupe proprement avec des points de suspension.
+        // Un bouton d'action tronqué, lui, est un vrai défaut — c'est ce que
+        // cette mesure cherche.
+        const boutons = Array.prototype.slice.call(
+          document.querySelectorAll('.bar .actions button'));
         return {
           page: document.documentElement.scrollWidth > window.innerWidth,
           barre: bar.scrollWidth > bar.clientWidth + 1,

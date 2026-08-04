@@ -135,6 +135,39 @@ const check = (nom, cond, detail = '') => {
     await page.evaluate(() =>
       document.documentElement.scrollWidth <= window.innerWidth));
 
+  // ── Aucun écran sans sortie ────────────────────────────────────────────
+  // La liste des cartes n'avait qu'une issue : choisir une carte, ce qui
+  // remettait le draft à zéro. Consulter la carte en cours coûtait donc ses
+  // picks. Chaque écran doit ramener au draft d'un seul geste, et le nom du
+  // produit doit y ramener aussi — c'est le réflexe de n'importe quel site.
+  console.log('\n== aucun écran sans sortie ==');
+  for (const [nom, aller] of [
+    ['liste des cartes', async () => page.locator('[data-act="cartes"]').first().click()],
+    ['désigner un ennemi', async () => page.locator('[data-act="addE"]').click()],
+    ['mes brawlers', async () => page.locator('[data-act="roster"]').click()],
+  ]) {
+    await aller();
+    check(nom + ' : on peut revenir au draft',
+      (await page.locator('.bar .actions [data-act="draft"]').count()) === 1);
+    check(nom + ' : le nom du produit y ramène aussi',
+      (await page.locator('.logo[data-act="draft"]').count()) === 1);
+    await page.locator('.bar .actions [data-act="draft"]').click();
+    check(nom + ' : et on y est', await page.locator('.hero .name').isVisible());
+  }
+
+  // Rechoisir la carte qu'on a déjà n'est pas un changement de carte : c'est
+  // ce que fait quelqu'un venu vérifier son nom.
+  console.log('\n== revoir sa carte ne coûte pas son draft ==');
+  await page.locator('[data-act="addE"]').click();
+  await page.locator('#grid .cel').first().click();
+  const avant = await page.locator('[data-act="rme"]').count();
+  await page.locator('[data-act="cartes"]').first().click();
+  await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
+  await page.getByText('Safe Zone').first().click();
+  check('les picks sont conservés',
+    (await page.locator('[data-act="rme"]').count()) === avant, avant);
+  await page.locator('[data-act="reset"]').click();
+
   console.log('\n== ajouter des picks, jusqu\'aux limites ==');
   async function ajouter(bouton, combien) {
     for (let i = 0; i < combien; i++) {
@@ -163,6 +196,19 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="addB"]').count()) === 0);
 
   check('un brawler est toujours conseillé', await page.locator('.hero .name').isVisible());
+
+  // ── Les bans ───────────────────────────────────────────────────────────
+  // L'app disait « bannis ceux-là » et il fallait ensuite ouvrir la saisie,
+  // chercher le nom, le taper : cinq gestes entre le conseil et l'acte.
+  // Et six portraits grisés sans croix ne disaient pas qu'ils étaient
+  // retirables — ils ressemblaient à de la décoration.
+  console.log('\n== les bans ==');
+  check('chaque ban banni porte une croix',
+    (await page.locator('.jeton-ctx.ban .croix').count()) ===
+    (await page.evaluate(() => bans.length)));
+  check('et le compte est affiché',
+    (await page.locator('.compte-ban').textContent()).includes('/'));
+
 
   // ── Le mode rapide tient sur un écran ──────────────────────────────────
   // C'est la raison d'être du mode : pendant un draft, descendre pour taper
@@ -224,6 +270,16 @@ const check = (nom, cond, detail = '') => {
   check('la carte est conservée',
     (await page.locator('.b.full').first().textContent()).includes('Safe Zone'));
 
+  // Le conseil de ban n'apparaît qu'en phase de ban, c'est-à-dire quand
+  // aucun pick n'est encore saisi — donc juste ici.
+  const conseil = page.locator('.conseil-ban').first();
+  const nomConseille = (await conseil.locator('.n').textContent()).trim();
+  await conseil.click();
+  check('taper un ban conseillé le bannit',
+    await page.evaluate(n => bans.map(nomBrawler).indexOf(n) > -1, nomConseille),
+    nomConseille);
+  await page.locator('[data-act="reset"]').click();
+
   // ── Le clavier ─────────────────────────────────────────────────────────
   // Sur un ordinateur, ce n'est pas la mise en page qui fait gagner du temps
   // mais le clavier : trois lettres et Entrée battent n'importe quel nombre
@@ -274,7 +330,7 @@ const check = (nom, cond, detail = '') => {
   await page.locator('[data-act="roster"]').click();
   await page.locator('[data-act="rien"]').click();
   check('« tout décocher » vide tout', (await page.locator('.cel.on').count()) === 0);
-  await page.locator('[data-act="draft"]').click();
+  await page.locator('.bar .actions [data-act="draft"]').click();
   check('l\'app explique quoi faire',
     (await page.locator('.box p').textContent()).includes('Coche d\'abord'));
 
@@ -286,7 +342,7 @@ const check = (nom, cond, detail = '') => {
   await page.getByText('Safe Zone').first().click();
   await page.locator('[data-act="roster"]').first().click();
   await page.locator('[data-act="tout"]').click();
-  await page.locator('[data-act="draft"]').click();
+  await page.locator('.bar .actions [data-act="draft"]').click();
 
   check('démarre en mode Rapide',
     (await page.locator('[data-act="ouvrirMode"]').textContent()) === 'Rapide');

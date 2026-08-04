@@ -118,7 +118,17 @@ function menuDeroulant(nom, libelleBouton, titre, action, options) {
 }
 
 function barreHaut() {
-  var versRoster = ecran !== "roster";
+  /* Le troisième bouton dépend d'où l'on est, et il doit toujours ramener
+     quelque part.
+     ----------------------------------------------------------------------
+     Il proposait « Mes brawlers » partout sauf sur l'écran du roster. Sur la
+     liste des cartes, la seule sortie était donc d'aller voir ses brawlers,
+     ou de choisir une carte — ce qui remettait le draft à zéro. Autrement
+     dit : consulter la carte en cours de draft coûtait ses picks.
+
+     Règle simple : sur le draft on propose le roster, partout ailleurs on
+     propose de revenir au draft. */
+  var surLeDraft = (ecran === "draft") && !cibleAjout;
 
   /* À deux colonnes, conseil et classement sont affichés ensemble : choisir
      entre les deux ne changerait rien. Un menu sans effet est une friction,
@@ -140,10 +150,15 @@ function barreHaut() {
       return { valeur: l, actif: l === langue, libelle: LANGUES[l].nom };
     }));
 
-  return '<div class="bar"><div class="tt logo">Le Manager</div>'
+  /* Le nom du produit ramène à l'accueil : c'est le réflexe de n'importe quel
+     site, et il était mort ici. Un titre qui ne répond pas au doigt, c'est
+     une sortie de secours condamnée. */
+  return '<div class="bar">'
+       + '<button class="tt logo" data-act="draft" title="'
+       + echapper(t("retourAccueil")) + '">Le Manager</button>'
        + '<div class="actions">' + menuMode + menuLangue
-       + '<button class="b alt sm" data-act="' + (versRoster ? "roster" : "draft") + '">'
-       + echapper(versRoster ? t("mesBrawlers") : t("retour"))
+       + '<button class="b alt sm" data-act="' + (surLeDraft ? "roster" : "draft") + '">'
+       + echapper(surLeDraft ? t("mesBrawlers") : t("retour"))
        + "</button></div></div>";
 }
 
@@ -486,9 +501,13 @@ function pastille(cle, classe, action, taille) {
    déborder la rangée sur une deuxième ligne. Réduit au portrait, il garde sa
    place et son geste — et il a la même tête dans les deux modes. */
 function jetonBan(cle) {
+  /* Sans croix, six portraits grisés ressemblaient à de la décoration : rien
+     ne disait qu'ils étaient bannis, ni qu'on pouvait les retirer. La croix
+     est posée par-dessus, donc elle ne coûte pas un pixel de hauteur. */
   return '<button class="jeton-ctx ban" data-act="rmb" data-v="' + cle + '"'
-       + ' title="' + echapper(nomBrawler(cle)) + '">'
-       + portrait(brawler(cle), 26, false) + "</button>";
+       + ' title="' + echapper(t("retirerBan", { nom: nomBrawler(cle) })) + '">'
+       + portrait(brawler(cle), 28, false)
+       + '<span class="croix" aria-hidden="true">✕</span></button>';
 }
 
 function boutonAjout(action, libelle) {
@@ -509,13 +528,21 @@ function blocSaisieCompacte() {
   if (ennemis.length < MAX_ENNEMIS) html += boutonAjout("addE");
   html += "</div>";
 
-  html += '<div class="lab serre">' + echapper(t("equipeEtBans")) + "</div>"
-        + '<div class="wrap rangee-double">';
-
+  html += '<div class="lab serre">' + echapper(t("monEquipe")) + "</div>"
+        + '<div class="wrap">';
   allies.forEach(function (cle) { html += pastille(cle, "allie", "rma"); });
   if (allies.length < MAX_ALLIES) html += boutonAjout("addA");
+  html += "</div>";
 
-  html += '<span class="separateur" aria-hidden="true"></span>';
+  /* Les bans avaient leur propre section, puis ont été collés à la suite des
+     alliés pour gagner de la hauteur. Résultat : un intitulé pour deux
+     choses différentes, et six portraits sans nom qui débordaient sur une
+     deuxième ligne. Ils reprennent leur intitulé, avec le compte — c'est ce
+     qu'on veut savoir d'un coup d'œil, pas qui exactement. */
+  html += '<div class="lab serre lab-avec-action">'
+        + "<span>" + echapper(t("bannis")) + "</span>"
+        + '<span class="compte-ban">' + bans.length + "/" + MAX_BANS + "</span></div>"
+        + '<div class="wrap rangee-bans">';
   bans.forEach(function (cle) { html += jetonBan(cle); });
   if (bans.length < MAX_BANS) {
     html += '<button class="jeton-ctx vide" data-act="addB"'
@@ -564,11 +591,18 @@ function blocBans() {
   var liste = bansConseilles(NB_BANS_CONSEILLES);
   if (!liste.length) return "";
 
-  var html = '<div class="lab">' + echapper(t("aBannir")) + "</div>";
+  /* L'app disait « bannis ceux-là » et il fallait ensuite ouvrir la saisie,
+     chercher le nom, le taper, le désigner. Le conseil et le geste étaient
+     séparés par cinq actions. Chaque ligne est maintenant le bouton qui
+     l'exécute. */
+  var html = '<div class="lab serre">' + echapper(t("aBannir")) + "</div>";
   liste.forEach(function (x) {
-    html += '<div class="row conseil-ban">' + portrait(x.b, 34, false)
+    html += '<button class="row conseil-ban" data-act="banConseil" data-v="'
+          + x.k + '" title="' + echapper(t("bannirCelui", { nom: x.nom })) + '">'
+          + portrait(x.b, 34, false)
           + '<span class="n">' + echapper(x.nom) + "</span>"
-          + '<span class="w">' + echapper(x.raison) + "</span></div>";
+          + '<span class="w">' + echapper(x.raison) + "</span>"
+          + '<span class="geste" aria-hidden="true">+</span></button>';
   });
   return html;
 }

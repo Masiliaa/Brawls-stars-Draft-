@@ -90,9 +90,15 @@ var ACTIONS = {
   ouvrirModeCarte: function (v) { modeOuvert = (modeOuvert === v) ? null : v; },
 
   /* Choisir une carte remet le draft à zéro : on démarre une nouvelle partie. */
+  /* Changer de carte démarre une nouvelle partie, donc vide les picks.
+     Mais rechoisir CELLE QU'ON A DÉJÀ n'est pas un changement : c'est ce que
+     fait quelqu'un venu vérifier le nom de la carte, et lui effacer son
+     draft pour ça serait une punition absurde. */
   carte: function (v) {
+    if (v !== carteId) {
+      ennemis = []; bans = []; allies = [];
+    }
     carteId = v;
-    ennemis = []; bans = []; allies = [];
     cibleAjout = null;
     vueAnalyse = false;
     ecran = "draft";
@@ -114,6 +120,11 @@ var ACTIONS = {
   addE: function () { cibleAjout = "ennemi"; recherche = ""; },
   addB: function () { cibleAjout = "ban"; recherche = ""; },
   annuler: function () { cibleAjout = null; recherche = ""; },
+
+  /* Bannir directement depuis le conseil, sans passer par la recherche. */
+  banConseil: function (v) {
+    if (bans.length < MAX_BANS && bans.indexOf(v) < 0) bans.push(v);
+  },
 
   /* Ajouter le brawler désigné à la bonne liste, sans doublon ni dépassement. */
   choisir: function (v) {

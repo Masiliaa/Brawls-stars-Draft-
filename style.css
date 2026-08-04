@@ -41,8 +41,17 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 .tt{font-family:inherit;text-transform:none;letter-spacing:-.03em;line-height:1;text-shadow:none}
 .bar{display:flex;align-items:center;gap:8px;margin-bottom:22px}
-.bar .logo{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;
-  font-size:15px;font-weight:600;color:var(--doux);-webkit-text-stroke:0;letter-spacing:.01em}
+/* Le logo est un bouton depuis qu'il ramène à l'accueil : on annule donc
+   l'apparence que le navigateur donne à <button>, sans rien changer à l'œil. */
+/* Le logo cède sa place aux boutons d'action, jamais l'inverse : sur un
+   écran de 320 px il se coupe, et les points de suspension disent que c'est
+   voulu plutôt que cassé. Les boutons, eux, ne doivent jamais être tronqués. */
+.bar .logo{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;
+  text-overflow:ellipsis;margin-right:auto;
+  font-size:15px;font-weight:600;color:var(--doux);-webkit-text-stroke:0;letter-spacing:.01em;
+  background:none;border:none;padding:0;text-align:left;cursor:pointer;
+  font-family:inherit;-webkit-appearance:none}
+.bar .logo:active{color:var(--texte)}
 .bar .actions{display:flex;gap:6px;flex:none}
 
 .b{display:inline-flex;align-items:center;justify-content:center;gap:7px;
@@ -205,8 +214,16 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 /* Les bans conseillés reprennent la ligne des suggestions, mais en retrait :
    c'est une information de contexte, pas la décision principale. */
-.row.conseil-ban{opacity:.82}
+/* Chaque conseil de ban est le bouton qui l'exécute : il faut donc annuler
+   ce que le navigateur met sur un <button>, et montrer le geste. */
+.row.conseil-ban{opacity:.82;width:100%;font:inherit;color:inherit;
+  text-align:left;cursor:pointer;-webkit-appearance:none;background:transparent}
 .row.conseil-ban .n{font-size:15.5px;font-weight:550}
+.row.conseil-ban .geste{flex:none;margin-left:10px;width:26px;height:26px;
+  border-radius:8px;border:1px dashed var(--trait);color:var(--faible);
+  font-size:15px;line-height:24px;text-align:center}
+.row.conseil-ban:active{opacity:1;background:var(--carte2)}
+.row.conseil-ban:active .geste{border-style:solid;color:var(--vif);border-color:var(--vif)}
 
 .situation{margin:0 0 12px;font-size:11.5px;font-weight:600;color:var(--doux);
   letter-spacing:.01em;display:flex;align-items:center;gap:9px}
@@ -285,9 +302,18 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .lab-avec-action{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .lab-avec-action .relancer{margin:0;font-size:12px;padding:6px 12px;min-height:34px;
   letter-spacing:0;text-transform:none;font-weight:500}
-.rangee-double{align-items:center;gap:7px}
-.rangee-double .separateur{width:1px;height:26px;background:var(--trait);
-  margin:0 2px;flex:none}
+.lab-avec-action .compte-ban{font-variant-numeric:tabular-nums;color:var(--faible);
+  letter-spacing:.04em}
+.rangee-bans{align-items:center;gap:7px}
+/* La croix se pose PAR-DESSUS le portrait : elle dit « retirable » sans
+   coûter un pixel de hauteur, ce qui était tout l'enjeu de cette rangée. */
+.jeton-ctx{position:relative}
+.jeton-ctx .croix{position:absolute;top:-3px;right:-3px;width:14px;height:14px;
+  border-radius:50%;background:var(--fond);border:1px solid var(--trait);
+  color:var(--doux);font-size:8px;line-height:12px;text-align:center;
+  pointer-events:none}
+.jeton-ctx.ban{opacity:.6}
+.jeton-ctx.ban:active{opacity:1}
 
 /* ============ Contexte du mode analyse ============
    La même information sur une ligne, en tête d'écran. Elle était sous dix
@@ -368,3 +394,14 @@ body.clavier :focus-visible{outline:2px solid var(--vif);outline-offset:2px;
 .note summary::after{content:" ›";display:inline-block}
 .note[open] summary::after{content:" ⌄"}
 .note[open] summary{margin-bottom:8px}
+
+/* ============ Fenêtre basse, le dernier mot ============
+   Ces règles rétrécissent les blancs quand la hauteur manque — téléphone
+   couché, fenêtre écrasée. Elles sont ici, en fin de feuille, parce qu'à
+   spécificité égale c'est la dernière règle écrite qui gagne : déclarées
+   plus haut, elles étaient annulées sans bruit par les valeurs normales. */
+@media (max-height:520px){
+  .lab.serre{margin:9px 0 5px}
+  .rangee-bans{gap:6px}
+  .replis{padding-bottom:0}
+}
