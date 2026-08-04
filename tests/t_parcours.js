@@ -211,6 +211,40 @@ const check = (nom, cond, detail = '') => {
   check('la carte est conservée',
     (await page.locator('.b.full').first().textContent()).includes('Safe Zone'));
 
+  // ── Le clavier ─────────────────────────────────────────────────────────
+  // Sur un ordinateur, ce n'est pas la mise en page qui fait gagner du temps
+  // mais le clavier : trois lettres et Entrée battent n'importe quel nombre
+  // de clics. Le piège est que les raccourcis mordent sur la frappe — taper
+  // « bea » dans la recherche ne doit pas ouvrir trois écrans.
+  console.log('\n== le clavier ==');
+  await page.keyboard.press('e');
+  check('« e » ouvre la saisie d\'un ennemi',
+    (await page.evaluate(() => cibleAjout)) === 'ennemi');
+  check('et le champ a déjà le focus',
+    await page.evaluate(() => document.activeElement.id === 'q'));
+
+  await page.keyboard.type('pip');
+  await page.keyboard.press('Enter');
+  check('taper puis Entrée désigne le premier résultat',
+    JSON.stringify(await page.evaluate(() => ennemis)) === '["piper"]',
+    await page.evaluate(() => ennemis));
+
+  await page.keyboard.press('a');
+  await page.keyboard.press('Escape');
+  check('Échap annule la désignation en cours',
+    (await page.evaluate(() => cibleAjout)) === null);
+
+  await page.keyboard.press('b');
+  await page.keyboard.type('bea');
+  check('les lettres tapées dans le champ ne déclenchent rien',
+    (await page.evaluate(() => cibleAjout)) === 'ban' &&
+    (await page.evaluate(() => recherche)) === 'bea',
+    await page.evaluate(() => [cibleAjout, recherche]));
+  await page.keyboard.press('Escape');
+
+  await page.locator('[data-act="reset"]').click();
+
+
   console.log('\n== changer de carte remet le draft à zéro ==');
   await ajouter('addE', 2);
   await page.locator('[data-act="cartes"]').first().click();

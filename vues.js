@@ -269,9 +269,17 @@ function ecranChoix() {
        + echapper(t(CLE_TITRE_CHOIX[cibleAjout])) + "</div>"
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercher"))
        + '" value="' + echapper(recherche) + '">'
+       + astuceClavier()
        + '<div class="grid" id="grid">' + grilleBrawlers("choix") + "</div>"
        + '<button class="b alt sm reset" data-act="annuler">'
        + echapper(t("annuler")) + "</button>";
+}
+
+/* Un raccourci que personne ne connaît n'existe pas. La ligne n'apparaît
+   qu'avec une souris — la classe est posée au démarrage par app.js — et
+   reste discrète : c'est un rappel, pas une consigne. */
+function astuceClavier() {
+  return '<p class="astuce-clavier">' + echapper(t("astuceClavier")) + "</p>";
 }
 
 

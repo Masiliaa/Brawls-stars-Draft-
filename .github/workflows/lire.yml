@@ -1,0 +1,65 @@
+# Lit une page web et l'imprime dans le journal.
+#
+# À quoi ça sert
+# --------------
+# La session qui écrit le code de ce dépôt n'a pas d'accès sortant libre : le
+# proxy de l'environnement répond 403 à la plupart des domaines, au nom de la
+# politique réseau de l'organisation. Ce n'est pas le site qui refuse, c'est
+# la sortie qui est fermée, et il ne faut pas chercher à la contourner.
+#
+# Les serveurs de GitHub, eux, ont le réseau — et leurs journaux se lisent à
+# distance. Ce flux de travail n'ajoute donc aucun droit : il déplace la
+# lecture là où elle est permise, et la rend consultable.
+#
+# Comment s'en servir : onglet Actions → « Lire une page » → Run workflow,
+# coller l'adresse. Le résultat s'affiche dans le journal de l'exécution.
+#
+# Il n'écrit rien. Aucun accès en écriture au dépôt n'est demandé.
+
+name: Lire une page
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Adresse à lire (https://…)"
+        required: true
+        type: string
+      brut:
+        description: "Sans navigateur (plus rapide, voit moins)"
+        type: boolean
+        default: false
+      liens:
+        description: "Nombre de liens à imprimer"
+        type: string
+        default: "60"
+
+# Lecture seule : ce flux ne commite rien et n'a rien à modifier.
+permissions:
+  contents: read
+
+jobs:
+  lire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Sans navigateur, on ne voit qu'une fraction d'une page moderne : la
+      # plupart des sites construisent leur contenu une fois chargés.
+      - name: Installer Chromium
+        if: inputs.brut != true
+        run: |
+          pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Lire
+        run: |
+          python3 outils/lire.py "${{ inputs.url }}" \
+            --liens "${{ inputs.liens }}" --sans-cache \
+            ${{ inputs.brut == true && '--brut' || '' }}

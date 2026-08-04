@@ -11,8 +11,20 @@
 
 var conteneur = document.getElementById("app");
 
+/* Un pointeur fin, c'est une souris ou un trackpad : il y a un clavier
+   derrière. Sur un écran tactile, donner le focus au champ ferait surgir le
+   clavier virtuel par-dessus la grille qu'on vient d'ouvrir. */
+var AU_CLAVIER = !!(window.matchMedia && window.matchMedia("(pointer:fine)").matches);
+if (AU_CLAVIER) document.body.classList.add("clavier");
+
 function render() {
   conteneur.innerHTML = vueHTML();
+
+  /* Ouvrir un écran de recherche et devoir cliquer dans le champ avant de
+     taper, c'est un geste de trop quand on a un clavier sous les doigts. */
+  if (!AU_CLAVIER) return;
+  var champ = document.getElementById("q");
+  if (champ) champ.focus();
 }
 
 
@@ -155,12 +167,60 @@ conteneur.addEventListener("click", function (e) {
   render();
 });
 
-/* Échap referme le menu : réflexe attendu dès qu'on est au clavier. */
+/* ============ Le clavier ============
+   Sur un ordinateur, ce n'est pas la mise en page qui fait gagner du temps,
+   c'est le clavier : taper « pip » puis Entrée bat n'importe quel nombre de
+   clics. Trois touches suffisent, et aucune n'invente de fonction nouvelle —
+   elles déclenchent exactement ce que déclenche un bouton visible.
+
+     Entrée  désigne le premier résultat affiché
+     Échap   annule, referme, revient
+     E A B   ouvrent la saisie d'un ennemi, d'un allié, d'un ban
+
+   Les lettres ne valent que sur l'écran de draft et jamais pendant qu'on
+   écrit : sinon taper « bea » dans la recherche déclencherait trois écrans. */
+
+function champDeSaisieActif() {
+  var a = document.activeElement;
+  return !!a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.isContentEditable);
+}
+
+/* Le premier résultat de la grille ou de la liste de cartes, selon l'écran. */
+function premierResultat() {
+  return document.querySelector('#grid .cel, #listeCartes [data-act="carte"]');
+}
+
+var RACCOURCIS_DRAFT = { e: "addE", a: "addA", b: "addB" };
+
 document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape" && menuOuvert) {
-    menuOuvert = null;
-    render();
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (e.key === "Escape") {
+    if (menuOuvert) { menuOuvert = null; render(); return; }
+    /* Écran de désignation ou de carte : Échap ramène au draft, comme le
+       bouton « Annuler ». Sur le draft lui-même, il referme le détail. */
+    if (cibleAjout) { ACTIONS.annuler(); render(); return; }
+    if (ecran !== "draft") { ACTIONS.draft(); render(); return; }
+    if (vueAnalyse) { ACTIONS.detail(); render(); return; }
+    return;
   }
+
+  if (e.key === "Enter") {
+    var premier = premierResultat();
+    if (!premier) return;
+    e.preventDefault();
+    premier.click();
+    return;
+  }
+
+  if (champDeSaisieActif() || ecran !== "draft" || cibleAjout) return;
+
+  var action = RACCOURCIS_DRAFT[e.key.toLowerCase()];
+  if (!action) return;
+  e.preventDefault();
+  menuOuvert = null;
+  ACTIONS[action]();
+  render();
 });
 
 

@@ -348,6 +348,18 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   .col-detail .intro{grid-column:1 / -1}
 }
 
+/* ============ Clavier ============
+   Masquée par défaut : sur un écran tactile, annoncer « Entrée » et « Échap »
+   serait au mieux inutile, au pire un mensonge. app.js pose la classe sur
+   <body> quand un pointeur fin est détecté. */
+.astuce-clavier{display:none}
+body.clavier .astuce-clavier{display:block;margin:-4px 0 14px;
+  font-size:11.5px;color:var(--faible)}
+/* Au clavier, le focus doit se voir : sans repère visible on ne sait plus
+   où l'on est dans la grille. */
+body.clavier :focus-visible{outline:2px solid var(--vif);outline-offset:2px;
+  border-radius:6px}
+
 /* Pied de page : les sources se replient, la mention Supercell reste. */
 .note .supercell{margin-top:9px}
 .note summary{cursor:pointer;list-style:none;color:var(--faible);
