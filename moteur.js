@@ -113,6 +113,20 @@ var CLE_MODE = {
 };
 function nomMode(m) { return t(CLE_MODE[m]); }
 
+/* Le nom d'une carte tel que le jeu l'annonce dans la langue de l'app.
+   ---------------------------------------------------------------------------
+   « Center Stage » s'annonce « Milieu de scène » en français. L'app affichait
+   la version anglaise : il fallait traduire de tête, pendant les 25 secondes
+   du draft, pour retrouver sa carte dans la liste.
+
+   Rien n'est traduit ici : les noms viennent de ce que le jeu affiche
+   réellement, relevé par refresh.py. Sans traduction connue, l'anglais reste
+   — c'est le nom d'origine, jamais une invention. */
+function nomCarte(carte) {
+  if (!carte) return "";
+  return (carte.noms && carte.noms[langue]) || carte.nom;
+}
+
 
 /* ============ Index dérivés des données ============ */
 

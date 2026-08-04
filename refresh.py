@@ -1475,14 +1475,91 @@ def js(valeur):
     return json.dumps(valeur, ensure_ascii=False, separators=(",", ":"))
 
 
+# Le jeu traduit le nom de certaines cartes : « Center Stage » s'annonce
+# « Milieu de scène » en français. L'app en affichait la version anglaise, et
+# il fallait traduire de tête pendant les 25 secondes du draft.
+#
+# Brawl Time Ninja publie ses listes dans chaque langue, et la structure de
+# ses liens donne la correspondance gratuitement : l'adresse porte le nom
+# anglais, le texte du lien porte le nom traduit.
+#
+#     /fr/tier-list/mode/brawl-ball/map/Center-Stage   →   Milieu de scène
+#
+# On ne traduit donc rien : on recopie ce que le jeu affiche déjà.
+LANGUES_CARTES = ("fr", "es")
+RX_LIEN_CARTE = re.compile(r"/tier-list/mode/[^/]+/map/([^/?#\"]+)")
+
+
+def noms_de_cartes(net, langue):
+    """{identifiant de carte: nom affiché dans cette langue}."""
+    url = BASE_NINJA + "/" + langue + "/tier-list/ranked"
+    try:
+        html = net.get_rendu(url) or net.get(url)
+    except Exception as e:
+        souci("noms de cartes en %s illisibles (%s) — on garde l'existant"
+              % (langue, e.__class__.__name__))
+        return {}
+
+    trouves = {}
+    for bloc in aplatir(html):
+        if bloc["type"] != "lien":
+            continue
+        m = RX_LIEN_CARTE.search(bloc.get("href") or "")
+        texte = " ".join((bloc.get("texte") or "").split())
+        if not m or not texte:
+            continue
+        # L'adresse « Center-Stage » devient l'identifiant « center-stage »,
+        # celui que porte déjà chaque carte de donnees.js.
+        brut = urllib.parse.unquote(m.group(1))
+        ident = re.sub(r"[^a-z0-9]+", "-", brut.lower()).strip("-")
+        if ident:
+            trouves[ident] = texte
+    return trouves
+
+
+def ajouter_noms_traduits(net, cartes, anciennes):
+    """Complète chaque carte avec son nom dans les autres langues.
+
+    Une source muette ne doit jamais effacer ce qui est déjà écrit : sans
+    lecture, on recopie les noms de la version précédente."""
+    connus = {c.get("id"): (c.get("noms") or {}) for c in (anciennes or [])}
+    for c in cartes:
+        c["noms"] = dict(connus.get(c["id"]) or {})
+
+    for langue in LANGUES_CARTES:
+        table = noms_de_cartes(net, langue)
+        if not table:
+            continue
+        pris = 0
+        for c in cartes:
+            nom = table.get(c["id"])
+            # Un nom identique à l'anglais n'apprend rien : beaucoup de cartes
+            # gardent leur nom d'origine dans le jeu.
+            if nom and nom != c["nom"]:
+                c["noms"][langue] = nom
+                pris += 1
+        note("noms de cartes en %s : %d traduits sur %d"
+             % (langue, pris, len(cartes)))
+
+    for c in cartes:
+        if not c["noms"]:
+            c.pop("noms", None)
+    return cartes
+
+
 def rendre_maps(cartes):
     lignes = ["var MAPS=["]
     for i, c in enumerate(cartes):
         top = ",".join("[" + ",".join(js(x) for x in e if x is not None) + "]"
                        for e in c["top"])
-        lignes.append("{id:%s,img:%s,nom:%s,mode:%s,top:[%s]}%s"
+        # « noms » n'apparaît que s'il y a vraiment quelque chose à dire :
+        # la plupart des cartes gardent leur nom anglais dans le jeu, et
+        # écrire noms:{} sur chaque ligne alourdirait le fichier pour rien.
+        noms = c.get("noms") or {}
+        bloc_noms = (",noms:" + js(noms)) if noms else ""
+        lignes.append("{id:%s,img:%s,nom:%s%s,mode:%s,top:[%s]}%s"
                       % (js(c["id"]), c["img"] if c["img"] else "null",
-                         js(c["nom"]), js(c["mode"]), top,
+                         js(c["nom"]), bloc_noms, js(c["mode"]), top,
                          "];" if i == len(cartes) - 1 else ","))
     return "\n".join(lignes)
 
@@ -1549,11 +1626,26 @@ def ids_cartes(html):
 
 
 def cartes_actuelles(html):
+    """Les cartes déjà en place, noms traduits compris.
+
+    Le bloc « noms » est facultatif : la plupart des cartes gardent leur nom
+    anglais dans le jeu. Le motif doit donc l'accepter présent ou absent —
+    sinon plus aucune carte n'est relue, et la protection contre
+    l'appauvrissement du pool compare le relevé à une liste vide, c'est-à-dire
+    ne protège plus rien."""
     bloc = lire_bloc(html, "MAPS")
     out = []
-    for m in re.finditer(r'\{id:"([^"]+)",img:(\d+),nom:"([^"]+)",mode:"([^"]+)"', bloc):
+    motif = re.compile(
+        r'\{id:"([^"]+)",img:(\d+),nom:"([^"]+)"'
+        r'(?:,noms:(\{[^}]*\}))?'
+        r',mode:"([^"]+)"')
+    for m in motif.finditer(bloc):
+        try:
+            noms = json.loads(m.group(4)) if m.group(4) else {}
+        except Exception:
+            noms = {}
         out.append({"id": m.group(1), "img": int(m.group(2)),
-                    "nom": m.group(3), "mode": m.group(4)})
+                    "nom": m.group(3), "noms": noms, "mode": m.group(5)})
     return out
 
 
@@ -2098,6 +2190,7 @@ def main():
             cartes = None
         if cartes:
             cartes = appliquer_userates(cartes, a.userates)
+            cartes = ajouter_noms_traduits(net, cartes, anciennes)
             ordre = list(MODES)
             cartes.sort(key=lambda c: (ordre.index(c["mode"]), c["nom"]))
             html = ecrire_bloc(html, "MAPS", rendre_maps(cartes))

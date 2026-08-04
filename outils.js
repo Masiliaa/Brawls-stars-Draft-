@@ -9,6 +9,14 @@ function clef(nom) {
   return String(nom || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+/* Pour comparer une recherche à un texte accentué : « phenix » doit trouver
+   « Phénix flamboyant ». Personne ne pose les accents sur un clavier de
+   téléphone, encore moins pendant un draft. */
+function sansAccents(texte) {
+  return String(texte || "").normalize("NFD")
+    .replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
 /* Variante pour les noms de fichiers d'image sur les CDN, qui gardent les
    tirets et remplacent le reste par des soulignés.
    « El Primo » → « el_primo ». */

@@ -101,6 +101,19 @@ const check = (nom, cond, detail = '') => {
   await page.locator('#q').fill('zzzz');
   check('une recherche vaine le dit',
     (await page.locator('[data-act="carte"]').count()) === 0);
+
+  // Le jeu annonce « Milieu de scène », pas « Center Stage ». Traduire de
+  // tête pendant les 25 secondes du draft n'est pas une option, et personne
+  // ne pose les accents sur un clavier de téléphone.
+  await page.locator('#q').fill('milieu');
+  check('on trouve la carte par le nom que le jeu annonce',
+    (await page.locator('[data-act="carte"]').count()) === 1);
+  await page.locator('#q').fill('center');
+  check('et toujours par son nom d\'origine',
+    (await page.locator('[data-act="carte"]').count()) === 1);
+  await page.locator('#q').fill('phenix');
+  check('les accents ne sont pas obligatoires',
+    (await page.locator('[data-act="carte"]').count()) === 1);
   await page.locator('#q').fill('');
   check('vider la recherche rend les modes',
     (await page.locator('[data-act="ouvrirModeCarte"]').count()) === 6);
@@ -248,10 +261,13 @@ const check = (nom, cond, detail = '') => {
   console.log('\n== changer de carte remet le draft à zéro ==');
   await ajouter('addE', 2);
   await page.locator('[data-act="cartes"]').first().click();
+  // On tape le nom d'origine et on clique sur celui que le jeu annonce en
+  // français : c'est exactement ce que fait quelqu'un qui connaît la carte
+  // sous son nom anglais mais joue avec l'interface traduite.
   await page.locator('#q').fill('Hot Potato');
-  await page.getByText('Hot Potato').first().click();
-  check('nouvelle carte affichée',
-    (await page.locator('.b.full').first().textContent()).includes('Hot Potato'));
+  await page.getByText('C\'est chaud patate').first().click();
+  check('nouvelle carte affichée sous son nom français',
+    (await page.locator('.b.full').first().textContent()).includes('chaud patate'));
   check('les ennemis ont été vidés', (await page.locator('[data-act="rme"]').count()) === 0);
 
   console.log('\n== roster vide : message d\'invite ==');

@@ -197,7 +197,7 @@ function ecranRoster() {
 function ligneCarte(carte) {
   return '<button class="b full carte-choix" data-act="carte" data-v="' + carte.id + '">'
        + '<span class="gauche">' + vignette(carte, 34)
-       + '<span class="nom">' + echapper(carte.nom) + "</span></span>"
+       + '<span class="nom">' + echapper(nomCarte(carte)) + "</span></span>"
        + '<span class="fleche">›</span></button>';
 }
 
@@ -222,10 +222,14 @@ function ecranCartes() {
    toute la page ferait perdre le focus du champ à chaque lettre. */
 function listeCartesHTML() {
   var html = "";
-  var filtre = recherche.trim().toLowerCase();
+  var filtre = sansAccents(recherche.trim());
   if (filtre) {
+    /* On cherche sur les deux noms : celui qu'affiche le jeu et celui
+       d'origine. Quelqu'un qui a lu « Milieu de scène » à l'écran le tape ;
+       quelqu'un qui connaît le nom anglais le tape aussi. */
     var trouvees = MAPS.filter(function (c) {
-      return c.nom.toLowerCase().indexOf(filtre) !== -1;
+      return sansAccents(c.nom).indexOf(filtre) !== -1
+          || sansAccents(nomCarte(c)).indexOf(filtre) !== -1;
     });
     if (!trouvees.length) {
       return html + '<div class="lab" style="margin-top:18px">'
@@ -291,7 +295,7 @@ function boutonCarte(carte, couleur) {
        + '<span class="gauche">' + (carte ? vignette(carte, 32) : "")
        + '<span class="deux-lignes">'
        + '<span class="sur">' + echapper(carte ? nomMode(carte.mode) : t("etape1")) + "</span>"
-       + '<span class="nom">' + echapper(carte ? carte.nom : t("choisirCarte")) + "</span>"
+       + '<span class="nom">' + echapper(carte ? nomCarte(carte) : t("choisirCarte")) + "</span>"
        + "</span></span>"
        + '<span class="action">' + echapper(t("changer")) + "</span></button>";
 }
