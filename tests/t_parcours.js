@@ -180,6 +180,48 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="rme"]').count()) === avant, avant);
   await page.locator('[data-act="reset"]').click();
 
+  // ── Désigner sans taper ────────────────────────────────────────────────
+  // Mesuré le 04/08/2026 : les huit brawlers les plus joués sur la carte
+  // arrivaient en positions 5, 10, 12, 28, 45, 49 — et deux n'étaient pas
+  // affichés du tout, la grille étant coupée à 60 noms rangés dans l'ordre
+  // alphabétique. Pour saisir le pick adverse le plus probable, il fallait
+  // donc taper son nom. C'est le vrai coût de la saisie, bien plus que le
+  // nombre d'appuis.
+  console.log('\n== le pick probable est sous le pouce ==');
+  await page.locator('[data-act="addE"]').click();
+  const ordre = await page.evaluate(() => {
+    const grille = [...document.querySelectorAll('#grid .cel')]
+      .map(e => e.getAttribute('data-v'));
+    const surLaCarte = carteActive().top.map(t => clef(t[0]));
+    return {
+      rangs: surLaCarte.map(k => grille.indexOf(k)),
+      visibles: surLaCarte.filter(k => {
+        const e = document.querySelector('#grid .cel[data-v="' + k + '"]');
+        return e && e.getBoundingClientRect().bottom <= window.innerHeight;
+      }).length,
+      combien: surLaCarte.length
+    };
+  });
+  check('tous les brawlers de la carte sont proposés',
+    ordre.rangs.every(r => r >= 0), ordre.rangs);
+  check('et ils occupent les toutes premières places',
+    Math.max.apply(null, ordre.rangs) < ordre.combien + 2, ordre.rangs);
+  check('visibles sans faire défiler',
+    ordre.visibles === ordre.combien, ordre.visibles + '/' + ordre.combien);
+  await page.locator('[data-act="annuler"]').click();
+
+  // Un brawler déjà banni ne peut plus être pické : le proposer, c'est
+  // offrir un choix impossible.
+  await page.locator('[data-act="addB"]').click();
+  const premierBan = await page.locator('#grid .cel').first().getAttribute('data-v');
+  await page.locator('#grid .cel').first().click();
+  await page.locator('[data-act="addE"]').click();
+  check('un brawler banni disparaît des propositions',
+    (await page.locator('#grid .cel[data-v="' + premierBan + '"]').count()) === 0,
+    premierBan);
+  await page.locator('[data-act="annuler"]').click();
+  await page.locator('[data-act="reset"]').click();
+
   console.log('\n== ajouter des picks, jusqu\'aux limites ==');
   async function ajouter(bouton, combien) {
     for (let i = 0; i < combien; i++) {

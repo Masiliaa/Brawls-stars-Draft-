@@ -183,11 +183,22 @@ function barreHaut() {
    "roster" — on coche ceux qu'on sait jouer, tous affichés
    "choix"  — on désigne un pick, limité aux 60 premiers pour rester fluide */
 function grilleBrawlers(usage) {
-  var filtre = recherche.trim().toLowerCase();
+  var filtre = sansAccents(recherche.trim());
   var liste = brawlers.filter(function (b) {
-    return b.nom.toLowerCase().indexOf(filtre) > -1;
+    return sansAccents(b.nom).indexOf(filtre) > -1;
   });
-  if (usage === "choix") liste = liste.slice(0, 60);
+
+  if (usage === "choix") {
+    /* Ceux qui sont déjà bannis ou déjà pris ne peuvent plus l'être : les
+       montrer, c'est proposer un choix impossible. */
+    var engages = dejaEngages();
+    liste = liste.filter(function (b) { return engages.indexOf(b.k) < 0; });
+
+    /* Rangés par ce qui a des chances de tomber sur cette carte, pas par
+       ordre alphabétique : c'est ce qui permet de désigner d'un seul appui
+       au lieu de taper trois lettres. */
+    liste = ordreProbable(liste).slice(0, 60);
+  }
 
   return liste.map(function (b) {
     var coche = usage === "roster" && roster.has(b.k);

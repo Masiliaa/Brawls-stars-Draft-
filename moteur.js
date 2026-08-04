@@ -169,6 +169,45 @@ function raison(priorite, texte) {
 }
 
 /* Nombre de picks adverses qui viendront encore après le tien. */
+/* ============ L'ordre dans lequel on propose les brawlers ============
+   Mesuré le 04/08/2026 sur Center Stage : sur les huit brawlers les plus
+   joués de la carte, le premier arrivait en 5e position de la grille, le
+   dernier en 49e — et deux ne s'affichaient pas du tout, la liste étant
+   coupée à 60 noms rangés par ordre alphabétique. Autrement dit : pour
+   saisir le pick adverse le plus probable, il fallait taper son nom.
+
+   On range donc par ce qu'on sait vraiment : d'abord les brawlers relevés
+   sur cette carte, dans leur ordre de classement ; puis les autres par
+   tier dans ce mode ; puis l'alphabet. Aucune estimation là-dedans — que
+   des mesures déjà affichées ailleurs dans l'app. */
+var POIDS_TIER_ORDRE = { S: 100, A: 200, B: 300, C: 400, D: 500 };
+
+function ordreProbable(liste) {
+  var carte = carteActive();
+  var rang = {};
+  if (carte) {
+    carte.top.forEach(function (e, i) { rang[clef(e[0])] = i; });
+  }
+  var tiers = (carte && TIER_PAR_MODE[carte.mode]) || {};
+
+  function poids(b) {
+    if (b.k in rang) return rang[b.k];              /* 0 à 7 : sur la carte */
+    return POIDS_TIER_ORDRE[tiers[b.k]] || 900;     /* sinon, son tier */
+  }
+
+  return liste.slice().sort(function (a, b) {
+    var pa = poids(a), pb = poids(b);
+    if (pa !== pb) return pa - pb;
+    return a.nom.localeCompare(b.nom, "fr");
+  });
+}
+
+/* Un brawler déjà banni ou déjà pris ne peut plus l'être une seconde fois :
+   le laisser dans la liste, c'est proposer un choix impossible. */
+function dejaEngages() {
+  return ennemis.concat(allies, bans);
+}
+
 function reponsesRestantes() {
   return Math.max(0, MAX_ENNEMIS - ennemis.length);
 }
