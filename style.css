@@ -122,14 +122,22 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .pil.add{background:transparent;border-style:dashed;color:var(--doux);padding:5px 15px}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px}
+/* Le voile a 50 % dit « celui-la, tu ne l'as pas coche ». Il n'a de sens que
+   sur l'ecran des brawlers, ou il y a deux etats. Il etait pose sur .cel,
+   donc sur TOUTES les grilles — y compris celle ou l'on designe un ennemi en
+   pleine draft, qui n'a pas d'etat coche et se retrouvait donc grisee en
+   entier : noms a 2,25:1 la ou il en faut 4,5. L'ecran le plus tendu de
+   l'app etait le moins lisible. Le voile est desormais reserve a .cel.roster. */
 .cel{background:transparent;border:none;border-radius:0;padding:0;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:none;opacity:.5;transition:opacity .12s}
+  display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:none;transition:opacity .12s}
 .cel .port{width:52px;height:52px}
 .cel b{font-family:inherit;font-weight:500;text-transform:none;font-size:11px;line-height:1.15;
-  color:var(--doux);text-shadow:none}
-.cel.on{background:transparent;opacity:1}
-.cel.on .port{box-shadow:0 0 0 2px var(--vif)}
-.cel.on b{color:var(--texte)}
+  color:var(--texte);text-shadow:none}
+.cel.roster{opacity:.5}
+.cel.roster b{color:var(--doux)}
+.cel.roster.on{background:transparent;opacity:1}
+.cel.roster.on .port{box-shadow:0 0 0 2px var(--vif)}
+.cel.roster.on b{color:var(--texte)}
 
 .lab{font-family:inherit;text-transform:uppercase;font-size:10px;font-weight:700;letter-spacing:.18em;
   color:var(--faible);margin:24px 0 10px;text-shadow:none}

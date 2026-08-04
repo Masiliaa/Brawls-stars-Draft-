@@ -75,6 +75,16 @@ const check = (nom, cond, detail = '') => {
   check('vider la recherche restaure la liste',
     (await page.locator('.cel').count()) === toutCoche);
 
+  // Ici, et ici seulement, il y a deux états à distinguer d'un coup d'œil.
+  await page.locator('[data-act="rien"]').click();
+  const voile = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector('#grid .cel')).opacity));
+  await page.locator('[data-act="tout"]').click();
+  const plein = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector('#grid .cel')).opacity));
+  check('un perso non coché reste visiblement en retrait',
+    voile < plein, { nonCoche: voile, coche: plein });
+
   console.log('\n== le roster survit au rechargement ==');
   await page.reload({ waitUntil: 'networkidle' });
   const apresReload = await page.evaluate(() => roster.size);
@@ -208,6 +218,30 @@ const check = (nom, cond, detail = '') => {
     Math.max.apply(null, ordre.rangs) < ordre.combien + 2, ordre.rangs);
   check('visibles sans faire défiler',
     ordre.visibles === ordre.combien, ordre.visibles + '/' + ordre.combien);
+
+  // Le voile à 50 % des non cochés était posé sur toutes les grilles. Celle-ci
+  // n'a pas d'état coché : elle était donc grisée en entier, noms à 2,25:1
+  // alors qu'il en faut 4,5. L'écran le plus tendu de l'app était le moins
+  // lisible. On mesure le contraste réel, voile compris.
+  const lisibilite = await page.evaluate(() => {
+    const rgb = s => s.match(/\d+(\.\d+)?/g).map(Number);
+    const lum = ([r, g, b]) => {
+      const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const cel = document.querySelector('#grid .cel');
+    const nom = cel.querySelector('b');
+    const op = parseFloat(getComputedStyle(cel).opacity);
+    const fond = rgb(getComputedStyle(document.body).backgroundColor);
+    const vu = rgb(getComputedStyle(nom).color).map((v, i) => v * op + fond[i] * (1 - op));
+    const [a, b] = [lum(vu), lum(fond)].sort((m, n) => n - m);
+    return { contraste: +((a + 0.05) / (b + 0.05)).toFixed(2), opacite: op };
+  });
+  check('les noms de la grille de choix sont lisibles (≥ 4,5:1)',
+    lisibilite.contraste >= 4.5, lisibilite);
+  check('la grille de choix n’est pas voilée',
+    lisibilite.opacite === 1, lisibilite);
+
   await page.locator('[data-act="annuler"]').click();
 
   // Un brawler déjà banni ne peut plus être pické : le proposer, c'est

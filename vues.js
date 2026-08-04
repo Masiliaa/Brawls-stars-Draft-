@@ -202,7 +202,10 @@ function grilleBrawlers(usage) {
 
   return liste.map(function (b) {
     var coche = usage === "roster" && roster.has(b.k);
-    return '<button class="cel' + (coche ? " on" : "") + '"'
+    /* La classe « roster » porte le voile des non cochés. Sans elle, la
+       grille de choix héritait de l'état « pas coché » en permanence. */
+    return '<button class="cel' + (usage === "roster" ? " roster" : "")
+         + (coche ? " on" : "") + '"'
          + ' data-act="' + (usage === "roster" ? "toggle" : "choisir") + '"'
          + ' data-v="' + b.k + '">'
          + portrait(b, 40, false)
