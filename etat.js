@@ -32,6 +32,37 @@ function definirMode(m) {
   try { localStorage.setItem(CLE_MODE_AFFICHAGE, m); } catch (e) { /* ignoré */ }
 }
 
+/* La place disponible, pas le type d'appareil.
+   ------------------------------------------------------------------------
+   Il serait tentant de distinguer téléphone, tablette et ordinateur. C'est
+   une fausse piste : un iPhone tenu en paysage fait 844 px de large, soit
+   plus que la zone utile d'un iPad en portrait. Le type d'appareil ne dit
+   rien de ce qu'on peut afficher ; la largeur, si — et elle change quand on
+   tourne l'appareil ou qu'on redimensionne une fenêtre.
+
+   Au-delà du seuil, le conseil et le classement tiennent côte à côte : la
+   séparation rapide / analyse n'existait que parce qu'un téléphone est
+   étroit.
+
+   La largeur est calculée, pas choisie : 340 px de plancher pour le conseil
+   — en dessous, le nom en gros corps se coupe en deux — plus 28 de
+   gouttière, 380 pour que le classement reste lisible, et 56 de marges.
+   Soit 804, arrondi à 820.
+
+   Mais la largeur ne suffit pas, et l'iPhone tenu en paysage le prouve :
+   844 px de large, donc assez pour deux colonnes, et seulement 390 de haut.
+   Y afficher le classement complet portait la page de 2 à 6,7 écrans — la
+   seconde colonne n'a nulle part où tenir, et la première ne peut même pas
+   se coller puisqu'elle dépasse déjà la fenêtre. D'où la seconde condition :
+   il faut aussi de quoi loger le conseil et sa saisie, soit 600 px. */
+var SEUIL_DEUX_COLONNES = 820;
+var SEUIL_HAUTEUR = 600;
+
+function deuxColonnes() {
+  return window.innerWidth >= SEUIL_DEUX_COLONNES
+      && window.innerHeight >= SEUIL_HAUTEUR;
+}
+
 /* Descente ponctuelle dans le détail, depuis le mode rapide.
    ------------------------------------------------------------------------
    Changer de mode demandait deux gestes dans un menu, et c'était un réglage
@@ -44,6 +75,10 @@ function definirMode(m) {
 var vueAnalyse = false;
 
 function modeEffectif() {
+  /* Sur deux colonnes le classement est déjà à l'écran, à côté du conseil :
+     choisir entre les deux n'a plus de sens, et proposer un choix sans
+     effet est une friction de plus. */
+  if (deuxColonnes()) return "large";
   return vueAnalyse ? "analyse" : modeAffichage;
 }
 

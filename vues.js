@@ -120,7 +120,10 @@ function menuDeroulant(nom, libelleBouton, titre, action, options) {
 function barreHaut() {
   var versRoster = ecran !== "roster";
 
-  var menuMode = menuDeroulant(
+  /* À deux colonnes, conseil et classement sont affichés ensemble : choisir
+     entre les deux ne changerait rien. Un menu sans effet est une friction,
+     pas une option — il disparaît, et revient dès qu'on rétrécit. */
+  var menuMode = deuxColonnes() ? "" : menuDeroulant(
     "Mode",
     t(modeAffichage === "rapide" ? "modeRapide" : "modeAnalyse"),
     t("choisirMode"), "mode",
@@ -314,24 +317,37 @@ function encadre(message, action, libelle) {
        + '<button class="b" data-act="' + action + '">' + echapper(libelle) + "</button></div>";
 }
 
-/* Le brawler recommandé, en grand, puis les suivants en liste. */
-function blocConseils(liste, couleurMode) {
+/* Le brawler recommandé, en grand, puis les suivants en bande.
+
+   Sur deux colonnes, le classement complet est déjà affiché à droite : la
+   bande des suivants ferait doublon, et la porte vers le détail n'ouvre
+   plus rien puisque le détail est là. Le bloc se réduit alors au verdict. */
+function blocConseils(liste, couleurMode, cote) {
   if (!liste.length) {
     return '<div class="box"><p>' + echapper(t("tousBannis")) + "</p></div>";
   }
 
-  /* Le bloc entier est un bouton : taper le nom ouvre le calcul. C'est la
-     porte vers le mode analyse, à un geste au lieu de deux dans un menu. */
+  /* Hors deux colonnes, le bloc entier est un bouton : taper le nom ouvre le
+     calcul. C'est la porte vers le mode analyse, à un geste au lieu de deux
+     dans un menu. Un bouton qui ne ferait rien serait pire que pas de
+     bouton, donc à côté du classement c'est une simple boîte. */
   var premier = liste[0];
-  var html = '<button class="hero" data-act="detail"'
-           + ' title="' + echapper(t("voirCalcul")) + '"'
-           + ' style="--r:' + (premier.b.couleur || couleurMode) + '">'
-           + '<span class="tierb">' + echapper(t("tier", { tier: premier.tier })) + "</span>"
-           + '<div class="in">' + portrait(premier.b, 84, true)
-           + '<span><span class="ribbon">' + echapper(t("prends")) + "</span>"
-           + '<div class="tt name">' + echapper(premier.nom) + "</div></span>"
-           + '<span class="vers-detail" aria-hidden="true">›</span></div>'
-           + '<div class="why">' + echapper(premier.raison) + "</div></button>";
+  var html = cote
+    ? '<div class="hero" style="--r:' + (premier.b.couleur || couleurMode) + '">'
+    : '<button class="hero" data-act="detail"'
+      + ' title="' + echapper(t("voirCalcul")) + '"'
+      + ' style="--r:' + (premier.b.couleur || couleurMode) + '">';
+
+  html += '<span class="tierb">' + echapper(t("tier", { tier: premier.tier })) + "</span>"
+        + '<div class="in">' + portrait(premier.b, 84, true)
+        + '<span><span class="ribbon">' + echapper(t("prends")) + "</span>"
+        + '<div class="tt name">' + echapper(premier.nom) + "</div></span>"
+        + (cote ? "" : '<span class="vers-detail" aria-hidden="true">›</span>')
+        + "</div>"
+        + '<div class="why">' + echapper(premier.raison) + "</div>"
+        + (cote ? "</div>" : "</button>");
+
+  if (cote) return html;
 
   /* Les suivants tenaient sur trois lignes pleines, raison comprise : 195 px,
      le plus gros poste de l'écran après le conseil lui-même, et c'est lui qui
@@ -569,16 +585,42 @@ function ecranDraft() {
      draft tient d'un seul regard : le nom, sa raison, et la saisie juste
      dessous. L'adversaire pick, on le tape, le nom change au-dessus sans
      que rien ne bouge sous le pouce. */
-  if (modeEffectif() === "analyse") {
+  var mode = modeEffectif();
+
+  /* LARGE — deux colonnes. Le conseil et sa saisie restent en vue à gauche
+     pendant que le classement défile à droite : sur un portable, la colonne
+     unique laissait 64 % de l'écran vide et faisait quand même défiler
+     trois fois. */
+  if (mode === "large") {
+    return html
+         + '<div class="deux-colonnes">'
+         + '<div class="col-conseil">'
+         + ligneSituation()
+         + blocConseils(conseils(), couleur, true)
+         + blocSaisieCompacte()
+         + (phaseDeBan() ? blocBans() : "")
+         + "</div>"
+         + '<div class="col-detail">' + blocAnalyse(carte) + "</div>"
+         + "</div>" + noteHTML();
+  }
+
+  if (mode === "analyse") {
     html += blocContexte();
     html += ligneSituation();
     return html + blocAnalyse(carte) + noteHTML();
   }
 
+  /* RAPIDE — une colonne sur un téléphone debout. Les deux moitiés sont
+     malgré tout enveloppées séparément, parce qu'une fenêtre large mais
+     basse — un téléphone couché, et Brawl Stars se joue couché — a la place
+     de les mettre côte à côte sans rien changer d'autre. C'est la feuille
+     de style qui en décide, pas ce code. */
   html += ligneSituation();
-  html += blocConseils(conseils(), couleur);
-  html += blocSaisieCompacte();
-  if (phaseDeBan()) html += blocBans();
+  html += '<div class="rapide-corps">'
+        + '<div class="part-verdict">' + blocConseils(conseils(), couleur) + "</div>"
+        + '<div class="part-saisie">' + blocSaisieCompacte()
+        + (phaseDeBan() ? blocBans() : "") + "</div>"
+        + "</div>";
 
   return html + noteHTML();
 }

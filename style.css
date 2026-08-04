@@ -23,7 +23,21 @@ html,body{margin:0;padding:0}
 body{min-height:100vh;background:var(--fond);color:var(--texte);
   font-family:var(--police);
   -webkit-font-smoothing:antialiased;font-size:15px}
+/* La place disponible, pas le type d'appareil. Un iPhone tenu en paysage
+   fait 844 px de large : plus qu'un iPad debout. D'où une seule règle,
+   partout — largeur ET hauteur suffisantes, sinon colonne unique.
+   Les mêmes seuils sont dans etat.js, qui décide de ce qui est calculé ;
+   ici on ne fait que la mise en page. */
 #app{max-width:520px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+@media (min-width:820px) and (min-height:600px){
+  #app{max-width:1180px;padding-left:28px;padding-right:28px}
+}
+/* Au-delà, élargir encore rallongerait les lignes du classement au lieu de
+   les rendre lisibles. C'est le nombre de fiches visibles qu'on augmente,
+   pas leur largeur — voir .col-detail plus bas. */
+@media (min-width:1600px) and (min-height:600px){
+  #app{max-width:1560px}
+}
 
 .tt{font-family:inherit;text-transform:none;letter-spacing:-.03em;line-height:1;text-shadow:none}
 .bar{display:flex;align-items:center;gap:8px;margin-bottom:22px}
@@ -113,6 +127,31 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .note a{color:var(--doux);text-decoration:underline}
 .intro{font-size:14px;font-weight:400;color:var(--doux);margin:0 0 14px;line-height:1.55}
 @media (max-width:359px){.bar .b.sm{font-size:12px;padding:8px 11px}.b.lang{min-width:36px;padding:8px 8px}}
+
+/* Fenêtre large mais basse — le téléphone couché, c'est-à-dire dans la
+   position où l'on joue. La hauteur ne permet pas d'empiler le conseil puis
+   la saisie ; la largeur permet de les poser côte à côte. Le classement,
+   lui, reste hors de question : il n'y a pas 600 px de haut pour lui. */
+@media (max-height:520px) and (min-width:700px){
+  #app{max-width:960px}
+  .rapide-corps{display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,1fr);
+    gap:22px;align-items:start}
+  .part-saisie .lab:first-child{margin-top:0}
+}
+
+/* Fenêtre basse — un téléphone tenu en paysage, une fenêtre écrasée. Le
+   conseil occupait 225 px sur 390 de haut : le nom reste le plus gros
+   élément de l'écran, mais il n'a plus besoin d'en prendre le tiers. */
+@media (max-height:520px){
+  #app{padding-top:calc(10px + env(safe-area-inset-top))}
+  .bar{margin-bottom:14px}
+  .hero{padding:16px 18px 14px;border-radius:16px}
+  .hero .in{gap:14px}
+  .name{font-size:clamp(28px,7vw,38px)}
+  .hero .port{width:56px!important;height:56px!important;--fs:22px!important}
+  .why{margin-top:12px;padding-top:10px}
+  .lab{margin:14px 0 8px}
+}
 
 /* ============ Liste des cartes ============ */
 .groupe-mode{display:block;margin-bottom:22px}
@@ -281,6 +320,33 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   border-radius:2px;margin:0;font-size:0;letter-spacing:0}
 .analyse.premier{border-color:color-mix(in srgb,var(--vif) 34%,var(--trait))}
 .analyse.premier .jauge-score i{background:var(--vif)}
+
+/* ============ Deux colonnes ============
+   Sur un portable, la colonne unique laissait 64 % de l'écran vide et
+   faisait quand même défiler trois fois pour lire le classement. Le conseil
+   et sa saisie se collent à gauche, le classement défile à droite : plus
+   rien à faire défiler pour corriger un pick, et le nom reste sous les yeux.
+
+   Les largeurs sont volontairement en pixels et non en fractions : la
+   colonne de gauche contient un nom en très gros corps, qui a besoin d'un
+   plancher pour ne pas se couper en deux, et le classement lit mieux large
+   que la moitié d'un écran de 1920. */
+.deux-colonnes{display:grid;grid-template-columns:minmax(340px,400px) minmax(0,1fr);
+  gap:28px;align-items:start}
+.col-conseil{position:sticky;top:18px}
+.col-detail{min-width:0}
+/* Le classement est déjà annoncé par le conseil à côté : sa phrase
+   d'introduction ferait redite en haut de la seconde colonne. */
+.col-detail .intro{margin-top:0}
+
+/* Sur très grand écran, on ne rend pas les fiches plus larges — une phrase
+   de raison étalée sur 900 px se lit mal, l'œil perd sa ligne. On en montre
+   deux de front : six fiches d'un coup au lieu de trois. */
+@media (min-width:1600px) and (min-height:600px){
+  .col-detail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:0 22px;align-content:start}
+  .col-detail .intro{grid-column:1 / -1}
+}
 
 /* Pied de page : les sources se replient, la mention Supercell reste. */
 .note .supercell{margin-top:9px}

@@ -16,6 +16,23 @@ function render() {
 }
 
 
+/* ============ Changement de largeur ============
+   Tourner un téléphone, faire pivoter une tablette ou redimensionner une
+   fenêtre change la mise en page : à partir d'un certain point, conseil et
+   classement tiennent côte à côte. On ne redessine que quand le seuil est
+   franchi — un redimensionnement de fenêtre émet des dizaines d'événements
+   par seconde, et refaire l'écran à chaque pixel n'apporterait rien. */
+var largeurEtait = deuxColonnes();
+
+window.addEventListener("resize", function () {
+  var maintenant = deuxColonnes();
+  if (maintenant === largeurEtait) return;
+  largeurEtait = maintenant;
+  menuOuvert = null;      /* le menu de mode peut venir de disparaître */
+  render();
+});
+
+
 /* ============ Frappe dans le champ de recherche ============ */
 
 conteneur.addEventListener("input", function (e) {
