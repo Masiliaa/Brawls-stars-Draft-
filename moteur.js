@@ -29,6 +29,13 @@
 
 var POINTS_TIER = { S: 100, A: 82, B: 62, C: 40, D: 20 };
 
+/* Ce que vaut un brawler dont on ne connaît pas le tier. C'est un CHOIX, pas
+   une mesure — d'où sa propre constante plutôt qu'un « || "D" » qui faisait
+   passer l'ignorance pour un relevé. Même valeur que D, parce qu'on ne
+   conseille pas ce qu'on n'a pas pu évaluer ; mais l'écran dit « pas encore
+   classé », jamais « tier D ». */
+var POINTS_TIER_INCONNU = 20;
+
 /* Bonus selon la place occupée sur la carte : 1er, 2e, 3e… */
 var BONUS_CARTE = [20, 15, 11, 9, 7, 5, 4, 3];
 var BONUS_CARTE_RESTE = 2;
@@ -249,13 +256,36 @@ function reponsesRestantes() {
 
 /* ============ Règle 0 — le tier de base ============ */
 
+/* Un brawler que les tier lists ne connaissent pas n'a PAS le tier D.
+   ------------------------------------------------------------------------
+   Il y avait ici « || "D" ». Mesuré, avec une API renvoyant un brawler absent
+   des tier lists, roster de quatre :
+
+     3. Zilpha   Tier D   « tier D en Brawl Ball »    ← aucun tier connu
+     4. Piper    Tier D   « 7 brawlers le contrent »  ← vraiment tier D
+
+   Rien ne distinguait « mesuré mauvais » de « on n'en sait rien ». C'est un
+   trou de donnée présenté comme la pire des notes relevées, et c'est la règle
+   que ce projet s'interdit le plus explicitement.
+
+   Le repli était INATTEIGNABLE sans réseau, ce qui explique qu'il n'ait jamais
+   été vu : TIERS classe exactement 105 brawlers dans les six modes, et la
+   liste de secours est reconstruite à partir de TIERS. Seul un brawler apporté
+   par l'API peut donc tomber dedans — c'est-à-dire les plus récents, ceux vers
+   qui l'app envoie justement l'utilisateur.
+
+   Le tier vaut désormais null, et l'écran dit « pas encore classé ». */
 function pointsDeTier(cle, mode) {
-  var tier = TIER_PAR_MODE[mode][cle] || "D";
+  var tier = TIER_PAR_MODE[mode][cle] || null;
   var raisons = [];
   if (tier === "S" || tier === "A") {
     raisons.push(raison(2, t("raisonTier", { tier: tier, mode: nomMode(mode) })));
   }
-  return { tier: tier, points: POINTS_TIER[tier], raisons: raisons };
+  return {
+    tier: tier,
+    points: tier ? POINTS_TIER[tier] : POINTS_TIER_INCONNU,
+    raisons: raisons
+  };
 }
 
 
@@ -554,11 +584,12 @@ function evaluer(cle, carte) {
     raisons = raisons.concat(apports[regle].raisons);
   });
 
-  /* Aucune règle n'a rien eu à dire : on affiche au moins le tier. */
+  /* Aucune règle n'a rien eu à dire : on affiche au moins le tier — ou, s'il
+     n'y en a pas, on le dit franchement plutôt que d'en inventer un. */
   if (!raisons.length) {
-    raisons.push(raison(4, t("raisonTier", {
-      tier: base.tier, mode: nomMode(carte.mode)
-    })));
+    raisons.push(raison(4, base.tier
+      ? t("raisonTier", { tier: base.tier, mode: nomMode(carte.mode) })
+      : t("raisonTierInconnu", { mode: nomMode(carte.mode) })));
   }
   raisons.sort(function (a, b) { return a.priorite - b.priorite; });
 
@@ -638,9 +669,9 @@ function bansConseilles(combien) {
     }
 
     if (!raisons.length) {
-      raisons.push(raison(4, t("raisonTier", {
-        tier: base.tier, mode: nomMode(carte.mode)
-      })));
+      raisons.push(raison(4, base.tier
+        ? t("raisonTier", { tier: base.tier, mode: nomMode(carte.mode) })
+        : t("raisonTierInconnu", { mode: nomMode(carte.mode) })));
     }
     raisons.sort(function (x, y) { return x.priorite - y.priorite; });
 

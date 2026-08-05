@@ -565,6 +565,14 @@ function encadre(message, action, libelle) {
    Sur deux colonnes, le classement complet est déjà affiché à droite : la
    bande des suivants ferait doublon, et la porte vers le détail n'ouvre
    plus rien puisque le détail est là. Le bloc se réduit alors au verdict. */
+/* Le libellé d'un tier. Un brawler que les tier lists ne connaissent pas a
+   « tier === null » : on écrit alors qu'il n'est pas classé, au lieu d'afficher
+   un « Tier D » qui ferait passer un trou de donnée pour un relevé. Voir
+   pointsDeTier() dans moteur.js. */
+function libTier(tier) {
+  return tier ? t("tier", { tier: tier }) : t("tierInconnu");
+}
+
 function blocConseils(liste, couleurMode, cote) {
   if (!liste.length) {
     return '<div class="box"><p>' + echapper(t("tousBannis")) + "</p></div>";
@@ -591,7 +599,7 @@ function blocConseils(liste, couleurMode, cote) {
   html += '<span class="in">' + portrait(premier.b, 60, false)
         + '<span class="tt name">' + echapper(premier.nom) + "</span></span>"
         + '<span class="mesure"><span class="chip">'
-        + echapper(t("tier", { tier: premier.tier })) + "</span>"
+        + echapper(libTier(premier.tier)) + "</span>"
         + (sur ? "<span>" + echapper(t("surCetteCarte",
             { wr: virgule(sur.wr.toFixed(1)) })) + "</span>" : "")
         /* La flèche vers le calcul avait disparu avec la carte qui la
@@ -631,7 +639,7 @@ function blocConseils(liste, couleurMode, cote) {
           + '<span class="txt"><span class="n">' + echapper(x.nom) + "</span>"
           + '<span class="p">' + echapper(sous) + "</span></span>"
           + '<span class="v">'
-          + echapper(s ? virgule(s.wr.toFixed(1)) + " %" : t("tier", { tier: x.tier }))
+          + echapper(s ? virgule(s.wr.toFixed(1)) + " %" : libTier(x.tier))
           + "</span></button>";
   });
 
@@ -715,7 +723,7 @@ function ligneAnalyse(x, rang, scoreMax, parts) {
            + '<span class="rang">' + rang + "</span>"
            + portrait(x.b, 34, false)
            + '<span class="nom">' + echapper(x.nom) + "</span>"
-           + '<span class="tier">' + echapper(t("tier", { tier: x.tier })) + "</span>"
+           + '<span class="tier">' + echapper(libTier(x.tier)) + "</span>"
            + '<span class="score"><b>' + Math.round(x.score) + "</b>"
            + '<i class="lu">' + echapper(t("libScore")) + "</i></span>"
            + "</div>";

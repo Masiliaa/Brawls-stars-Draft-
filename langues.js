@@ -66,6 +66,10 @@ var LANGUES = {
       cocherMesBrawlers: "Cocher mes brawlers",
       tousBannis: "Tous tes brawlers sont bannis ou déjà pris.",
       tier: "Tier {tier}",
+      /* Un brawler que les tier lists ne connaissent pas. Écrire « Tier D »
+         ferait passer un trou de donnée pour la pire des notes relevées. */
+      tierInconnu: "pas encore classé",
+      raisonTierInconnu: "pas encore classé en {mode}",
       bannis: "Bannis",
       ajouter: "+ ajouter",
       retourAccueil: "Revenir à l'accueil",
@@ -202,6 +206,8 @@ var LANGUES = {
       cocherMesBrawlers: "Select my brawlers",
       tousBannis: "All your brawlers are banned or already taken.",
       tier: "Tier {tier}",
+      tierInconnu: "not ranked yet",
+      raisonTierInconnu: "not ranked yet in {mode}",
       bannis: "Banned",
       ajouter: "+ add",
       retourAccueil: "Back to the start",
@@ -335,6 +341,8 @@ var LANGUES = {
       cocherMesBrawlers: "Marcar mis brawlers",
       tousBannis: "Todos tus brawlers están baneados o ya elegidos.",
       tier: "Tier {tier}",
+      tierInconnu: "aún sin clasificar",
+      raisonTierInconnu: "aún sin clasificar en {mode}",
       bannis: "Baneados",
       ajouter: "+ añadir",
       retourAccueil: "Volver al inicio",

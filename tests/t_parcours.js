@@ -881,6 +881,42 @@ const check = (nom, cond, detail = '') => {
       (await page.locator('.rappel').count()) === 0,
       await page.evaluate(() => nouveauxBrawlers.map(b => b.nom)));
 
+    // 8. Le meme brawler inconnu, mais cote TIER.
+    //    TIERS classe exactement 105 brawlers dans les six modes, et la liste
+    //    de secours est reconstruite A PARTIR de TIERS : sans API, tout
+    //    brawler affiche a forcement un tier. Le repli « || "D" » n'etait donc
+    //    atteignable que par un brawler apporte par l'API — les plus recents,
+    //    ceux vers qui l'app envoie justement l'utilisateur.
+    //    Mesure avant correction, roster de quatre :
+    //      3. Zilpha  Tier D  « tier D en Brawl Ball »   <- aucun tier connu
+    //      4. Piper   Tier D  « 7 brawlers le contrent » <- vraiment tier D
+    //    Rien ne distinguait « mesure mauvais » de « on n'en sait rien ».
+    const inconnu = await page.evaluate(() => {
+      roster = new Set(['zilpha', 'mortis', 'piper', 'poco']); sauverRoster();
+      carteId = MAPS[0].id; ecran = 'draft'; modeAffichage = 'analyse';
+      ennemis = []; allies = []; bans = []; analyseTout = true; render();
+      const cle = clef('Zilpha');
+      const ligne = [...document.querySelectorAll('.analyse')]
+        .find(a => a.querySelector('.nom').textContent.trim() === 'Zilpha');
+      return {
+        dansLesTiers: !!(TIER_PAR_MODE[MAPS[0].mode] || {})[cle],
+        tierRendu: pointsDeTier(cle, MAPS[0].mode).tier,
+        pastille: ligne ? ligne.querySelector('.tier').textContent.trim() : null,
+        pourquoi: ligne && ligne.querySelector('.pourquoi')
+          ? ligne.querySelector('.pourquoi').textContent.trim() : null,
+        pastilleD: [...document.querySelectorAll('.analyse')]
+          .filter(a => /Tier D/.test(a.querySelector('.tier').textContent)).length,
+      };
+    });
+    check('un brawler hors des tier lists n\'a pas de tier inventé',
+      inconnu.dansLesTiers === false && inconnu.tierRendu === null, inconnu);
+    check('l\'écran écrit qu\'il n\'est pas classé, pas « Tier D »',
+      inconnu.pastille === 'pas encore classé', inconnu.pastille);
+    check('et la raison affichée le dit aussi',
+      /pas encore classé/.test(inconnu.pourquoi || ''), inconnu.pourquoi);
+    check('les vrais tier D, eux, s\'affichent toujours',
+      inconnu.pastilleD >= 1, inconnu.pastilleD);
+
     await page.unroute('**/api.brawlapi.com/v1/brawlers**');
     await page.evaluate(() => {
       localStorage.removeItem('manager:vus');
