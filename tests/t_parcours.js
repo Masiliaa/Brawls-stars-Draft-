@@ -727,6 +727,14 @@ const check = (nom, cond, detail = '') => {
   // 1. Sans réseau, l'app retombait sur une liste de secours sans classes —
   //    or la classe fait marcher la règle d'équilibre des familles. Le
   //    catalogue est désormais gardé d'une ouverture à l'autre.
+  //
+  //    « Sans réseau » etait suppose, pas impose : ces controles ne coupaient
+  //    rien du tout. Ils passaient chez moi parce que la politique reseau y
+  //    repond 403 a brawlapi.com, et tombaient sur les serveurs de GitHub, ou
+  //    l'API repond tres bien — etatApi valait « ok » au lieu de « garde ».
+  //    Un test qui depend d'un reseau absent ne teste rien : on coupe donc
+  //    l'appel pour de bon.
+  await page.route('**/api.brawlapi.com/**', route => route.abort());
   await page.evaluate(() => {
     const faux = brawlers.map(b => ({ nom: b.nom, k: b.k, img: null,
       couleur: '#ff0000', classe: 'Tank', rarete: { id: 4, nom: 'Epic' } }));
@@ -765,6 +773,56 @@ const check = (nom, cond, detail = '') => {
   await page.reload({ waitUntil: 'networkidle' });
   check('au premier lancement, aucun rappel',
     (await page.locator('.rappel').count()) === 0);
+
+  await page.unroute('**/api.brawlapi.com/**');
+
+  // 6. Le meme rappel, mais avec une API QUI REPOND — le cas de tout le monde.
+  //    Il ne marchait pas : appliquerCatalogue() appelait noterCatalogueVu()
+  //    juste avant recalculerNouveaux(), donc on marquait tout comme vu puis
+  //    on cherchait ce qui ne l'etait pas. Reponse : rien, toujours. Le rappel
+  //    ne pouvait apparaitre chez personne dont l'API repond, et il avait
+  //    l'air de marcher uniquement depuis la machine ou l'API est injoignable.
+  //    « Vu » veut dire vu PAR L'UTILISATEUR : c'est donc l'ouverture de
+  //    l'ecran des brawlers qui l'ecrit, et rien d'autre.
+  const FAUSSE_API = (liste) => ({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ list: liste.map(b => ({
+      name: b.nom, id: 1, class: { name: 'Tank' },
+      rarity: { name: 'Epic', id: 4, color: '#a0f' },
+      imageUrl2: null, released: true })) }),
+  });
+  const noms = await page.evaluate(() => brawlers.map(b => ({ nom: b.nom, k: b.k })));
+  await page.route('**/api.brawlapi.com/v1/brawlers**',
+    route => route.fulfill(FAUSSE_API(noms)));
+  // On dit avoir deja vu tout le monde SAUF deux.
+  await page.evaluate(k => localStorage.setItem('manager:vus', JSON.stringify(k)),
+    noms.slice(2).map(b => b.k));
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForFunction(() => etatApi === 'ok', null, { timeout: 15000 });
+  check('API qui répond : l\'API fait bien autorité',
+    (await page.evaluate(() => etatApi)) === 'ok',
+    await page.evaluate(() => etatApi));
+  check('et les deux nouveaux sont signalés quand même',
+    (await page.locator('.rappel').count()) === 1
+    && /2/.test(await page.locator('.rappel').innerText()),
+    await page.evaluate(() => nouveauxBrawlers.length));
+
+  // Aller voir l'ecran doit eteindre le rappel : c'est la, et seulement la,
+  // que « vu » devient vrai.
+  await page.locator('.rappel[data-act="roster"]').click();
+  check('ouvrir l\'écran des brawlers note qu\'on a vu le catalogue',
+    (await page.evaluate(() => lireListe('manager:vus').length)) === noms.length,
+    await page.evaluate(() => lireListe('manager:vus').length));
+  await page.locator('[data-act="draft"]').first().click();
+  check('et le rappel a disparu, sans recharger',
+    (await page.locator('.rappel').count()) === 0);
+
+  await page.unroute('**/api.brawlapi.com/v1/brawlers**');
+  await page.evaluate(() => {
+    localStorage.removeItem('manager:vus');
+    localStorage.removeItem('manager:catalogue');
+  });
+  await page.reload({ waitUntil: 'networkidle' });
 
   // ── Le catalogue ne bouge pas sous le doigt ────────────────────────────
   // Bug signalé : « j'ai coché douze brawlers, au moment de la draft je

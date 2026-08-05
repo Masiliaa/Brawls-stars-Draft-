@@ -280,7 +280,13 @@ function appliquerCatalogue(liste) {
   brawlers = liste;
   indexerBrawlers();
   garderCatalogue();
-  noterCatalogueVu();
+  /* noterCatalogueVu() était appelé ICI, juste avant recalculerNouveaux() —
+     donc on marquait tout comme vu, puis on cherchait ce qui ne l'était pas.
+     La réponse était forcément « rien ». Le rappel « 2 nouveaux brawlers » ne
+     pouvait donc apparaître chez personne dont l'API répond, c'est-à-dire
+     chez à peu près tout le monde. Il ne se voyait que depuis la machine où
+     ce code a été écrit, où l'API est injoignable — et c'est pour ça qu'il
+     avait l'air de marcher. Voir noterCatalogueVu() pour l'endroit juste. */
   recalculerNouveaux();
   return true;
 }
@@ -373,7 +379,19 @@ function sauverRoster() {
    lorsque la source fait autorité.
 
    Au passage, c'était aussi 818 octets ré-écrits à CHAQUE case cochée : 54 Ko
-   pour remplir un roster, en écriture bloquante sur le fil principal. */
+   pour remplir un roster, en écriture bloquante sur le fil principal.
+
+   QUAND l'appeler — la première correction avait déplacé cet appel dans
+   appliquerCatalogue(), c'est-à-dire à l'arrivée du catalogue. Mais le nom
+   de la clé dit ce qu'elle veut dire : « vus », par l'utilisateur. Marquer
+   tout comme vu à l'instant où l'API répond, avant même qu'il ait ouvert
+   l'écran, vide la clé de son sens — et comme recalculerNouveaux() suivait
+   immédiatement, la réponse était toujours « rien de nouveau ». Le rappel
+   n'apparaissait donc chez personne dont l'API répond.
+
+   L'appel est maintenant fait quand l'écran des brawlers est RÉELLEMENT
+   dessiné (voir render() dans app.js). C'est le moment où « vu » devient
+   vrai, et le seul. */
 function noterCatalogueVu() {
   if (etatApi !== "ok" && etatApi !== "garde") return;
   ecrireJSON(CLE_VUS, brawlers.map(function (b) { return b.k; }));

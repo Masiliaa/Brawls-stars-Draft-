@@ -54,6 +54,13 @@ function render() {
      doit être là où personne ne peut l'éviter, pas sur l'un des chemins. */
   if (ecran !== "roster") soldeCatalogue();
 
+  /* Et l'inverse : sur l'écran des brawlers, on note que le catalogue a été
+     vu. C'est ici que « vu » devient vrai — pas à l'arrivée des données.
+     Après, pour que le rappel qu'on vient de satisfaire disparaisse du même
+     coup, sans attendre un tour de plus. */
+  var surLeRoster = (ecran === "roster");
+  if (surLeRoster) { noterCatalogueVu(); recalculerNouveaux(); }
+
   conteneur.innerHTML = vueHTML();
 
   /* La largeur utile dépend du mode, et la feuille de style ne peut pas le
