@@ -86,6 +86,10 @@ var LANGUES = {
 
       raisonTier: "tier {tier} en {mode}",
       raisonCarte: "n°{rang} sur la carte · {wr} % de victoires",
+      /* Le taux d'utilisation dit sur combien de monde repose le taux de
+         victoire. Sans lui, « 59,45 % » se lit pareil qu'il vienne de la
+         moitié des équipes ou d'une poignée de parties. */
+      raisonCarteUsage: "n°{rang} sur la carte · {wr} % de victoires · joué par {use} %",
       raisonCouverture: "{nom} couvre {n} de tes {total} contres connus",
       raisonBat: "bat {nom}",
       raisonPerd: "perd contre {nom}",
@@ -217,6 +221,7 @@ var LANGUES = {
 
       raisonTier: "tier {tier} in {mode}",
       raisonCarte: "#{rang} on this map · {wr}% win rate",
+      raisonCarteUsage: "#{rang} on this map · {wr}% win rate · picked by {use}%",
       raisonCouverture: "{nom} covers {n} of your {total} known counters",
       raisonBat: "beats {nom}",
       raisonPerd: "loses to {nom}",
@@ -348,6 +353,7 @@ var LANGUES = {
 
       raisonTier: "tier {tier} en {mode}",
       raisonCarte: "n.º{rang} en el mapa · {wr} % de victorias",
+      raisonCarteUsage: "n.º{rang} en el mapa · {wr} % de victorias · usado por {use} %",
       raisonCouverture: "{nom} cubre {n} de tus {total} counters conocidos",
       raisonBat: "gana a {nom}",
       raisonPerd: "pierde contra {nom}",

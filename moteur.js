@@ -33,6 +33,35 @@ var POINTS_TIER = { S: 100, A: 82, B: 62, C: 40, D: 20 };
 var BONUS_CARTE = [20, 15, 11, 9, 7, 5, 4, 3];
 var BONUS_CARTE_RESTE = 2;
 
+/* Combien on croit un taux de victoire, selon le nombre de gens qui jouent
+   vraiment ce brawler sur cette carte.
+   ------------------------------------------------------------------------
+   refresh.py relève DEUX mesures par ligne — taux de victoire ET taux
+   d'utilisation — et range les deux dans MAPS. La seconde n'était lue nulle
+   part. Résultat, sur les 216 lignes du jeu de données du 05/08/2026 :
+
+     Dry Season      n°8  Juju    66,67 % de victoires   pour 0,31 % d'utilisation
+     Sneaky Fields   n°2  Rosa    59,45 %                pour 2,93 %
+     Triple Dribble  n°3  Ziggy   60,82 %                pour 1,4 %
+
+   Trente lignes sur 216 sont sous 3 % d'utilisation. L'app écrivait
+   « n°2 sur la carte · 59,45 % de victoires » pour Rosa EXACTEMENT comme
+   « 55,1 % de victoires » pour Griff, joué par 42 % des équipes. L'un est une
+   mesure, l'autre est le bruit de quelques parties, et rien ne les
+   distinguait à l'écran ni dans le calcul.
+
+   ATTENTION — ces deux nombres sont un CHOIX, pas un relevé. La source ne
+   donne pas le nombre de parties, seulement une part d'utilisation ; 5 %, ce
+   n'est donc pas un seuil statistique, c'est l'endroit où l'on a décidé de
+   cesser de croire une ligne sur parole, au vu de la distribution ci-dessus.
+   Les nombres AFFICHÉS, eux, restent ceux de la source, sans retouche : c'est
+   la pondération qui est un jugement, jamais le chiffre montré.
+
+   On n'annule jamais complètement : figurer au classement d'une carte reste
+   un fait, même mesuré sur peu de parties. D'où le plancher. */
+var SEUIL_FIABLE = 5;
+var PLANCHER_FIABLE = 0.2;
+
 var PT_MATCHUP = 12;   /* gain ou perte face à un ennemi de la table COUNTERS */
 var PT_CYCLE = 9;      /* idem, mais via le cycle de familles, moins fiable */
 var PT_ROLE = 6;       /* rôle complété (+) ou doublé (−) dans l'équipe */
@@ -232,15 +261,30 @@ function pointsDeTier(cle, mode) {
 
 /* ============ Règle 1 — le classement sur la carte ============ */
 
+/* Combien vaut une ligne du classement d'une carte, selon le monde qui la
+   joue. Vaut 1 dès SEUIL_FIABLE, décroît linéairement en dessous, sans
+   descendre sous PLANCHER_FIABLE. Voir le barème pour le pourquoi. */
+function fiabilite(utilisation) {
+  if (typeof utilisation !== "number" || !isFinite(utilisation)) return 1;
+  if (utilisation >= SEUIL_FIABLE) return 1;
+  return Math.max(PLANCHER_FIABLE, utilisation / SEUIL_FIABLE);
+}
+
 function pointsDeCarte(cle, carte) {
   for (var i = 0; i < carte.top.length; i++) {
     if (clef(carte.top[i][0]) !== cle) continue;
     var tauxVictoire = carte.top[i][1];
+    /* Le troisième nombre manque dans les jeux de données d'avant le
+       05/08/2026, et dans ceux qu'un test fabrique à la main : fiabilite()
+       rend alors 1, donc le calcul est celui d'avant. */
+    var utilisation = carte.top[i][2];
+    var brut = BONUS_CARTE[i] || BONUS_CARTE_RESTE;
     return {
-      points: BONUS_CARTE[i] || BONUS_CARTE_RESTE,
-      raisons: [raison(PRIORITE_CARTE, t("raisonCarte", {
-        rang: i + 1, wr: virgule(tauxVictoire)
-      }))]
+      points: Math.round(brut * fiabilite(utilisation)),
+      raisons: [raison(PRIORITE_CARTE, t(
+        typeof utilisation === "number" ? "raisonCarteUsage" : "raisonCarte", {
+          rang: i + 1, wr: virgule(tauxVictoire), use: virgule(utilisation)
+        }))]
     };
   }
   return { points: 0, raisons: [] };

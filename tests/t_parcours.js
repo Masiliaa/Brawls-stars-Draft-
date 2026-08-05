@@ -813,6 +813,38 @@ const check = (nom, cond, detail = '') => {
   check('sans avoir rien perdu du roster',
     (await page.evaluate(() => roster.size)) === 8);
 
+  // ── Le taux d'utilisation ──────────────────────────────────────────────
+  // refresh.py releve deux mesures par ligne de carte — taux de victoire ET
+  // taux d'utilisation — et rangeait la seconde dans MAPS sans que personne
+  // ne la lise. « Rosa, n°2, 59,45 % de victoires » s'affichait comme
+  // « Griff, 55,1 % », joue par 42 % des equipes : l'un est une mesure,
+  // l'autre le bruit de quelques parties, et rien ne les distinguait.
+  console.log('\n== le taux d\'utilisation est lu ==');
+  const usage = await page.evaluate(() => {
+    const c = MAPS.find(m => m.top.some(e => e[2] < SEUIL_FIABLE));
+    const bas = c.top.findIndex(e => e[2] < SEUIL_FIABLE);
+    const haut = c.top.findIndex(e => e[2] >= SEUIL_FIABLE);
+    return {
+      // en dessous du seuil, le bonus de carte est rabote…
+      basBrut: BONUS_CARTE[bas], basPts: pointsDeCarte(clef(c.top[bas][0]), c).points,
+      // …au-dessus, il ne bouge pas d'un point
+      hautBrut: BONUS_CARTE[haut], hautPts: pointsDeCarte(clef(c.top[haut][0]), c).points,
+      // et il n'est jamais annule : figurer au classement reste un fait
+      plancher: fiabilite(0) === PLANCHER_FIABLE,
+      // un jeu de donnees d'avant, sans 3e nombre, doit calculer comme avant
+      sansDonnee: fiabilite(undefined) === 1,
+      texte: pointsDeCarte(clef(c.top[bas][0]), c).raisons[0].texte,
+    };
+  });
+  check('sous le seuil, le bonus de carte est rabattu',
+    usage.basPts < usage.basBrut, usage);
+  check('au-dessus, il ne bouge pas', usage.hautPts === usage.hautBrut, usage);
+  check('il n\'est jamais annulé complètement', usage.plancher, usage);
+  check('un jeu de données sans ce nombre calcule comme avant',
+    usage.sansDonnee, usage);
+  check('et le taux d\'utilisation est écrit à l\'écran',
+    /jou[ée] par|picked by|usado por/.test(usage.texte), usage.texte);
+
   // Le solde etait ecrit dans le gestionnaire de clic. Echap ne passe pas par
   // lui : il appelle ACTIONS.draft() puis render() directement. Mesure : le
   // catalogue restait en attente indefiniment, l'app tournait sur la liste de
