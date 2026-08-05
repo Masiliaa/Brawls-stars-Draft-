@@ -653,16 +653,17 @@ var PARTS_SCORE = { tier: "libTier", carte: "libCarte", ennemis: "libEnnemis",
    exactement — 82 + 15 + 12 − 2 = 107 — donc on peut le dessiner sans rien
    inventer : c'est une décomposition juste, pas une estimation. */
 function partsDuScore(x) {
-  var positives = [], negatives = [], total = 0;
+  var positives = [], negatives = [], gains = 0;
   Object.keys(PARTS_SCORE).forEach(function (cle) {
     var v = Math.round(x.detail[cle] || 0);
     if (!v) return;
-    total += Math.abs(v);
-    (v > 0 ? positives : negatives).push({ cle: cle, valeur: v });
+    if (v > 0) { positives.push({ cle: cle, valeur: v }); gains += v; }
+    else negatives.push({ cle: cle, valeur: v });
   });
-  /* Les négatives en dernier : ce qu'on perd se lit au bout de ce qu'on
-     gagne, pas au milieu. */
-  return { liste: positives.concat(negatives), total: total };
+  /* Les négatives en dernier dans la liste lue ; « gains » ne compte que le
+     positif, c'est lui qui découpe la barre — voir ligneAnalyse(). */
+  return { liste: positives.concat(negatives), positives: positives,
+           gains: gains };
 }
 
 /* Le libellé traduit d'une part. */
@@ -670,15 +671,32 @@ function nomPart(cle) {
   return t(PARTS_SCORE[cle]);
 }
 
-function ligneAnalyse(x, rang, ampleurMax, parts) {
+function ligneAnalyse(x, rang, scoreMax, parts) {
 
-  /* La longueur totale de la barre dit l'ampleur du calcul ; ses parts
-     disent d'où vient le score. Sans la première, dix barres de même
-     longueur pour 107, 105 et 102 laisseraient croire que les trois se
-     valent — une barre normalisée qui ressemble à une barre de score est un
-     mensonge par la forme. */
-  var largeur = ampleurMax > 0
-    ? Math.max(6, Math.round((parts.total / ampleurMax) * 100)) : 0;
+  /* LA LONGUEUR DE LA BARRE DIT LE SCORE. Rien d'autre.
+     ----------------------------------------------------------------------
+     Première version : la longueur valait la somme des contributions EN
+     VALEUR ABSOLUE. Mesuré sur Center Stage, roster complet : Damian, score
+     87, QUATRIÈME, avait la barre la plus longue de l'écran — 332 px contre
+     315 pour Griff, premier avec 107. Dix inversions sur quarante-cinq
+     paires. Un brawler dont les contributions se compensent a une grande
+     ampleur et un petit score : la barre disait l'ampleur et paraissait dire
+     le rang. C'est exactement le mensonge par la forme contre lequel ce
+     fichier met en garde ailleurs, et il était écrit ici.
+
+     Maintenant : longueur proportionnelle au score, et les parts découpent
+     cette longueur au prorata des gains. Le rapport entre deux segments reste
+     juste, et leur somme fait la barre. Les valeurs exactes sont écrites en
+     toutes lettres dans la légende juste dessous : la forme classe, le texte
+     chiffre.
+
+     Ce que le risque retranche n'est plus dessiné. Il ne peut pas l'être sans
+     rallonger une barre qui doit dire le score — une barre plus longue pour
+     un malus serait le même mensonge à l'envers. Il reste écrit, en clair,
+     dans la légende. */
+  var score = Math.round(x.score);
+  var largeur = (scoreMax > 0 && score > 0)
+    ? Math.max(4, Math.round((score / scoreMax) * 100)) : 0;
 
   var html = '<article class="analyse' + (rang === 1 ? " premier" : "") + '">'
            + '<div class="tete">'
@@ -690,15 +708,17 @@ function ligneAnalyse(x, rang, ampleurMax, parts) {
            + '<i class="lu">' + echapper(t("libScore")) + "</i></span>"
            + "</div>";
 
-  if (parts.total) {
-    html += '<span class="piste-jauge"><span class="jauge-score" style="width:'
-          + largeur + '%">';
-    parts.liste.forEach(function (p) {
-      var pourcent = (Math.abs(p.valeur) / parts.total) * 100;
-      html += '<i class="part-' + p.cle + (p.valeur < 0 ? " retire" : "")
-            + '" style="width:' + pourcent.toFixed(2) + '%"></i>';
-    });
-    html += "</span></span>";
+  if (parts.liste.length) {
+    if (largeur && parts.gains) {
+      html += '<span class="piste-jauge"><span class="jauge-score" style="width:'
+            + largeur + '%">';
+      parts.positives.forEach(function (p) {
+        var pourcent = (p.valeur / parts.gains) * 100;
+        html += '<i class="part-' + p.cle
+              + '" style="width:' + pourcent.toFixed(2) + '%"></i>';
+      });
+      html += "</span></span>";
+    }
 
     html += '<div class="calcul">';
     parts.liste.forEach(function (p) {
@@ -744,13 +764,13 @@ function blocAnalyse(carte) {
 
   html += '<p class="intro">' + echapper(t("analyseIntro", { n: liste.length })) + "</p>";
 
-  /* L'échelle des barres est commune à toute la liste, sinon comparer deux
-     lignes ne voudrait rien dire. On prend la plus grande ampleur affichée,
-     pas un maximum théorique : c'est un écart réel entre ces brawlers-là. */
+  /* L'échelle est commune à toute la liste, sinon comparer deux barres ne
+     voudrait rien dire. Le repère est le meilleur SCORE affiché — un écart
+     réel entre ces brawlers-là, jamais une note sur 100. */
   var partsDeChacun = liste.map(partsDuScore);
-  var ampleurMax = 0;
-  partsDeChacun.forEach(function (p) {
-    ampleurMax = Math.max(ampleurMax, p.total);
+  var scoreMax = 0;
+  liste.forEach(function (x) {
+    scoreMax = Math.max(scoreMax, Math.round(x.score));
   });
 
   /* Le conteneur porte la mise en page : une colonne partout, deux quand
@@ -758,7 +778,7 @@ function blocAnalyse(carte) {
      et la pire case du tableau avec près de six écrans à faire défiler. */
   html += '<div class="classement">';
   montres.forEach(function (x, i) {
-    html += ligneAnalyse(x, i + 1, ampleurMax, partsDeChacun[i]);
+    html += ligneAnalyse(x, i + 1, scoreMax, partsDeChacun[i]);
   });
   html += "</div>";
 
