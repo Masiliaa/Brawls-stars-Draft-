@@ -128,7 +128,49 @@ l'environnement, dans les réglages de Claude Code sur le web.
 **Donc : ne plus jamais écrire « leurs sites bloquent la lecture ». Lancer le
 flux, ou dire précisément quel hôte la politique refuse.**
 
-## 9. Phrases de rappel
+## 9. Pas de flotte d'agents. Verrouillé, pas promis.
+
+Constaté le 05/08/2026. Une « recherche exhaustive des axes d'amélioration »
+a été lancée sous forme de workflow multi-agents : **137 agents, 2,6 millions
+de tokens, limite de session atteinte**. Les huit audits ont fini, mais les
+vérificateurs et la synthèse sont tombés en route. Il en est sorti 64 pistes
+**non vérifiées**, dont la moitié étaient fausses ou déjà corrigées.
+
+C'est moi qui l'avais dimensionné : 2 vérificateurs × 64 pistes = 128 agents
+de vérification, au-delà de ce que la session peut tenir. Le budget de
+l'utilisateur a été détruit pour un résultat inexploitable.
+
+Ce qui a marché, le même jour, pour un coût sans commune mesure : **mesurer
+une chose à la fois dans le navigateur**, avant d'y toucher. C'est comme ça
+qu'ont été trouvés la barre qui mentait, la grille coupée à 60, le rappel
+« nouveaux brawlers » qui n'apparaissait chez personne — et c'est comme ça
+qu'a été **écartée** une piste fausse (« la phase de ban est sous la ligne
+de flottaison »), qui ne se reproduit sur aucune taille.
+
+**Le verrou est dans `.claude/settings.json`, commité avec le dépôt :**
+
+```json
+"disableWorkflows": true,
+"workflowKeywordTriggerEnabled": false,
+"permissions": { "deny": ["Workflow", "Agent"] }
+```
+
+Ce n'est pas une consigne, c'est une absence : les outils ne sont pas
+disponibles. Une consigne se serait appuyée sur le même jugement qui a
+échoué. Le fichier est dans le dépôt et non dans `~/.claude/` **parce que le
+conteneur est effacé après chaque session** — seul ce qui est commité revient.
+
+Pour le rouvrir, il faut éditer ce fichier. C'est voulu : que ce soit un
+geste, pas un réflexe. Et si l'utilisateur le demande, mesurer d'abord le
+coût attendu et l'annoncer **avant** de lancer quoi que ce soit.
+
+À la place : chercher soi-même (`Grep`, `Read`), mesurer soi-même dans le
+navigateur, corriger **un point à la fois**, avec sa mesure avant/après dans
+le message de commit. Et laisser l'intégration continue trouver le reste —
+elle a débusqué en deux passages un vrai bug que trois mois d'audits n'ont
+pas vu, parce qu'elle exécute le code là où l'API répond.
+
+## 10. Phrases de rappel
 
 L'utilisateur peut écrire à tout moment :
 
@@ -136,3 +178,6 @@ L'utilisateur peut écrire à tout moment :
   avec leurs inconvénients, attendre le choix.
 - **« la solution durable »** → refaire le choix en ne regardant que le
   long terme, quitte à défaire ce qui vient d'être fait.
+- **« combien ça coûte »** → avant de lancer quoi que ce soit de long,
+  annoncer le nombre d'appels prévus et l'ordre de grandeur en tokens.
+  Attendre le feu vert si c'est au-delà de l'ordinaire.
