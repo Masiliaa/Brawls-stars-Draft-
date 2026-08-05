@@ -247,15 +247,35 @@ const check = (nom, cond, detail = '') => {
   check('le dernier pick est signalé dans les raisons',
     pick.trois.raisons.join(' ').includes('dernier pick'), pick.trois.raisons);
 
+  // detail.ennemis est la SOMME sur tous les ennemis. Pour comparer le meme
+  // contre a deux positions de pick, il faut donc que les deux ennemis en
+  // plus n'apportent rien — sinon on mesure leur contribution, pas la
+  // ponderation.
+  //
+  // Ils n'apportaient rien ici par accident : le cycle de familles a besoin
+  // de « classe », qui vient de l'API, et l'API ne repond pas depuis le bac
+  // a sable ou ce test a ete ecrit. Sur les serveurs de GitHub elle repond,
+  // le cycle s'appliquait, et le test tombait — 10 contre 4 au lieu de
+  // l'inverse. Le test avait raison de tomber : il ne mesurait pas ce qu'il
+  // annoncait. On neutralise donc la classe explicitement, au lieu de
+  // compter sur un reseau absent.
   const fiab = await page.evaluate(p => {
     eval(p);
     COUNTERS = { barley: { perd: [['mortis', 'Se faufile']], bat: [] } };
     carteId = 'safe-zone'; roster = new Set(['mortis', 'piper']); allies = []; bans = [];
+    const classes = {};
+    ['shelly', 'bull'].forEach(k => {
+      const b = brawlers.find(x => x.k === k);
+      if (b) { classes[k] = b.classe; b.classe = null; }
+    });
     const avec = n => {
       ennemis = ['barley', 'shelly', 'bull'].slice(0, n);
       return conseils(NB_ANALYSE).find(y => y.k === 'mortis').detail.ennemis;
     };
     const out = { un: avec(1), trois: avec(3) };
+    Object.keys(classes).forEach(k => {
+      brawlers.find(x => x.k === k).classe = classes[k];
+    });
     COUNTERS = {}; ennemis = [];
     return out;
   }, petit);
@@ -403,16 +423,26 @@ const check = (nom, cond, detail = '') => {
   check('slug correct', /larry___lawrie/.test(img.chaine[0]), img.chaine[0]);
   check('initiales en dernier recours', img.ini === 'LL', img.ini);
 
-  // Vérifié le 29/07/2026 : cdn.brawlify.com/brawlers/borderless/{nom}.png
-  // répond 404 pour tous les brawlers. Cette adresse ne doit pas revenir.
-  const toutesSources = await page.evaluate(() => {
+  // Vérifié le 29/07/2026 : cdn.brawlify.com/brawlers/borderless/{NOM}.png
+  // répond 404 pour tous les brawlers. C'était une adresse DEVINÉE à partir
+  // du nom, jamais contrôlée, et elle ne doit pas revenir.
+  //
+  // Ce qu'on interroge, c'est donc ce que NOTRE code fabrique — pas ce que
+  // l'API renvoie. La distinction n'est pas théorique : l'API sert elle aussi
+  // du cdn.brawlify.com, mais par identifiant numérique (…/borderless/
+  // 16000027.png), ce qui est une autre adresse, et c'est sa réponse, pas
+  // notre invention. Le motif précédent ne les distinguait pas : il passait
+  // ici, où l'API est injoignable, et tombait sur les serveurs de GitHub, où
+  // elle répond. On donne donc une fiche SANS img pour ne regarder que les
+  // adresses reconstruites.
+  const fabriquees = await page.evaluate(() => {
     return brawlers.slice(0, 20)
-      .map(b => sourcesBrawler(b).filter(Boolean).join(" "))
+      .map(b => sourcesBrawler({ nom: b.nom, k: b.k, img: null })
+                  .filter(Boolean).join(" "))
       .join(" ");
   });
-  check('l’adresse brawlify en 404 a bien disparu',
-    !/cdn\.brawlify\.com\/brawlers\/borderless/.test(toutesSources),
-    toutesSources.slice(0, 120));
+  check('aucune adresse brawlify n’est reconstruite par nous',
+    !/cdn\.brawlify\.com/.test(fabriquees), fabriquees.slice(0, 120));
 
   // L'URL fournie par l'API est la seule certaine : elle doit primer sur
   // les URL reconstruites à partir du nom.
