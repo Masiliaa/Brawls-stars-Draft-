@@ -834,6 +834,61 @@ const check = (nom, cond, detail = '') => {
   });
   await page.reload({ waitUntil: 'networkidle' });
 
+  // 7. L'API renvoie PLUS que la liste de secours, et repond pendant qu'on est
+  //    sur l'ecran des brawlers.
+  //    Aucun test ne faisait ca : tous fabriquent leur fausse API A PARTIR de
+  //    « brawlers », donc les deux listes ont toujours les memes cles et la
+  //    difference ne peut pas apparaitre. Or c'est la vraie situation — le
+  //    repli est reconstruit depuis les tier lists et ignore les brawlers les
+  //    plus recents.
+  //    Mesure avant correction : « vus » recevait les 105 noms du repli
+  //    pendant que les 107 de l'API attendaient, puis en quittant l'ecran les
+  //    2 en plus sortaient en « 2 nouveaux brawlers depuis ta derniere
+  //    visite ». Ils n'etaient pas nouveaux, ils manquaient au repli.
+  {
+    let relacher;
+    const attendre = new Promise(r => { relacher = r; });
+    let corps = null;
+    await page.route('**/api.brawlapi.com/v1/brawlers**', async route => {
+      await attendre;
+      await route.fulfill({ status: 200, contentType: 'application/json',
+                            body: JSON.stringify(corps) });
+    });
+    await page.evaluate(() => {
+      localStorage.removeItem('manager:catalogue');
+      localStorage.removeItem('manager:vus');
+    });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    const secours = await page.evaluate(() => brawlers.map(b => b.nom));
+    corps = { list: secours.concat(['Zilpha', 'Vondra']).map(n => ({
+      name: n, released: true, class: { name: 'Tank' },
+      rarity: { id: 4, name: 'Epic', color: '#a020f0' }, imageUrl2: null })) };
+
+    await page.evaluate(() => { ecran = 'roster'; render(); });
+    relacher();
+    await page.waitForFunction(() => etatApi === 'ok', null, { timeout: 15000 });
+    // Un render() pendant qu'on est encore sur l'ecran : une case cochee.
+    await page.locator('#grid .cel').first().click();
+    check('catalogue en attente : « vus » n\'enregistre pas la liste périmée',
+      (await page.evaluate(() => lireListe('manager:vus').length)) === 0,
+      await page.evaluate(() => lireListe('manager:vus').length));
+
+    await page.locator('.bar .actions [data-act="draft"]').click();
+    check('le vrai catalogue est bien posé en quittant',
+      (await page.evaluate(() => brawlers.length)) === secours.length + 2,
+      await page.evaluate(() => brawlers.length));
+    check('et AUCUN « nouveau brawler » n\'est annoncé — ils manquaient au repli',
+      (await page.locator('.rappel').count()) === 0,
+      await page.evaluate(() => nouveauxBrawlers.map(b => b.nom)));
+
+    await page.unroute('**/api.brawlapi.com/v1/brawlers**');
+    await page.evaluate(() => {
+      localStorage.removeItem('manager:vus');
+      localStorage.removeItem('manager:catalogue');
+    });
+    await page.reload({ waitUntil: 'networkidle' });
+  }
+
   // ── Le catalogue ne bouge pas sous le doigt ────────────────────────────
   // Bug signalé : « j'ai coché douze brawlers, au moment de la draft je
   // n'avais même pas les mêmes ». Cause : le rangement par rareté a besoin de

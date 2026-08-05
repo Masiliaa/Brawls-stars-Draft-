@@ -57,9 +57,24 @@ function render() {
   /* Et l'inverse : sur l'écran des brawlers, on note que le catalogue a été
      vu. C'est ici que « vu » devient vrai — pas à l'arrivée des données.
      Après, pour que le rappel qu'on vient de satisfaire disparaisse du même
-     coup, sans attendre un tour de plus. */
+     coup, sans attendre un tour de plus.
+
+     « et pas de catalogue en attente » : sans cette condition, on enregistre
+     comme vue une liste que l'app s'apprête à jeter.
+     ----------------------------------------------------------------------
+     Mesuré, premier lancement, API répondant pendant qu'on est sur cet
+     écran : « vus » recevait les 105 noms du repli, puis en quittant l'écran
+     le catalogue à 107 était posé, et les 2 que le repli ignorait sortaient
+     en « 2 nouveaux brawlers depuis ta dernière visite ». Ils n'étaient pas
+     nouveaux : ils manquaient au repli. C'est mot pour mot le mensonge que
+     le commentaire de noterCatalogueVu() dit avoir corrigé — réintroduit
+     par un autre chemin, le jour même, par la correction précédente.
+
+     etatApi ne suffit pas à s'en garder : il dit « l'appel a réussi », pas
+     « la liste à l'écran vient de là ». catalogueEnAttente, lui, dit
+     exactement qu'une autre liste va remplacer celle-ci. */
   var surLeRoster = (ecran === "roster");
-  if (surLeRoster) { noterCatalogueVu(); recalculerNouveaux(); }
+  if (surLeRoster && !catalogueEnAttente) { noterCatalogueVu(); recalculerNouveaux(); }
 
   conteneur.innerHTML = vueHTML();
 
