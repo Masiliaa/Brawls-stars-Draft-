@@ -42,13 +42,33 @@ jobs:
         with:
           node-version: "22"
 
+      # Le navigateur pèse 300 Mo et ne change qu'à chaque version de
+      # playwright : le retélécharger à chaque poussée coûtait 55 secondes
+      # pour rien. La clé porte le nom du système, sinon un binaire Linux
+      # servirait ailleurs.
+      - name: Reprendre le navigateur déjà téléchargé
+        id: cache-navigateur
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}
+
       # --no-save : il n'y a pas de package.json dans ce dépôt, et en créer un
       # pour une dépendance de test ferait croire à une étape de build. Le
       # navigateur vient avec, c'est lui qui fait tout le travail.
-      - name: Installer Playwright et Chromium
+      - name: Installer Playwright
+        run: npm install --no-save playwright
+
+      # --with-deps installe aussi des paquets système, qui eux ne sont pas
+      # dans le cache : cette étape-là tourne à chaque fois, même quand le
+      # navigateur est déjà là. Elle est rapide.
+      - name: Installer Chromium
         run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          if [ "${{ steps.cache-navigateur.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install-deps chromium
+          else
+            npx playwright install --with-deps chromium
+          fi
 
       # Les suites chargent l'app par http, pas par file:// — le service
       # worker et localStorage ne fonctionnent qu'avec une vraie origine.
