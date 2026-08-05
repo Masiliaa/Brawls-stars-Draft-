@@ -207,8 +207,20 @@ function grilleBrawlers(usage) {
 
     /* Rangés par ce qui a des chances de tomber sur cette carte, pas par
        ordre alphabétique : c'est ce qui permet de désigner d'un seul appui
-       au lieu de taper trois lettres. */
-    liste = ordreProbable(liste).slice(0, 60);
+       au lieu de taper trois lettres.
+
+       Rangés, mais PAS coupés. Il y avait ici « .slice(0, 60) » : sur 105
+       brawlers, quarante-cinq n'apparaissaient nulle part, et rien à l'écran
+       ne le disait. Celui qui descend jusqu'au bas de la grille sans trouver
+       son adversaire en conclut que l'app ne le connaît pas — alors qu'elle
+       le connaît et le cache. Une liste tronquée sans le dire se lit comme
+       une liste complète : c'est le même mensonge par la forme que la barre
+       du classement.
+       Mesuré avant d'enlever le plafond, pour vérifier qu'il n'achetait rien :
+       +2,1 ms par dessin sur téléphone (4,0 → 6,1) et 750 px de défilement en
+       plus, sur une grille déjà classée par probabilité — donc du défilement
+       qu'on ne fait que si on n'a pas trouvé avant. */
+    liste = ordreProbable(liste);
   }
 
   return cellules(liste, usage);

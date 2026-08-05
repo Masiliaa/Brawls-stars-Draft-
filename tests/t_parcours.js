@@ -422,6 +422,26 @@ const check = (nom, cond, detail = '') => {
     await page.evaluate(() => [cibleAjout, recherche]));
   await page.keyboard.press('Escape');
 
+  // Entrée hors du champ : le navigateur clique lui-meme ce qui a le focus.
+  // Le raccourci s'ajoutait par-dessus et prenait le PREMIER resultat —
+  // mesure : focus sur la cinquieme case, Entree, c'est la premiere qui
+  // entrait dans le draft. Naviguer au clavier dans la grille etait donc
+  // impossible, et l'erreur etait silencieuse : on obtenait bien un brawler.
+  await page.keyboard.press('e');
+  const vise = await page.evaluate(() => {
+    const c = [...document.querySelectorAll('#grid .cel')];
+    c[4].focus();
+    return { cible: c[4].getAttribute('data-v'), premier: c[0].getAttribute('data-v') };
+  });
+  await page.keyboard.press('Enter');
+  // On regarde le DERNIER ajouté : « piper » est encore là, mis par le test
+  // du champ de recherche juste au-dessus.
+  check('Entrée avec le focus sur une case prend CETTE case',
+    (await page.evaluate(() => ennemis[ennemis.length - 1])) === vise.cible,
+    [vise, await page.evaluate(() => ennemis)]);
+  check('et ce n\'était pas déjà la première case',
+    vise.cible !== vise.premier, vise);
+
   await page.locator('[data-act="reset"]').click();
 
 
@@ -792,6 +812,31 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('.rangee-rarete').count()) >= 6);
   check('sans avoir rien perdu du roster',
     (await page.evaluate(() => roster.size)) === 8);
+
+  // Le solde etait ecrit dans le gestionnaire de clic. Echap ne passe pas par
+  // lui : il appelle ACTIONS.draft() puis render() directement. Mesure : le
+  // catalogue restait en attente indefiniment, l'app tournait sur la liste de
+  // secours — sans rarete ni classe, donc avec un conseil qui n'est plus tout
+  // a fait le meme conseil — et se rattrapait seulement au prochain
+  // changement d'ecran fait a la souris. Depuis, le solde est dans render(),
+  // qui est le passage oblige de TOUS les chemins.
+  // (on est déjà sur l'écran des brawlers, laissé par le test précédent)
+  await page.evaluate(() => {
+    brawlers = brawlers.map(b => ({ nom: b.nom, k: b.k, img: null, couleur: '#0f0',
+      classe: b.classe, rarete: null }));
+    indexerBrawlers();
+    catalogueEnAttente = brawlers.map(b => Object.assign({}, b,
+      { rarete: { id: 1, nom: 'R' } }));
+    etatApi = 'ok'; render();
+  });
+  check('sur le roster, le catalogue attend toujours',
+    await page.evaluate(() => catalogueEnAttente !== null));
+  await page.keyboard.press('Escape');
+  check('Échap quitte le roster comme le bouton',
+    (await page.evaluate(() => ecran)) === 'draft');
+  check('et solde le catalogue, comme le ferait un clic',
+    await page.evaluate(() => catalogueEnAttente === null && !!brawlers[0].rarete),
+    await page.evaluate(() => [catalogueEnAttente === null, brawlers[0].rarete]));
 
   console.log('\n== bilan ==');
   check('aucune erreur JavaScript sur tout le parcours', erreurs.length === 0, erreurs);

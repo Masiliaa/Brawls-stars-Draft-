@@ -98,3 +98,32 @@ function ecrireTexte(cle, valeur) {
     else localStorage.removeItem(cle);
   } catch (e) { /* ignoré */ }
 }
+
+/* Les mêmes lectures, mais en exigeant la FORME attendue.
+   ------------------------------------------------------------------------
+   JSON.parse ne répond qu'à « est-ce du JSON ? », jamais à « est-ce la bonne
+   chose ? ». Le try/catch ci-dessus ne rattrape donc qu'une partie des
+   valeurs abîmées : celles qui ne s'analysent pas.
+
+   Mesuré, en écrivant une valeur analysable mais de mauvais type puis en
+   rechargeant : « manager:recentes » à 42, « manager:catalogue » à
+   {"liste":null} et « manager:roster » à {"pas":"un tableau"} donnaient
+   chacune un écran entièrement blanc. Trois cas sur six essayés.
+
+   Le pire n'est pas la panne, c'est qu'elle ne passe pas : la valeur abîmée
+   reste dans le navigateur, donc chaque réouverture rebloque au même
+   endroit, sans message et sans rien à quoi rattacher la cause. Vider le
+   stockage d'un site n'est pas un geste que l'app peut demander à qui que ce
+   soit — et cela effacerait le roster.
+
+   Ces deux fonctions rendent le défaut plutôt que la mauvaise forme. On perd
+   au pire une préférence ; on ne perd jamais l'app. */
+function lireListe(cle) {
+  var lu = lireJSON(cle, null);
+  return Array.isArray(lu) ? lu : [];
+}
+
+function lireObjet(cle) {
+  var lu = lireJSON(cle, null);
+  return (lu && typeof lu === "object" && !Array.isArray(lu)) ? lu : {};
+}

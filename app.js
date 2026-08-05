@@ -17,7 +17,43 @@ var conteneur = document.getElementById("app");
 var AU_CLAVIER = !!(window.matchMedia && window.matchMedia("(pointer:fine)").matches);
 if (AU_CLAVIER) document.body.classList.add("clavier");
 
+/* Le catalogue arrive : on l'applique — SAUF si l'écran des brawlers est
+   ouvert. Là, le remplacer réorganise la grille par rareté sous le doigt de
+   quelqu'un en train de cocher : les cases changent de place, et on voit
+   d'autres noms cochés que ceux qu'on vient de toucher. Aucune information ne
+   vaut ça ; il attend qu'on quitte l'écran.
+
+   Une première version notait « redessin en attente » et énumérait les
+   actions à ne pas solder. Le drapeau n'était jamais lu, la liste ne
+   protégeait rien, et le bug restait entier au premier lancement — le seul
+   cas où ce garde-fou devait servir. Ce qui se garde ici n'est pas un
+   drapeau, c'est le catalogue lui-même : tant qu'il n'est pas posé, rien ne
+   peut bouger.
+
+   Écrit AVANT render(), qui l'appelle : « var catalogueEnAttente » vaudrait
+   undefined plus haut, et l'app s'appuierait sur un détail du langage pour
+   ne pas se tromper. L'ordre de lecture dit la dépendance. */
+var catalogueEnAttente = null;
+
+function soldeCatalogue() {
+  if (!catalogueEnAttente) return;
+  appliquerCatalogue(catalogueEnAttente);
+  catalogueEnAttente = null;
+}
+
 function render() {
+  /* Le solde se fait ICI, et pas dans le gestionnaire de clic.
+     ----------------------------------------------------------------------
+     Il y était, et le clic n'est pas le seul chemin : la touche Échap quitte
+     l'écran des brawlers en appelant ACTIONS.draft() puis render() sans
+     passer par lui. Mesuré : catalogue arrivé pendant qu'on coche, Échap,
+     l'app repartait sur la liste de secours — sans rareté, sans classe, donc
+     avec un conseil qui n'est plus tout à fait le même conseil — et ne se
+     rattrapait qu'au prochain changement d'écran fait à la souris.
+     render() est le seul passage obligé de tous les chemins. Le garde-fou
+     doit être là où personne ne peut l'éviter, pas sur l'un des chemins. */
+  if (ecran !== "roster") soldeCatalogue();
+
   conteneur.innerHTML = vueHTML();
 
   /* La largeur utile dépend du mode, et la feuille de style ne peut pas le
@@ -240,12 +276,7 @@ conteneur.addEventListener("click", function (e) {
   /* Toute action autre que l'ouverture d'un menu le referme. */
   if (OUVRENT_UN_MENU.indexOf(nom) < 0) menuOuvert = null;
 
-  var ecranAvant = ecran;
   action(bouton.getAttribute("data-v"));
-  /* Le catalogue attendait peut-être qu'on quitte l'écran des brawlers.
-     On teste le CHANGEMENT D'ÉCRAN, pas une liste d'actions à tenir à jour :
-     ajouter demain un tri ou un filtre à cet écran ne rouvrira pas le bug. */
-  if (ecranAvant === "roster" && ecran !== "roster") soldeCatalogue();
   render();
 });
 
@@ -288,6 +319,16 @@ document.addEventListener("keydown", function (e) {
   }
 
   if (e.key === "Enter") {
+    /* Entrée ne prend le premier résultat QUE depuis le champ de recherche :
+       c'est le geste attendu quand on vient de taper trois lettres.
+       ----------------------------------------------------------------------
+       Partout ailleurs, non — et c'était un bug. Mesuré : focus posé au
+       clavier sur la cinquième case (Surge), une frappe sur Entrée, c'est
+       Damian qui entrait dans le draft. Le navigateur clique déjà de
+       lui-même l'élément qui a le focus ; ce raccourci s'ajoutait par-dessus
+       et désignait quelqu'un d'autre que celui qu'on visait. Naviguer au
+       clavier dans la grille était donc impossible. */
+    if (!champDeSaisieActif()) return;
     var premier = premierResultat();
     if (!premier) return;
     e.preventDefault();
@@ -314,26 +355,6 @@ document.addEventListener("keydown", function (e) {
 chargerLangue();
 render();
 
-/* Le catalogue arrive : on l'applique — SAUF si l'écran des brawlers est
-   ouvert. Là, le remplacer réorganise la grille par rareté sous le doigt de
-   quelqu'un en train de cocher : les cases changent de place, et on voit
-   d'autres noms cochés que ceux qu'on vient de toucher. Aucune information ne
-   vaut ça ; il attend qu'on quitte l'écran.
-
-   Une première version notait « redessin en attente » et énumérait les
-   actions à ne pas solder. Le drapeau n'était jamais lu, la liste ne
-   protégeait rien, et le bug restait entier au premier lancement — le seul
-   cas où ce garde-fou devait servir. Ce qui se garde ici n'est pas un
-   drapeau, c'est le catalogue lui-même : tant qu'il n'est pas posé, rien ne
-   peut bouger. */
-var catalogueEnAttente = null;
-
-function soldeCatalogue() {
-  if (!catalogueEnAttente) return;
-  appliquerCatalogue(catalogueEnAttente);
-  catalogueEnAttente = null;
-}
-
 /* Les icônes des modes se chargent à part : elles ne conditionnent aucun
    calcul, donc leur arrivée n'a pas à retarder le premier dessin. Et on ne
    les redemande pas quand on les a déjà : elles ne changent pour ainsi dire
@@ -345,7 +366,9 @@ if (!Object.keys(IMAGES_MODES).length) {
 
 chargerBrawlers().then(function (liste) {
   catalogueEnAttente = liste;
-  if (ecran === "roster") return;
-  soldeCatalogue();
-  render();
+  /* On ne décide ici que du redessin : c'est render() qui pose le catalogue,
+     et lui seul, depuis qu'il est le passage obligé. Sur l'écran des
+     brawlers, pas de redessin — donc le catalogue reste en attente, ce qui
+     est exactement la règle. */
+  if (ecran !== "roster") render();
 });

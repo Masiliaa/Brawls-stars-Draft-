@@ -212,10 +212,12 @@ function garderCatalogue() {
 }
 
 function relireCatalogue() {
-  var lu = lireJSON(CLE_CATALOGUE, null);
+  var lu = lireListe(CLE_CATALOGUE);
   /* On refuse une liste vide ou trop courte : mieux vaut la liste de secours,
-     qui est au moins cohérente, qu'un catalogue tronqué par un stockage plein. */
-  if (!lu || lu.length < 40) return false;
+     qui est au moins cohérente, qu'un catalogue tronqué par un stockage plein.
+     Et on regarde la première fiche : une liste de quarante n'importe quoi
+     passerait le test de longueur, et le moteur travaillerait sur du vide. */
+  if (lu.length < 40 || !lu[0] || !lu[0].k) return false;
   brawlers = lu;
   indexerBrawlers();
   return true;
@@ -242,7 +244,7 @@ var CATALOGUE_GARDE = relireCatalogue();
 var CLE_MODES = "manager:modes";
 var IMAGES_MODES = {};
 
-IMAGES_MODES = lireJSON(CLE_MODES, {});
+IMAGES_MODES = lireObjet(CLE_MODES);
 
 function chargerModes() {
   return fetch("https://api.brawlapi.com/v1/gamemodes")
@@ -337,7 +339,7 @@ function chargerBrawlers() {
    l'utilisateur, et le renommer le ferait disparaître. */
 var CLE_ROSTER = "manager:roster";
 
-var roster = new Set(lireJSON(CLE_ROSTER, []));
+var roster = new Set(lireListe(CLE_ROSTER));
 
 /* La carte d'un identifiant. Cette boucle était écrite trois fois — ici,
    dans relireCarte() et dans carteActive() de moteur.js. MAPS est régénéré à
@@ -384,8 +386,8 @@ function noterCatalogueVu() {
 var nouveauxBrawlers = [];
 
 function recalculerNouveaux() {
-  var vus = lireJSON(CLE_VUS, null);
-  if (!vus || !vus.length) { nouveauxBrawlers = []; return; }
+  var vus = lireListe(CLE_VUS);
+  if (!vus.length) { nouveauxBrawlers = []; return; }
   var connus = {};
   vus.forEach(function (k) { connus[k] = true; });
   nouveauxBrawlers = brawlers.filter(function (b) { return !connus[b.k]; });
@@ -411,14 +413,14 @@ var MAX_RECENTES = 4;
 /* Filtrées sur le pool en cours : la rotation change à chaque saison, et
    proposer une carte qui n'existe plus serait pire que ne rien proposer. */
 function cartesRecentes() {
-  return lireJSON(CLE_RECENTES, []).map(carteParId).filter(Boolean);
+  return lireListe(CLE_RECENTES).map(carteParId).filter(Boolean);
 }
 
 function noterCarteRecente(id) {
   if (!id) return;
   /* On travaille sur les identifiants bruts : résoudre les cartes pour ne
      garder que leur id ensuite, c'est balayer MAPS pour rien. */
-  var liste = lireJSON(CLE_RECENTES, []).filter(function (x) { return x !== id; });
+  var liste = lireListe(CLE_RECENTES).filter(function (x) { return x !== id; });
   ecrireJSON(CLE_RECENTES, [id].concat(liste).slice(0, MAX_RECENTES));
 }
 

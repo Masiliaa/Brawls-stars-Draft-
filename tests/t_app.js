@@ -469,8 +469,50 @@ const check = (nom, cond, detail = '') => {
     /Tier/.test(await page.locator('.hero .mesure').first().textContent()));
   await page.locator('[data-act="addE"]').click();
   check('grille de choix ennemi', await page.locator('#grid .cel').first().isVisible());
+
+  // La grille etait coupee a 60 par un slice(0, 60), sur 105 brawlers : 45 ne
+  // figuraient nulle part, et rien a l'ecran ne le disait. Qui descend
+  // jusqu'en bas sans trouver son adversaire en conclut que l'app ne le
+  // connait pas. Le classement par probabilite reste, la coupe non.
+  const grille = await page.evaluate(() => ({
+    cases: document.querySelectorAll('#grid .cel').length,
+    connus: brawlers.length,
+    engages: dejaEngages().length,
+  }));
+  check('la grille montre TOUS les brawlers désignables',
+    grille.cases === grille.connus - grille.engages, grille);
+
   await page.locator('#grid .cel').first().click();
   check('ennemi ajouté', (await page.locator('[data-act="rme"]').count()) === 1);
+
+  // ── Un stockage abime ne doit pas donner un ecran blanc ────────────────
+  // JSON.parse ne repond qu'a « est-ce du JSON ? », jamais a « est-ce la
+  // bonne chose ? ». Mesure : trois de ces six valeurs, parfaitement
+  // analysables, donnaient une page entierement vide. Et la valeur restant
+  // dans le navigateur, chaque reouverture rebloquait au meme endroit.
+  console.log('\n== stockage abîmé : l\'app tient debout ==');
+  const CAS = [
+    ['manager:roster', '{"pas":"un tableau"}'],
+    ['manager:roster', '"chaine"'],
+    ['manager:recentes', '42'],
+    ['manager:catalogue', '{"liste":null}'],
+    ['manager:catalogue', '[1,2,3]'],
+    ['manager:modes', '[1,2,3]'],
+    ['manager:vus', 'true'],
+  ];
+  for (const [cle, val] of CAS) {
+    const p = await nav.newPage();
+    const boum = [];
+    p.on('pageerror', e => boum.push(e.message));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(([c, v]) => localStorage.setItem(c, v), [cle, val]);
+    await p.reload({ waitUntil: 'networkidle' });
+    const vivant = await p.evaluate(() => document.querySelectorAll('button').length);
+    check(cle + ' = ' + val + ' : l\'app s\'ouvre quand même',
+      vivant > 0 && boum.length === 0, { boutons: vivant, erreurs: boum });
+    await p.close();
+  }
+
   check('toujours aucune erreur JS', erreurs.length === 0, erreurs);
 
   await nav.close();
