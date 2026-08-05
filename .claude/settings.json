@@ -1,11 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "disableWorkflows": true,
-  "workflowKeywordTriggerEnabled": false,
-  "permissions": {
-    "deny": [
-      "Workflow",
-      "Agent"
-    ]
-  }
+
+  "//": "Les workflows multi-agents restent DISPONIBLES. Ce qui est bridé, c'est leur taille par défaut : « small » vise moins de 5 agents, au lieu des 15 par défaut. Le 05/08/2026, un audit mal dimensionné en a lancé 137 pour 2,6 millions de tokens, et la vérification s'est effondrée avant de rendre quoi que ce soit. Le problème n'était pas l'outil, c'était l'éventail multiplié par l'éventail. Voir CLAUDE.md section 9 pour la façon de s'en servir.",
+  "workflowSizeGuideline": "small",
+
+  "//2": "Le mot-clé « ultracode » fait basculer un tour entier en orchestration multi-agents, sans que personne ne l'ait demandé explicitement. Il reste déclenchable en le tapant vraiment, mais plus par accident.",
+  "workflowKeywordTriggerEnabled": false
 }

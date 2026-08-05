@@ -128,47 +128,81 @@ l'environnement, dans les réglages de Claude Code sur le web.
 **Donc : ne plus jamais écrire « leurs sites bloquent la lecture ». Lancer le
 flux, ou dire précisément quel hôte la politique refuse.**
 
-## 9. Pas de flotte d'agents. Verrouillé, pas promis.
+## 9. Les workflows multi-agents : comment, pas si
 
-Constaté le 05/08/2026. Une « recherche exhaustive des axes d'amélioration »
-a été lancée sous forme de workflow multi-agents : **137 agents, 2,6 millions
-de tokens, limite de session atteinte**. Les huit audits ont fini, mais les
-vérificateurs et la synthèse sont tombés en route. Il en est sorti 64 pistes
-**non vérifiées**, dont la moitié étaient fausses ou déjà corrigées.
+Le 05/08/2026, une « recherche exhaustive des axes d'amélioration » a coûté
+**137 agents et 2,6 millions de tokens**, a atteint la limite de session, et
+n'a rien rendu d'utilisable : les huit audits ont fini, les vérificateurs et
+la synthèse sont tombés en route. Il en est sorti 64 pistes **non vérifiées**,
+dont la moitié fausses ou déjà corrigées.
 
-C'est moi qui l'avais dimensionné : 2 vérificateurs × 64 pistes = 128 agents
-de vérification, au-delà de ce que la session peut tenir. Le budget de
-l'utilisateur a été détruit pour un résultat inexploitable.
+L'outil n'était pas en cause. Le dimensionnement l'était, et c'est le mien.
+Ce fichier dit donc comment s'en servir, pas de s'en priver.
 
-Ce qui a marché, le même jour, pour un coût sans commune mesure : **mesurer
-une chose à la fois dans le navigateur**, avant d'y toucher. C'est comme ça
-qu'ont été trouvés la barre qui mentait, la grille coupée à 60, le rappel
-« nouveaux brawlers » qui n'apparaissait chez personne — et c'est comme ça
-qu'a été **écartée** une piste fausse (« la phase de ban est sous la ligne
-de flottaison »), qui ne se reproduit sur aucune taille.
+### Ce qui a réellement coûté
 
-**Le verrou est dans `.claude/settings.json`, commité avec le dépôt :**
+Trois erreurs, dans l'ordre d'importance :
 
-```json
-"disableWorkflows": true,
-"workflowKeywordTriggerEnabled": false,
-"permissions": { "deny": ["Workflow", "Agent"] }
+1. **L'éventail multiplié par l'éventail.** 8 audits ont produit 64 pistes,
+   puis 64 × 2 vérificateurs = 128 agents de vérification. C'est ce produit
+   qui explose, jamais le premier éventail. Huit chercheurs, c'est huit
+   agents : négligeable.
+2. **Aucun dédoublonnage avant la partie chère.** Les 64 pistes contenaient
+   des doublons et des choses déjà corrigées. Dédoublonner et classer, c'est
+   du code JavaScript ordinaire dans le script — **gratuit, zéro agent**. Fait
+   avant, il restait une quinzaine de pistes réelles à vérifier.
+3. **Tout rendu à la fin.** `parallel()` est une barrière : elle attend tout
+   le monde. En atteignant la limite au milieu, on perd aussi ce qui était
+   déjà fait. `pipeline()` fait descendre chaque piste seule jusqu'au bout —
+   à la 40ᵉ qui meurt, les 39 premières sont déjà rendues.
+
+### Les quatre règles
+
+- **Dédoublonner et classer AVANT de vérifier**, en JavaScript dans le script.
+  Puis ne vérifier que les 10 à 15 premières. Le reste attendra un autre tour.
+- **`pipeline()` par défaut, `parallel()` seulement quand une étape a
+  réellement besoin de TOUS les résultats de la précédente.**
+- **La vérification est mécanique : elle ne mérite pas le gros modèle.**
+  `{model: "haiku", effort: "low"}` sur les vérificateurs. Chercher demande du
+  jugement ; contrôler qu'une chose se reproduit, non.
+- **Pas d'agent de synthèse.** Je lis les résultats et je synthétise dans la
+  boucle principale : c'est déjà payé.
+
+Ce que ça donne sur le même travail : **5 chercheurs + dédoublonnage gratuit
++ 10 vérificateurs bon marché = 15 agents** au lieu de 137, avec un résultat
+vérifié au lieu d'un tas de pistes brutes.
+
+### Le plafond dur, et c'est l'utilisateur qui le tient
+
+Écrire **`+300k`** (ou tout autre chiffre) dans la demande fixe un plafond de
+tokens pour le tour. Ce n'est pas indicatif : au-delà, les appels d'agents
+**échouent**. Le script doit s'y adapter :
+
+```js
+while (budget.total && budget.remaining() > 50_000) { … }
+const FLOTTE = budget.total ? Math.floor(budget.total / 100_000) : 5
 ```
 
-Ce n'est pas une consigne, c'est une absence : les outils ne sont pas
-disponibles. Une consigne se serait appuyée sur le même jugement qui a
-échoué. Le fichier est dans le dépôt et non dans `~/.claude/` **parce que le
-conteneur est effacé après chaque session** — seul ce qui est commité revient.
+C'est le seul garde-fou qui ne dépende pas de mon jugement — celui qui a
+échoué. Quand l'utilisateur ne donne pas de chiffre, annoncer le nombre
+d'agents prévu et l'ordre de grandeur **avant** de lancer.
 
-Pour le rouvrir, il faut éditer ce fichier. C'est voulu : que ce soit un
-geste, pas un réflexe. Et si l'utilisateur le demande, mesurer d'abord le
-coût attendu et l'annoncer **avant** de lancer quoi que ce soit.
+`.claude/settings.json`, commité avec le dépôt (le conteneur est effacé après
+chaque session, seul ce qui est commité revient), porte deux réglages :
+`workflowSizeGuideline: "small"` — viser moins de 5 agents plutôt que 15 — et
+`workflowKeywordTriggerEnabled: false`, pour qu'un « ultracode » tapé par
+hasard ne bascule pas tout un tour en orchestration.
 
-À la place : chercher soi-même (`Grep`, `Read`), mesurer soi-même dans le
-navigateur, corriger **un point à la fois**, avec sa mesure avant/après dans
-le message de commit. Et laisser l'intégration continue trouver le reste —
-elle a débusqué en deux passages un vrai bug que trois mois d'audits n'ont
-pas vu, parce qu'elle exécute le code là où l'API répond.
+### Et quand un workflow n'est pas la bonne réponse
+
+Il ne l'est pas quand une mesure suffit. Le même jour, **mesurer une chose à
+la fois dans le navigateur** a trouvé la barre du classement qui mentait, la
+grille coupée à 60 sur 105, et le rappel « nouveaux brawlers » qui
+n'apparaissait chez personne — pour une fraction du coût. Et surtout, ça a
+permis d'**écarter** une piste fausse au lieu de la corriger pour rien.
+
+Un workflow sert à couvrir large quand on ne sait pas où chercher. Il ne sert
+pas à vérifier : ça, ça se mesure.
 
 ## 10. Phrases de rappel
 
@@ -179,5 +213,8 @@ L'utilisateur peut écrire à tout moment :
 - **« la solution durable »** → refaire le choix en ne regardant que le
   long terme, quitte à défaire ce qui vient d'être fait.
 - **« combien ça coûte »** → avant de lancer quoi que ce soit de long,
-  annoncer le nombre d'appels prévus et l'ordre de grandeur en tokens.
+  annoncer le nombre d'agents prévus et l'ordre de grandeur en tokens.
   Attendre le feu vert si c'est au-delà de l'ordinaire.
+- **`+300k`** (n'importe quel chiffre, dans la demande) → plafond DUR de
+  tokens pour le tour. Au-delà, les appels d'agents échouent. C'est le seul
+  garde-fou qui ne dépende pas du jugement de Claude. Voir section 9.
