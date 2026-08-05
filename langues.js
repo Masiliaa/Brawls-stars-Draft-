@@ -59,6 +59,10 @@ var LANGUES = {
       changer: "changer",
       inviteCarte: "Ouvre la carte annoncée au début du draft. Tu auras un nom tout de suite.",
       inviteRoster: "Coche d'abord tes brawlers, sinon impossible de te conseiller un perso jouable.",
+      /* Montré le temps que counters.js arrive. Il dit ce qui manque et
+         ce qui marche déjà — un « chargement… » nu laisserait croire que
+         l'app est bloquée, alors que la carte se choisit très bien. */
+      chargeMatchups: "Je charge les duels. La carte et tes brawlers sont déjà utilisables ; les conseils arrivent dès que les chiffres sont complets.",
       cocherMesBrawlers: "Cocher mes brawlers",
       tousBannis: "Tous tes brawlers sont bannis ou déjà pris.",
       tier: "Tier {tier}",
@@ -194,6 +198,7 @@ var LANGUES = {
       changer: "change",
       inviteCarte: "Open the map announced at the start of the draft. You'll get a name straight away.",
       inviteRoster: "Tick your brawlers first, otherwise there's no way to suggest one you can actually play.",
+      chargeMatchups: "Loading matchups. The map and your brawlers already work; the advice appears as soon as the numbers are complete.",
       cocherMesBrawlers: "Select my brawlers",
       tousBannis: "All your brawlers are banned or already taken.",
       tier: "Tier {tier}",
@@ -326,6 +331,7 @@ var LANGUES = {
       changer: "cambiar",
       inviteCarte: "Abre el mapa anunciado al empezar el draft. Tendrás un nombre enseguida.",
       inviteRoster: "Marca primero tus brawlers; si no, no hay forma de recomendarte uno que puedas jugar.",
+      chargeMatchups: "Estoy cargando los duelos. El mapa y tus brawlers ya funcionan; los consejos aparecen en cuanto los números estén completos.",
       cocherMesBrawlers: "Marcar mis brawlers",
       tousBannis: "Todos tus brawlers están baneados o ya elegidos.",
       tier: "Tier {tier}",

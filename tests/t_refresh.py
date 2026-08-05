@@ -58,6 +58,10 @@ check("section maps non melangee", all(p[0] != "pinballdreams" for p in perd + b
 
 print("\n== lecture des blocs de index.html ==")
 html = open(R.FICHIER_DONNEES, encoding="utf-8").read()
+# Le bloc COUNTERS a quitte donnees.js : il en faisait 322 Ko sur 335, et
+# l'app l'attendait avant d'afficher quoi que ce soit. Format et marqueurs
+# inchanges, seul le fichier qui les porte a change — ce qui suit le verifie.
+counters_js = open(R.FICHIER_COUNTERS, encoding="utf-8").read()
 noms = R.noms_depuis_tiers(html)
 check("noms uniques", len(noms) == len(set(R.clef(n) for n in noms)), len(noms))
 check("nb brawlers plausible", 100 <= len(noms) <= 115, len(noms))
@@ -569,13 +573,13 @@ shutil.copy(R.FICHIER_DONNEES, cible)
 table = {"mortis": {"perd": [["jacky", "Le surpasse au corps a corps"]],
                     "bat": [["barley", "Punit ses faibles PV"]]},
          "8bit": {"perd": [], "bat": [["poco", "Le deborde a distance"]]}}
-h2 = R.ecrire_bloc(html, "COUNTERS", R.rendre_counters(table))
+h2 = R.ecrire_bloc(counters_js, "COUNTERS", R.rendre_counters(table))
 bloc = R.lire_bloc(h2, "COUNTERS")
 check("COUNTERS reecrit", '"mortis"' in bloc and '"8bit"' in bloc, bloc[:80])
 check("COUNTERS bien clos", bloc.rstrip().endswith("};"), bloc[-40:])
 
 pairs = {"bibi|surge": 4.2, "colt|poco": -1.5}
-h3 = R.ecrire_bloc(h2, "SYNERGIE", R.rendre_synergie(pairs))
+h3 = R.ecrire_bloc(html, "SYNERGIE", R.rendre_synergie(pairs))
 check("SYNERGIE reecrit", '"bibi|surge":4.2' in R.lire_bloc(h3, "SYNERGIE"),
       R.lire_bloc(h3, "SYNERGIE"))
 
@@ -782,10 +786,10 @@ check("les trois langues sont ecrites",
       and '"es":"Le supera"' in rendu, rendu[:160])
 check("une phrase anglaise seule reste valide",
       '"en":"Slips between the arcs"' in rendu, rendu)
-h7 = R.ecrire_bloc(html, "COUNTERS", rendu)
+h7 = R.ecrire_bloc(counters_js, "COUNTERS", rendu)
 check("le bloc reste bien clos", R.lire_bloc(h7, "COUNTERS").rstrip().endswith("};"))
 
-print("\n== recopie des traductions dans donnees.js ==")
+print("\n== recopie des traductions dans counters.js ==")
 
 # outils/appliquer_traductions.py existe parce que refresh.py ne recopie les
 # traductions que lorsqu'il relève les données — donc seulement quand il a le
@@ -794,7 +798,7 @@ print("\n== recopie des traductions dans donnees.js ==")
 sys.path.insert(0, os.path.join(R.RACINE, "outils"))
 import appliquer_traductions as AT
 
-avant = open(os.path.join(R.RACINE, "donnees.js"), encoding="utf-8").read()
+avant = open(R.FICHIER_COUNTERS, encoding="utf-8").read()
 anglais = re.findall(r'"en":"((?:[^"\\]|\\.)*)"', R.lire_bloc(avant, "COUNTERS"))
 
 apres, ajouts = AT.appliquer(avant, {})
@@ -817,9 +821,20 @@ check("le francais recopie est bien celui de la table",
 check("les phrases anglaises sont intactes",
       re.findall(r'"en":"((?:[^"\\]|\\.)*)"',
                  R.lire_bloc(apres, "COUNTERS")) == anglais)
-for nom in ("MAJ", "MAPS", "SYNERGIE"):
-    check("le bloc %s n'est pas touche" % nom,
-          R.lire_bloc(apres, nom) == R.lire_bloc(avant, nom))
+# Ces blocs vivent dans donnees.js, que ce script n'ouvre plus du tout : ce
+# qu'on verifie ici, c'est donc qu'il ne les emporte pas par accident et que
+# sa cible est bien l'autre fichier.
+for nom in ("MAJ", "MAPS", "SYNERGIE", "TIERS"):
+    check("le bloc %s reste dans donnees.js" % nom,
+          nom not in apres and R.lire_bloc(html, nom) is not None)
+check("appliquer_traductions ne vise que counters.js",
+      AT.CIBLE == R.FICHIER_COUNTERS, AT.CIBLE)
+
+# La structure « qui bat qui » ne doit pas bouger d'un pouce : ce script
+# n'ajoute que des langues. Les cles et les paires, elles, sont intouchables.
+cles = lambda t: re.findall(r'"(\w+)":\{perd:', t)
+check("aucune fiche n'apparait ni ne disparait",
+      cles(apres) == cles(avant), (len(cles(apres)), len(cles(avant))))
 
 # Repasser deux fois ne doit rien changer : le robot le lance à chaque
 # exécution, y compris quand il n'y a rien à faire.

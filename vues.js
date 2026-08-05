@@ -927,6 +927,24 @@ function ecranDraft() {
     return html + encadre(t("inviteRoster"), "roster", t("cocherMesBrawlers")) + noteHTML();
   }
 
+  /* Tant que « qui bat qui » n'est pas arrivé, on ne montre AUCUN chiffre.
+     ----------------------------------------------------------------------
+     La table se charge après le premier dessin (voir app.js) : c'est ce qui
+     ramène l'ouverture de 11,1 s à quelques secondes en 3G lente. Mais on ne
+     peut pas afficher le classement en attendant et le corriger ensuite.
+     Mesuré avant de s'y risquer : sans cette table, les scores changent sur
+     les 27 cartes MÊME sans un seul ennemi désigné — Surge passe de 102 à
+     107 sur Milieu de scène, et l'ordre bouge derrière lui. Un classement
+     qui se réécrit sous les yeux, c'est le bug qu'on a déjà corrigé deux
+     fois ici : la grille des raretés, puis le catalogue.
+
+     Donc : la carte se choisit, le roster se coche, la langue se change —
+     tout ça marche. Seuls les chiffres attendent d'être justes. */
+  if (!COUNTERS_PRET) {
+    return html + '<div class="box attente"><p>' + echapper(t("chargeMatchups"))
+         + "</p></div>" + noteHTML();
+  }
+
   /* Les deux modes ne sont plus la même page avec un bloc échangé.
      ----------------------------------------------------------------------
      ANALYSE — on la lit sans chrono, elle a le droit d'être longue. Son

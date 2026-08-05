@@ -42,6 +42,10 @@ from html.parser import HTMLParser
 RACINE = os.path.dirname(os.path.abspath(__file__))
 # Seul fichier réécrit : toutes les données de l'app y sont regroupées.
 FICHIER_DONNEES = os.path.join(RACINE, "donnees.js")
+# Le bloc COUNTERS a quitté donnees.js : il en faisait 322 Ko sur 335, et
+# l'app l'attendait avant d'afficher quoi que ce soit. Format inchangé,
+# marqueurs @DATA: inchangés — seul le fichier qui les porte a changé.
+FICHIER_COUNTERS = os.path.join(RACINE, "counters.js")
 CACHE = os.path.join(RACINE, ".cache")
 DONNEES = os.path.join(RACINE, "data")
 ASSETS = os.path.join(RACINE, "assets")
@@ -1452,21 +1456,25 @@ def telecharger_assets(net, noms, ids_cartes):
 
 
 # ---------------------------------------------------------------------------
-# Écriture dans donnees.js
+# Écriture dans les fichiers de données
+#
+# Deux fichiers portent des blocs @DATA: depuis que COUNTERS a quitté
+# donnees.js — d'où le message d'erreur qui ne nomme plus un fichier en
+# particulier : il nommerait le mauvais une fois sur deux.
 # ---------------------------------------------------------------------------
 
 def lire_bloc(html, nom):
     m = re.search(r"/\* @DATA:%s \*/\n(.*?)\n/\* @END:%s \*/" % (nom, nom),
                   html, re.S)
     if not m:
-        raise SystemExit("marqueur @DATA:%s introuvable dans donnees.js" % nom)
+        raise SystemExit("marqueur @DATA:%s introuvable" % nom)
     return m.group(1)
 
 
 def ecrire_bloc(html, nom, contenu):
     pat = re.compile(r"(/\* @DATA:%s \*/\n).*?(\n/\* @END:%s \*/)" % (nom, nom), re.S)
     if not pat.search(html):
-        raise SystemExit("marqueur @DATA:%s introuvable dans donnees.js" % nom)
+        raise SystemExit("marqueur @DATA:%s introuvable" % nom)
     return pat.sub(lambda m: m.group(1) + contenu + m.group(2), html, count=1)
 
 
@@ -2173,11 +2181,13 @@ def main():
         return 1
 
     html = open(FICHIER_DONNEES, encoding="utf-8").read()
+    counters_js = open(FICHIER_COUNTERS, encoding="utf-8").read()
     noms = noms_depuis_tiers(html)
     maj, saison = maj_actuelle(html)
     aujourdhui = dt.date.today().strftime("%d/%m/%Y")
     tr = Traducteur()
     touche = False
+    counters_touche = False
 
     if a.cartes:
         anciennes = cartes_actuelles(html)
@@ -2201,7 +2211,9 @@ def main():
         table = scraper_counters(net, tr)
         if table:
             controler_counters(table, noms)
-            html = ecrire_bloc(html, "COUNTERS", rendre_counters(table))
+            counters_js = ecrire_bloc(counters_js, "COUNTERS",
+                                      rendre_counters(table))
+            counters_touche = True
             maj["matchups"] = [aujourdhui, "brawlcalculator.com"]
             touche = True
 
@@ -2232,8 +2244,11 @@ def main():
         html = ecrire_bloc(html, "MAJ", rendre_maj(maj, saison))
         open(FICHIER_DONNEES, "w", encoding="utf-8").write(html)
         print("\ndonnees.js réécrit.")
+        if counters_touche:
+            open(FICHIER_COUNTERS, "w", encoding="utf-8").write(counters_js)
+            print("counters.js réécrit.")
     elif a.blanc:
-        print("\n--blanc : donnees.js laissé tel quel.")
+        print("\n--blanc : donnees.js et counters.js laissés tels quels.")
 
     if ERREURS:
         print("\n%d avertissement(s) :" % len(ERREURS))

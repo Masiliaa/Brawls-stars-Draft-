@@ -18,7 +18,11 @@ import re
 import sys
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CIBLE = os.path.join(RACINE, "donnees.js")
+# Le bloc COUNTERS a quitté donnees.js — il en faisait 322 Ko sur 335, et
+# l'app l'attendait avant d'afficher quoi que ce soit. Ce script ne touche
+# qu'à ce bloc : seul le fichier qui le porte a changé, pas son format ni
+# ses marqueurs.
+CIBLE = os.path.join(RACINE, "counters.js")
 TABLE = os.path.join(RACINE, "data", "traductions.json")
 LANGUES = ("fr", "es")
 

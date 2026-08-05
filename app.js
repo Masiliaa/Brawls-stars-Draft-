@@ -355,6 +355,40 @@ document.addEventListener("keydown", function (e) {
 chargerLangue();
 render();
 
+/* La table « qui bat qui » se charge après ce premier dessin.
+   ------------------------------------------------------------------------
+   Elle pèse 322 Ko sur les 524 que le navigateur télécharge avant de
+   pouvoir afficher quoi que ce soit. Mesuré : 11,1 s d'écran noir en 3G
+   lente, 2,9 s en 4G moyenne. L'app se donne 25 secondes en tout.
+
+   Le premier geste, toujours, c'est choisir la carte — et ça ne demande
+   que MAPS, 6,6 Ko. Autant le rendre possible tout de suite.
+
+   Chargée par une balise plutôt que par fetch() : c'est ce qui la fait
+   passer par le cache du navigateur et par le service worker comme
+   n'importe quel autre fichier de l'app, sans qu'aucun des deux ait à
+   connaître un cas particulier.
+
+   En cas d'échec on ne bloque rien : COUNTERS reste vide, le moteur
+   retombe sur le cycle de familles — c'est déjà ce qu'il fait quand une
+   paire manque — et le pied de page dit que les matchups sont absents. */
+(function chargerCounters() {
+  var balise = document.createElement("script");
+  balise.src = "counters.js";
+  balise.onload = function () {
+    COUNTERS_PRET = true;
+    render();
+  };
+  balise.onerror = function () {
+    /* Prêt ne veut pas dire rempli : ça veut dire « on sait à quoi s'en
+       tenir ». Sans ça l'app resterait à annoncer un chargement qui
+       n'arrivera jamais. */
+    COUNTERS_PRET = true;
+    render();
+  };
+  document.head.appendChild(balise);
+})();
+
 /* Les icônes des modes se chargent à part : elles ne conditionnent aucun
    calcul, donc leur arrivée n'a pas à retarder le premier dessin. Et on ne
    les redemande pas quand on les a déjà : elles ne changent pour ainsi dire

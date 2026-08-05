@@ -30,7 +30,7 @@
 
     langues.js    tous les textes affichés, en français, anglais et espagnol
     outils.js     petites fonctions de base (nettoyer un nom, échapper du texte)
-    donnees.js    d'où viennent les chiffres — seul fichier réécrit par refresh.py
+    donnees.js    d'où viennent les chiffres — réécrit par refresh.py
     etat.js       ce que l'app retient (carte choisie, picks, brawlers cochés)
     moteur.js     comment le brawler conseillé est calculé
     vues.js       comment tout ça est affiché
@@ -38,6 +38,12 @@
 
   Ce sont des scripts classiques, pas des modules : ils fonctionnent aussi
   bien en ouvrant le fichier directement que depuis un hébergeur.
+
+  counters.js N'EST PAS dans cette liste, et c'est voulu : à lui seul il
+  pesait 322 Ko sur les 524 qu'il fallait attendre avant de voir la moindre
+  chose — 11,1 s d'écran noir en 3G lente, mesuré. app.js le demande après
+  le premier dessin, pour que le choix de la carte, qui est toujours le
+  premier geste, n'attende pas la table des duels.
 -->
 <script src="langues.js"></script>
 <script src="outils.js"></script>

@@ -26,7 +26,7 @@
    nécessaire pour donnees.js, qui passe par le réseau en premier de toute
    façon ; c'est nécessaire pour que les anciens caches soient nettoyés. */
 
-var VERSION = "manager-v2";
+var VERSION = "manager-v3";
 
 var COQUILLE = [
   "./",
@@ -36,6 +36,10 @@ var COQUILLE = [
   "./outils.js",
   "./langues.js",
   "./donnees.js",
+  /* Demandé par app.js après le premier dessin, pas par index.html — mais
+     il fait partie de l'app au même titre que les autres, et sans lui hors
+     ligne le conseil retomberait sur le cycle de familles. */
+  "./counters.js",
   "./etat.js",
   "./moteur.js",
   "./vues.js",

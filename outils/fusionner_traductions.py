@@ -23,8 +23,12 @@ LANGUES = ("fr", "es")
 
 
 def phrases_du_projet():
-    """Les phrases anglaises réellement présentes dans donnees.js."""
-    h = open(os.path.join(RACINE, "donnees.js"), encoding="utf-8").read()
+    """Les phrases anglaises réellement présentes dans counters.js.
+
+    Le bloc COUNTERS a quitté donnees.js — il en faisait 322 Ko sur 335, et
+    l'app l'attendait avant d'afficher quoi que ce soit. Format et marqueurs
+    inchangés : seul le fichier qui les porte a changé."""
+    h = open(os.path.join(RACINE, "counters.js"), encoding="utf-8").read()
     bloc = re.search(r"/\* @DATA:COUNTERS \*/(.*?)/\* @END:COUNTERS \*/",
                      h, re.S).group(1)
     # Pas de « } » de fermeture dans le motif : une fois traduite, la phrase

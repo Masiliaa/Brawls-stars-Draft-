@@ -485,6 +485,83 @@ const check = (nom, cond, detail = '') => {
   await page.locator('#grid .cel').first().click();
   check('ennemi ajouté', (await page.locator('[data-act="rme"]').count()) === 1);
 
+  // ── counters.js arrive apres le premier dessin ─────────────────────────
+  // Il pesait 322 Ko sur les 524 qu'il fallait attendre avant de voir quoi
+  // que ce soit : 11,1 s d'ecran noir en 3G lente, mesure. Il est donc
+  // charge a part. Ce qui doit rester vrai pendant qu'il charge : l'app est
+  // utilisable, ET aucun chiffre n'est montre — sans cette table les scores
+  // changent sur les 27 cartes, meme sans un seul ennemi designe.
+  console.log('\n== la table des duels arrive apres le premier dessin ==');
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    const boum = [];
+    p.on('pageerror', e => boum.push(e.message));
+    // On retient counters.js le temps de regarder l'ecran.
+    let relacher;
+    const bloque = new Promise(r => { relacher = r; });
+    await p.route('**/counters.js', async route => {
+      await bloque;
+      await route.continue();
+    });
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html',
+      { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => {
+      roster = new Set(brawlers.map(x => x.k)); sauverRoster();
+      carteId = MAPS[0].id; ecran = 'draft'; render();
+    });
+    const pendant = await p.evaluate(() => ({
+      pret: COUNTERS_PRET,
+      table: Object.keys(COUNTERS).length,
+      carteChoisissable: !!document.querySelector('[data-act="cartes"]'),
+      versLeRoster: !!document.querySelector('[data-act="roster"]'),
+      attente: !!document.querySelector('.attente'),
+      chiffres: document.querySelectorAll('.analyse, .hero .mesure').length,
+    }));
+    check('pendant le chargement, la carte reste choisissable',
+      pendant.carteChoisissable, pendant);
+    check('et « Mes brawlers » aussi', pendant.versLeRoster, pendant);
+    check('l\'app dit qu\'elle charge', pendant.attente, pendant);
+    check('et ne montre AUCUN chiffre qu\'elle devra reprendre',
+      pendant.chiffres === 0, pendant);
+
+    relacher();
+    await p.waitForFunction(() => COUNTERS_PRET, null, { timeout: 15000 });
+    const apres = await p.evaluate(() => ({
+      table: Object.keys(COUNTERS).length,
+      attente: !!document.querySelector('.attente'),
+      conseil: !!document.querySelector('.hero .name'),
+    }));
+    check('une fois arrivee, la table est pleine', apres.table > 100, apres);
+    check('le message d\'attente disparait', !apres.attente, apres);
+    check('et le conseil s\'affiche', apres.conseil, apres);
+    check('sans une seule erreur JS', boum.length === 0, boum);
+    await p.close();
+  }
+
+  // Si le fichier ne vient jamais, l'app ne doit pas rester a annoncer un
+  // chargement qui n'arrivera pas : elle retombe sur le cycle de familles,
+  // ce qu'elle sait deja faire quand une paire manque, et le pied de page
+  // le dit.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/counters.js', route => route.abort());
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html',
+      { waitUntil: 'domcontentloaded' });
+    await p.waitForFunction(() => COUNTERS_PRET, null, { timeout: 15000 });
+    const r = await p.evaluate(() => {
+      roster = new Set(brawlers.map(x => x.k)); sauverRoster();
+      carteId = MAPS[0].id; ecran = 'draft'; render();
+      return { conseil: !!document.querySelector('.hero .name'),
+               attente: !!document.querySelector('.attente'),
+               note: document.querySelector('.note').textContent };
+    });
+    check('table introuvable : le conseil s\'affiche quand meme', r.conseil, r);
+    check('sans rester bloque sur le message d\'attente', !r.attente, r);
+    check('et le pied de page annonce la table absente',
+      /matchups absente/i.test(r.note), r.note.slice(0, 120));
+    await p.close();
+  }
+
   // ── Un stockage abime ne doit pas donner un ecran blanc ────────────────
   // JSON.parse ne repond qu'a « est-ce du JSON ? », jamais a « est-ce la
   // bonne chose ? ». Mesure : trois de ces six valeurs, parfaitement
