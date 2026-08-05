@@ -1,0 +1,84 @@
+# Les contrôles, à chaque poussée.
+#
+# Pourquoi ce fichier existe
+# --------------------------
+# Le dépôt portait 556 contrôles et n'en faisait tourner que 180. Le flux
+# « Données » lance tests/t_refresh.py, qui vérifie refresh.py — mais les
+# quatre suites navigateur, 376 contrôles, ne tournaient que sur la machine où
+# le code venait d'être écrit. Autrement dit : la seule chose vérifiée
+# automatiquement était celle qu'un robot modifie tout seul, et tout ce qu'un
+# humain touche ne l'était pas.
+#
+# Ce sont précisément ces suites qui ont attrapé, cette semaine, un contraste
+# tombé à 0,9:1 après une suppression trop large dans style.css, une constante
+# lue avant d'être définie, et une grille qui se réorganisait sous le doigt.
+# Aucune de ces trois n'était visible à la lecture du code.
+#
+# Ce flux n'écrit rien : contents: read.
+
+name: Contrôles
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # --no-save : il n'y a pas de package.json dans ce dépôt, et en créer un
+      # pour une dépendance de test ferait croire à une étape de build. Le
+      # navigateur vient avec, c'est lui qui fait tout le travail.
+      - name: Installer Playwright et Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      # Les suites chargent l'app par http, pas par file:// — le service
+      # worker et localStorage ne fonctionnent qu'avec une vraie origine.
+      - name: Servir l'app
+        run: |
+          python3 -m http.server 8765 &
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null http://127.0.0.1:8765/index.html && exit 0
+            sleep 0.5
+          done
+          echo "le serveur local n'a pas répondu"; exit 1
+
+      # Une suite par étape : quand ça casse, le nom de l'étape rouge dit déjà
+      # où regarder, sans ouvrir le journal.
+      - name: Contrôles de l'app
+        run: node tests/t_app.js
+
+      - name: Parcours complet
+        run: node tests/t_parcours.js
+
+      - name: Les trois langues
+        run: node tests/t_langues.js
+
+      - name: Tous les écrans, tous les modes
+        run: node tests/t_ecrans.js
+
+      # Contraste, taille des cibles tactiles, débordements : ce que les suites
+      # ne regardent pas, parce que ça ne se voit qu'une fois dessiné.
+      - name: Audit d'ergonomie
+        run: node outils/audit.js
+
+      - name: Contrôles de refresh.py
+        run: python3 tests/t_refresh.py

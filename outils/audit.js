@@ -13,6 +13,12 @@
 // Il ne remplace pas les tests : ceux-la disent si l'app marche, celui-ci
 // dit si elle s'utilise. A relancer apres tout changement d'apparence.
 const { chromium } = require('playwright');
+// Meme convention que les suites de tests/ : CHROME impose un binaire, sinon
+// on prend celui de playwright. Le chemin du bac a sable etait ecrit en dur
+// ici, ce qui marchait tant que ce fichier ne tournait que sur ma machine —
+// et exactement jusqu'a ce qu'on le mette en integration continue.
+const PORT = process.env.PORT || 8765;
+const BASE = 'http://127.0.0.1:' + PORT;
 const ETATS = {
   'accueil':   `carteId=null; ennemis=[];allies=[];bans=[]; ecran='draft'; cibleAjout=null;`,
   'draft':     `carteId='center-stage'; ennemis=['piper','bull']; allies=['poco']; bans=['leon']; ecran='draft'; cibleAjout=null;`,
@@ -25,9 +31,10 @@ const ETATS = {
 const lum = (c) => { const [r,g,b]=c.match(/\d+/g).map(Number).map(v=>{v/=255;
   return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);}); return 0.2126*r+0.7152*g+0.0722*b; };
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch(
+    process.env.CHROME ? { executablePath: process.env.CHROME } : {});
   const p = await b.newPage({ viewport:{width:390,height:844}, locale:'fr-FR' });
-  await p.goto('http://127.0.0.1:8765/index.html');
+  await p.goto(BASE + '/index.html');
   await p.evaluate(() => localStorage.setItem('manager:langue','fr'));
   await p.reload(); await p.waitForTimeout(300);
   const trouve = {};
