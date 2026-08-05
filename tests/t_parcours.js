@@ -613,12 +613,22 @@ const check = (nom, cond, detail = '') => {
 
   // ── Les brawlers rangés par rareté ─────────────────────────────────────
   // L'ordre alphabétique ne dit rien de ce qu'on possède ; la rareté, si.
-  // L'API n'est pas joignable pendant les tests, donc aucune rareté n'est
-  // connue et l'écran retombe sur la liste simple — ce repli est vérifié en
-  // premier. On injecte ensuite les 7 raretés relevées le 04/08/2026 sur
-  // api.brawlapi.com, avec leurs effectifs réels, pour vérifier le reste.
+  // Quand aucune rareté n'est connue, l'écran retombe sur la liste simple :
+  // ce repli est vérifié en premier. On injecte ensuite les 7 raretés
+  // relevées le 04/08/2026 sur api.brawlapi.com, avec leurs effectifs réels.
+  //
+  // Le commentaire disait ici « l'API n'est pas joignable pendant les tests ».
+  // C'etait vrai d'une seule machine — la mienne, ou la politique reseau
+  // repond 403 — et faux sur les serveurs de GitHub, ou l'API repond et
+  // fournit les raretes. Le repli n'y etait donc jamais celui qu'on croyait
+  // tester. On retire les raretes explicitement, au lieu de compter sur un
+  // reseau absent.
   console.log('\n== les brawlers rangés par rareté ==');
   await page.locator('[data-act="roster"]').first().click();
+  await page.evaluate(() => {
+    brawlers.forEach(b => { b.rarete = null; });
+    render();
+  });
   check('sans rareté connue, la liste simple reprend la main',
     (await page.locator('.rangee-rarete').count()) === 0 &&
     (await page.evaluate(() => document.getElementById('grid').className)) === 'grid');
