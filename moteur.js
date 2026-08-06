@@ -701,7 +701,20 @@ function conseils(combien) {
 
   var classement = [];
   roster.forEach(function (cle) {
-    if (!indisponibles[cle]) classement.push(evaluer(cle, carte));
+    if (indisponibles[cle]) return;
+    /* Une clé du roster qui n'est plus au catalogue n'est pas conseillable.
+       ----------------------------------------------------------------------
+       Le roster est enregistré dans le navigateur et survit à tout ; le
+       catalogue, lui, change. Supercell renomme un brawler, l'API cesse d'en
+       publier un, et la clé cochée hier ne correspond plus à rien.
+       brawler() rend alors une fiche fabriquée dont le NOM est la clé brute :
+       le moteur notait donc « bibi », sans portrait, sans classe, sans tier,
+       et l'app pouvait le conseiller.
+       On ne touche PAS à manager:roster — la clé peut revenir, et effacer le
+       roster de quelqu'un sur une réponse d'API douteuse serait pire que le
+       mal. On ne conseille simplement pas ce qu'on ne sait plus décrire. */
+    if (!parClef[cle]) return;
+    classement.push(evaluer(cle, carte));
   });
 
   classement.sort(function (a, b) { return b.score - a.score; });

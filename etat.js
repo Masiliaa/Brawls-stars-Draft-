@@ -211,13 +211,25 @@ function garderCatalogue() {
   ecrireJSON(CLE_CATALOGUE, brawlers);
 }
 
+/* En dessous de ce nombre, ce n'est pas un catalogue : c'est un accident.
+   Le seuil servait déjà à la RELECTURE — mieux vaut la liste de secours, qui
+   est au moins cohérente, qu'un catalogue tronqué par un stockage plein. Il ne
+   servait pas à l'ÉCRITURE, et c'était le trou.
+   ------------------------------------------------------------------------
+   Mesuré, avec une API répondant 200 mais ne renvoyant que trois brawlers :
+   le catalogue gardé passait de 105 à 3, l'app posait ces 3 et ne rendait plus
+   que 3 conseils. Le bon catalogue était détruit dans le navigateur, donc la
+   prochaine ouverture hors ligne repartait sans classes ni raretés. Une seule
+   réponse abîmée suffisait, et rien ne le disait. */
+var MIN_CATALOGUE = 40;
+
 function relireCatalogue() {
   var lu = lireListe(CLE_CATALOGUE);
   /* On refuse une liste vide ou trop courte : mieux vaut la liste de secours,
      qui est au moins cohérente, qu'un catalogue tronqué par un stockage plein.
      Et on regarde la première fiche : une liste de quarante n'importe quoi
      passerait le test de longueur, et le moteur travaillerait sur du vide. */
-  if (lu.length < 40 || !lu[0] || !lu[0].k) return false;
+  if (lu.length < MIN_CATALOGUE || !lu[0] || !lu[0].k) return false;
   brawlers = lu;
   indexerBrawlers();
   return true;
@@ -293,6 +305,16 @@ function appliquerCatalogue(liste) {
 
 /* Complète le catalogue avec l'API : vraies URL d'image, couleur de rareté
    et classe. La classe est indispensable au cycle de familles du moteur. */
+/* Le même état qu'une panne réseau : ce qui est affiché ne vient pas d'un
+   appel réussi aujourd'hui, et le pied de page doit rester exact. */
+function souciCatalogue(recus) {
+  etatApi = CATALOGUE_GARDE ? "garde" : "hors";
+  if (typeof console !== "undefined" && console.warn) {
+    console.warn("catalogue refusé : " + recus + " brawlers reçus, "
+                 + MIN_CATALOGUE + " au minimum");
+  }
+}
+
 function chargerBrawlers() {
   return fetch("https://api.brawlapi.com/v1/brawlers")
     .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
@@ -322,6 +344,22 @@ function chargerBrawlers() {
          brawlers est ouvert réorganise la grille sous le doigt de quelqu'un
          en train de cocher. La règle est un invariant, pas une liste de cas :
          « le catalogue ne change pas tant que cet écran est dessiné ». */
+      /* Une réponse 200 ne veut pas dire une réponse utilisable.
+         --------------------------------------------------------------------
+         Mesuré, trois cas où le serveur répond 200 : liste vide, champ
+         « list » absent, tout filtré par released:false. Dans les trois,
+         etatApi passait à « ok », l'app tournait sur la liste de secours —
+         donc SANS classes, ce qui éteint la règle d'équilibre des familles —
+         et le pied de page n'en disait pas un mot. L'utilisateur lisait
+         « Tiers par mode · source …, date » comme si tout était chargé.
+
+         Une réponse trop courte est traitée exactement comme une panne : on
+         garde ce qu'on avait, et on le DIT. C'est aussi ce qui empêche une
+         réponse tronquée d'écraser un bon catalogue gardé. */
+      if (liste.length < MIN_CATALOGUE) {
+        souciCatalogue(liste.length);
+        return null;
+      }
       etatApi = "ok";
       return liste;
     })

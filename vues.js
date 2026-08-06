@@ -279,7 +279,13 @@ function groupesParRarete(liste) {
     }
     groupes[id].liste.push(b);
   });
-  ordre.sort(function (a, b) { return a - b; });
+  /* Du plus commun au plus rare ; l'id 0 — rareté inconnue — ferme la marche
+     au lieu d'ouvrir la liste, où il passerait pour la rareté la plus basse. */
+  ordre.sort(function (a, b) {
+    if (a === 0) return 1;
+    if (b === 0) return -1;
+    return a - b;
+  });
   return ordre.map(function (id) { return groupes[id]; });
 }
 
@@ -330,9 +336,19 @@ function corpsRoster() {
   var liste = brawlersCherches();
   var groupes = groupesParRarete(liste);
   /* Pendant une recherche, découper trois résultats en sept intitulés ne
-     range rien. Et si l'API n'a pas répondu, aucune rareté n'est connue :
-     on retombe alors sur la liste simple, qui a toujours marché. */
-  var groupe = !filtre && groupes.every(function (g) { return g.id > 0; });
+     range rien. Et si l'API n'a pas répondu, AUCUNE rareté n'est connue :
+     on retombe alors sur la liste simple, qui a toujours marché.
+
+     « au moins une » et non « toutes ».
+     ----------------------------------------------------------------------
+     C'était « every » : il suffisait d'UN brawler sans rareté pour que le
+     rangement disparaisse chez tout le monde. Mesuré, avec une API renvoyant
+     104 raretés sur 105 : zéro intitulé affiché, liste à plat pour les 104
+     autres. Or Supercell peut sortir un brawler dont la rareté n'est pas
+     encore publiée, et c'est justement le moment où l'on va voir cet écran.
+     Ceux dont la rareté est inconnue forment maintenant leur propre groupe,
+     rangé en dernier et nommé pour ce qu'il est. */
+  var groupe = !filtre && groupes.some(function (g) { return g.id > 0; });
   if (groupe) return { classe: "", html: groupes.map(blocRarete).join("") };
 
   if (filtreManquants) {

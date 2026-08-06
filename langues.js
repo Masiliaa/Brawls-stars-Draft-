@@ -42,6 +42,7 @@ var LANGUES = {
       rarete5: "Mythiques",
       rarete6: "Légendaires",
       rarete7: "Ultra légendaires",
+      rarete0: "Rareté inconnue",
       cocherGroupe: "Tout cocher dans {groupe}",
       decocherGroupe: "Tout décocher dans {groupe}",
 
@@ -185,6 +186,7 @@ var LANGUES = {
       rarete5: "Mythic",
       rarete6: "Legendary",
       rarete7: "Ultra Legendary",
+      rarete0: "Unknown rarity",
       cocherGroupe: "Select all in {groupe}",
       decocherGroupe: "Clear all in {groupe}",
 
@@ -320,6 +322,7 @@ var LANGUES = {
       rarete5: "Míticos",
       rarete6: "Legendarios",
       rarete7: "Ultralegendarios",
+      rarete0: "Rareza desconocida",
       cocherGroupe: "Marcar todo en {groupe}",
       decocherGroupe: "Desmarcar todo en {groupe}",
 

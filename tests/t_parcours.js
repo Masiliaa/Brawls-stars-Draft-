@@ -925,6 +925,133 @@ const check = (nom, cond, detail = '') => {
     await page.reload({ waitUntil: 'networkidle' });
   }
 
+  // ── Une API qui repond, mais qui repond mal ────────────────────────────
+  // Quatre situations ou le serveur renvoie 200 sans rien d'utilisable. Elles
+  // sont inatteignables depuis la machine ou ce code est ecrit, ou l'API est
+  // toujours injoignable — c'est pour ca qu'aucune n'etait couverte.
+  console.log('\n== une API qui répond mal ==');
+  const fausse = (liste) => ({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ list: liste }) });
+  const carte = (n, sansRarete) => ({ name: n, released: true,
+    class: { name: 'Tank' },
+    rarity: sansRarete ? null : { id: 4, name: 'Epic', color: '#a020f0' },
+    imageUrl2: null });
+
+  // 1. Reponse 200 sans rien d'exploitable : ca doit se dire, pas passer pour
+  //    un succes. Sinon l'app tourne sur la liste de secours — donc sans
+  //    classes, ce qui eteint le cycle de familles — et le pied de page
+  //    annonce « Tiers par mode · source …, date » comme si tout etait charge.
+  for (const [nom, liste] of [
+    ['liste vide', []],
+    ['tout filtré par released:false', [{ name: 'X', released: false }]],
+  ]) {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill(fausse(liste)));
+    await p.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForFunction(() => etatApi !== 'charge', null, { timeout: 15000 });
+    const r = await p.evaluate(() => {
+      const d = document.querySelector('.note details'); if (d) d.open = true;
+      return { etat: etatApi,
+               prevenu: /n'a pas répondu|indisponibles/i.test(
+                 document.querySelector('.note').innerText) };
+    });
+    check(nom + ' : ce n\'est pas un succès', r.etat !== 'ok', r);
+    check(nom + ' : et le pied de page le dit', r.prevenu, r);
+    await p.close();
+  }
+
+  // 2. Une reponse TRONQUEE ne doit pas ecraser un bon catalogue garde.
+  //    Le seuil existait a la relecture, pas a l'ecriture. Mesure avant
+  //    correction : le catalogue garde passait de 105 a 3, et la prochaine
+  //    ouverture hors ligne repartait sans classes ni raretes.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    let corps = null;
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill(fausse(corps)));
+    await p.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    const noms = await p.evaluate(() => brawlers.map(b => b.nom));
+    corps = noms.map(n => carte(n));
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForFunction(() => etatApi === 'ok', null, { timeout: 15000 });
+    const complet = await p.evaluate(() => lireListe('manager:catalogue').length);
+
+    corps = noms.slice(0, 3).map(n => carte(n));
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForFunction(() => etatApi !== 'charge', null, { timeout: 15000 });
+    const apres = await p.evaluate(() => ({
+      posee: brawlers.length, garde: lireListe('manager:catalogue').length,
+      etat: etatApi }));
+    check('une réponse tronquée n\'écrase pas le catalogue gardé',
+      apres.garde === complet && complet > 100, { complet, apres });
+    check('et l\'app continue sur le catalogue complet',
+      apres.posee === complet, apres);
+    check('en disant que ça ne vient pas d\'un appel réussi',
+      apres.etat === 'garde', apres.etat);
+    await p.close();
+  }
+
+  // 3. UNE rarete manquante ne doit pas faire tomber le rangement des autres.
+  //    C'etait « every » : il suffisait d'un seul brawler sans rarete pour que
+  //    les 104 autres repassent en liste a plat.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    let corps = null;
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill(fausse(corps)));
+    await p.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    const noms = await p.evaluate(() => brawlers.map(b => b.nom));
+    corps = noms.map((n, i) => carte(n, i === 7));
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForFunction(() => etatApi === 'ok', null, { timeout: 15000 });
+    const r = await p.evaluate(() => {
+      ecran = 'roster'; recherche = ''; filtreManquants = false; render();
+      const t = [...document.querySelectorAll('.rangee-rarete')].map(e => e.textContent);
+      return { sansRarete: brawlers.filter(b => !b.rarete).length,
+               rangees: t.length, dernier: t[t.length - 1] || '' };
+    });
+    check('une seule rareté manquante ne casse pas le rangement',
+      r.sansRarete === 1 && r.rangees >= 2, r);
+    check('et les inconnus forment leur propre groupe, en dernier',
+      /inconnue/i.test(r.dernier), r.dernier);
+    await p.close();
+  }
+
+  // 4. Une cle du roster absente du catalogue ne doit pas etre conseillee.
+  //    brawler() fabrique une fiche dont le NOM est la cle brute : le moteur
+  //    notait « bibi », sans portrait ni classe ni tier, et pouvait le
+  //    conseiller. On ne touche pas au roster enregistre pour autant.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    let corps = null;
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill(fausse(corps)));
+    await p.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    const noms = await p.evaluate(() => brawlers.map(b => b.nom));
+    await p.evaluate(k => localStorage.setItem('manager:roster', JSON.stringify(k)),
+      ['mortis', 'piper', 'poco', 'bibi']);
+    corps = noms.filter(n => n !== 'Bibi').map(n => carte(n));
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForFunction(() => etatApi === 'ok', null, { timeout: 15000 });
+    const r = await p.evaluate(() => {
+      carteId = MAPS[0].id; ecran = 'draft'; ennemis = []; allies = []; bans = [];
+      render();
+      return { roster: roster.size, absente: !parClef['bibi'],
+               conseils: conseils(10).map(x => x.k) };
+    });
+    check('une clé absente du catalogue n\'est plus conseillée',
+      r.absente && r.conseils.indexOf('bibi') < 0, r);
+    check('les autres le sont toujours', r.conseils.length === 3, r.conseils);
+    check('et le roster enregistré n\'est pas touché', r.roster === 4, r.roster);
+    await p.close();
+  }
+
   // ── Le catalogue ne bouge pas sous le doigt ────────────────────────────
   // Bug signalé : « j'ai coché douze brawlers, au moment de la draft je
   // n'avais même pas les mêmes ». Cause : le rangement par rareté a besoin de
