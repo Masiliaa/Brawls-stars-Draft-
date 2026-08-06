@@ -50,6 +50,10 @@ const PREPARER = () => {
   for (const [nom, w, h, attenduLarge] of TAILLES) {
     console.log('\n== ' + nom + ' — ' + w + '×' + h + ' ==');
     const page = await nav.newPage({ viewport: { width: w, height: h }, locale: 'fr-FR' });
+  /* L'API coupee par defaut : un controle ne doit pas dependre du reseau de
+     la machine qui le fait tourner. Voir tests/t_app.js pour le detail. */
+  await page.route('**/api.brawlapi.com/**', r => r.abort());
+
     page.on('pageerror', e => erreurs.push(nom + ' : ' + e.message));
 
     await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
@@ -106,6 +110,10 @@ const PREPARER = () => {
   // la mise en page doit suivre sans recharger.
   console.log('\n== tourner l\'appareil, redimensionner la fenêtre ==');
   const page = await nav.newPage({ viewport: { width: 1440, height: 900 }, locale: 'fr-FR' });
+  /* L'API coupee par defaut : un controle ne doit pas dependre du reseau de
+     la machine qui le fait tourner. Voir tests/t_app.js pour le detail. */
+  await page.route('**/api.brawlapi.com/**', r => r.abort());
+
   page.on('pageerror', e => erreurs.push('redimensionnement : ' + e.message));
   await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
   await page.evaluate(prep => eval('(' + prep + ')()'), PREPARER.toString());

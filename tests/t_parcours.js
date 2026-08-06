@@ -19,6 +19,17 @@ const check = (nom, cond, detail = '') => {
   const nav = await chromium.launch(
     process.env.CHROME ? { executablePath: process.env.CHROME } : {});
   const page = await nav.newPage({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' });
+  /* L'API est coupee par defaut dans TOUTE la suite.
+     ------------------------------------------------------------------------
+     Un controle ne doit jamais dependre du reseau de la machine qui le fait
+     tourner. Ici la politique reseau repond 403 a api.brawlapi.com ; sur les
+     serveurs de GitHub elle repond. Sept controles ont ete corriges le
+     05/08/2026 pour avoir suppose l'absence de reseau au lieu de l'imposer,
+     et deux vrais bugs sont passes par ce trou.
+     Les blocs qui ont besoin d'une reponse la posent eux-memes par-dessus :
+     une route enregistree plus tard prend le pas sur celle-ci. */
+  await page.route('**/api.brawlapi.com/**', r => r.abort());
+
 
   const erreurs = [];
   page.on('pageerror', e => erreurs.push('pageerror: ' + e.message));

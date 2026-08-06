@@ -34,6 +34,10 @@ const lum = (c) => { const [r,g,b]=c.match(/\d+/g).map(Number).map(v=>{v/=255;
   const b = await chromium.launch(
     process.env.CHROME ? { executablePath: process.env.CHROME } : {});
   const p = await b.newPage({ viewport:{width:390,height:844}, locale:'fr-FR' });
+  /* L'API coupee par defaut : un controle ne doit pas dependre du reseau de
+     la machine qui le fait tourner. Voir tests/t_app.js pour le detail. */
+  await p.route('**/api.brawlapi.com/**', r => r.abort());
+
   await p.goto(BASE + '/index.html');
   await p.evaluate(() => localStorage.setItem('manager:langue','fr'));
   await p.reload(); await p.waitForTimeout(300);

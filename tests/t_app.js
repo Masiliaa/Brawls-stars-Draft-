@@ -18,6 +18,17 @@ const check = (nom, cond, detail = '') => {
     process.env.CHROME ? { executablePath: process.env.CHROME } : {});
   // locale fr-FR : verifie aussi la detection automatique de la langue.
   const page = await nav.newPage({ locale: 'fr-FR' });
+  /* L'API est coupee par defaut dans TOUTE la suite.
+     ------------------------------------------------------------------------
+     Un controle ne doit jamais dependre du reseau de la machine qui le fait
+     tourner. Ici la politique reseau repond 403 a api.brawlapi.com ; sur les
+     serveurs de GitHub elle repond. Sept controles ont ete corriges le
+     05/08/2026 pour avoir suppose l'absence de reseau au lieu de l'imposer,
+     et deux vrais bugs sont passes par ce trou.
+     Les blocs qui ont besoin d'une reponse la posent eux-memes par-dessus :
+     une route enregistree plus tard prend le pas sur celle-ci. */
+  await page.route('**/api.brawlapi.com/**', r => r.abort());
+
 
   const erreurs = [];
   page.on('pageerror', e => erreurs.push('pageerror: ' + e.message));
@@ -30,15 +41,32 @@ const check = (nom, cond, detail = '') => {
   check('app rendue', (await page.locator('#app .logo').textContent()) === 'Le Manager');
   check('ecran initial = choisir la carte', await page.getByText('Choisir la carte').first().isVisible());
 
-  // L'API brawlapi est bloquée ici : on injecte des classes pour pouvoir
-  // tester le cycle de familles, comme le ferait l'API en vrai.
-  await page.evaluate(() => {
+  // L'API est coupee : on injecte des classes pour pouvoir tester le cycle de
+  // familles, comme le ferait l'API en vrai.
+  //
+  // Douze etaient injectees, et les 93 autres restaient sans classe. Le cycle
+  // ne s'appliquait donc jamais a eux, et une regle qui se serait eteinte pour
+  // ces 93-la serait passee inapercue. Les douze gardent leur classe exacte —
+  // les tests qui suivent en dependent — et tous les autres en recoivent une,
+  // repartie sur les trois familles.
+  const couverture = await page.evaluate(() => {
     const cls = { mortis: 'Assassin', barley: 'Artillery', piper: 'Marksman',
                   jacky: 'Tank', shade: 'Assassin', poco: 'Support',
                   surge: 'Damage Dealer', bibi: 'Tank', bo: 'Marksman',
                   emz: 'Controller', bull: 'Tank', colt: 'Damage Dealer' };
-    Object.keys(cls).forEach(k => { if (parClef[k]) parClef[k].classe = cls[k]; });
+    const roue = ['Assassin', 'Controller', 'Marksman'];
+    brawlers.forEach(function (b, i) {
+      b.classe = cls[b.k] || roue[i % roue.length];
+    });
+    indexerBrawlers();
+    return { total: brawlers.length,
+             sansClasse: brawlers.filter(b => !b.classe).length,
+             familles: new Set(brawlers.map(b => FAMILLE_DE_CLASSE[b.classe])).size };
   });
+  check('tous les brawlers ont une classe, pas seulement douze',
+    couverture.sansClasse === 0 && couverture.total > 100, couverture);
+  check('et les trois familles sont représentées',
+    couverture.familles === 3, couverture);
 
   console.log('\n== moteur : carte + roster ==');
   const base = await page.evaluate(() => {
@@ -76,8 +104,30 @@ const check = (nom, cond, detail = '') => {
   const mortisCycle = cycle.find(x => x[0] === 'mortis');
   check('agression bonifiée contre contrôle',
     mortisCycle && /agression contre leur contrôle/.test(mortisCycle[2]), cycle);
-  const piperCycle = cycle.find(x => x[0] === 'piper');   // portée, battue par agression ? non : portée bat agression
-  check('les deux familles notées', piperCycle !== undefined, cycle);
+  // Ce controle verifiait « piperCycle !== undefined ». Piper est dans le
+  // roster, donc conseils() le renvoie TOUJOURS : l'assertion ne pouvait pas
+  // echouer, quel que soit le comportement du cycle. Elle comptait pour un
+  // controle vert sans rien controler.
+  // Ce qu'on veut savoir : le cycle joue-t-il dans les DEUX sens ? Mortis
+  // (agression) gagne contre Barley (controle) ; Piper (portee) perd contre
+  // lui, puisque controle bat portee.
+  const piperCycle = cycle.find(x => x[0] === 'piper');
+  const neutre = await page.evaluate(p => {
+    eval(p); COUNTERS = {}; ennemis = [];
+    const s = {}; conseils().forEach(x => s[x.k] = x.score); return s;
+  }, petit);
+  check('le cycle bonifie qui gagne',
+    mortisCycle[1] > neutre.mortis, { avec: mortisCycle[1], sans: neutre.mortis });
+  check('et pénalise qui perd',
+    piperCycle && piperCycle[1] < neutre.piper,
+    { avec: piperCycle && piperCycle[1], sans: neutre.piper });
+  // La phrase exacte depend de la raison retenue : le cycle lui-meme
+  // (« portee contre leur controle ») ou le verdict de composition
+  // (« mauvais face a leur composition »). Ce qui compte est qu'une raison
+  // soit donnee, pas laquelle — un malus silencieux serait le defaut.
+  check('le malus est nommé, pas silencieux',
+    piperCycle && /contre leur|composition/.test(piperCycle[2]),
+    piperCycle && piperCycle[2]);
 
   console.log('\n== COUNTERS : le matchup prend le pas sur le cycle ==');
   const res = await page.evaluate(p => {
@@ -514,6 +564,163 @@ const check = (nom, cond, detail = '') => {
 
   await page.locator('#grid .cel').first().click();
   check('ennemi ajouté', (await page.locator('[data-act="rme"]').count()) === 1);
+
+  // ── La transformation de chargerBrawlers() ─────────────────────────────
+  // Elle porte cinq cas particuliers, chacun ecrit apres un incident reel, et
+  // AUCUN n'etait exerce : ces branches ne s'executent que lorsque l'API
+  // repond, ce qui n'arrive jamais sur la machine ou ce code est ecrit.
+  //
+  // On appelle la VRAIE fonction, pas une copie de sa logique : un test qui
+  // reimplemente ce qu'il controle ne controle rien. La fausse reponse est
+  // donc completee jusqu'a depasser MIN_CATALOGUE, sinon chargerBrawlers()
+  // refuse le catalogue — ce qui est le comportement voulu, verifie a part.
+  console.log('\n== ce que chargerBrawlers() fait de la reponse ==');
+  {
+    const CAS = [
+      // ordre volontairement melange : la sortie doit etre triee par nom
+      { name: 'Zola', released: true, imageUrl: 'http://a/z.png',
+        class: { name: 'Tank' }, rarity: { id: 3, name: 'Super Rare', color: '#00ff00' } },
+      // imageUrl2 doit primer sur imageUrl
+      { name: 'Alma', released: true, imageUrl: 'http://a/vieux.png',
+        imageUrl2: 'http://a/neuf.png',
+        class: { name: 'Marksman' }, rarity: { id: 1, name: 'Common', color: '#fff' } },
+      // « Unknown » n'est pas une classe : elle doit devenir null
+      { name: 'Brix', released: true, class: { name: 'Unknown' },
+        rarity: { id: 2, name: 'Rare', color: '#123456' } },
+      // couleur invalide relevee en vrai le 04/08/2026 : « #fff11ev »
+      { name: 'Cyre', released: true, class: { name: 'Support' },
+        rarity: { id: 6, name: 'Legendary', color: '#fff11ev' } },
+      // rarity.id non numerique : rarete doit valoir null
+      { name: 'Dane', released: true, class: { name: 'Controller' },
+        rarity: { id: 'six', name: 'Legendary', color: '#abc' } },
+      // ni image, ni rarity, ni class
+      { name: 'Eero', released: true },
+      // released:false : doit disparaitre
+      { name: 'Fantome', released: false, class: { name: 'Tank' } },
+    ];
+    // De quoi depasser le seuil, sans interferer avec les cas ci-dessus.
+    const bourrage = [];
+    for (let i = 0; i < 50; i++) {
+      bourrage.push({ name: 'Test' + String(i).padStart(2, '0'), released: true,
+        class: { name: 'Tank' }, rarity: { id: 4, name: 'Epic', color: '#a0f' } });
+    }
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ list: CAS.concat(bourrage) }) }));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+
+    const r = await p.evaluate(async () => {
+      const liste = await chargerBrawlers();
+      if (!liste) return { refuse: true };
+      const par = {}; liste.forEach(b => { par[b.nom] = b; });
+      return { refuse: false, total: liste.length,
+               noms: liste.slice(0, 6).map(b => b.nom), par: par };
+    });
+    check('la vraie fonction rend bien un catalogue', r.refuse === false, r);
+    check('un brawler non sorti est écarté',
+      !r.par.Fantome && r.total === 56, r.total);
+    check('les noms sont triés',
+      r.noms.join(',') === 'Alma,Brix,Cyre,Dane,Eero,Test00', r.noms);
+    check('imageUrl2 prime sur imageUrl',
+      r.par.Alma.img === 'http://a/neuf.png', r.par.Alma.img);
+    check('imageUrl sert de repli', r.par.Zola.img === 'http://a/z.png', r.par.Zola.img);
+    check('aucune image : null, pas une chaîne vide',
+      r.par.Eero.img === null, r.par.Eero.img);
+    check('la classe « Unknown » devient null',
+      r.par.Brix.classe === null, r.par.Brix.classe);
+    check('une vraie classe est gardée', r.par.Zola.classe === 'Tank', r.par.Zola.classe);
+    check('la couleur « #fff11ev » est refusée',
+      r.par.Cyre.couleur === null, r.par.Cyre.couleur);
+    check('une couleur valide est gardée',
+      r.par.Zola.couleur === '#00ff00', r.par.Zola.couleur);
+    check('un identifiant de rareté non numérique donne null',
+      r.par.Dane.rarete === null, r.par.Dane.rarete);
+    check('une rareté valide est gardée',
+      r.par.Zola.rarete && r.par.Zola.rarete.id === 3, r.par.Zola.rarete);
+    check('la clé est normalisée depuis le nom', r.par.Alma.k === 'alma', r.par.Alma.k);
+    await p.close();
+  }
+
+  // Et sous le seuil, la meme fonction doit REFUSER — c'est le garde-fou qui
+  // empeche une reponse tronquee d'ecraser un bon catalogue.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ list: [{ name: 'Seul', released: true }] }) }));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    const r = await p.evaluate(async () => ({
+      rendu: await chargerBrawlers(), seuil: MIN_CATALOGUE, etat: etatApi }));
+    check('sous le seuil, chargerBrawlers refuse le catalogue',
+      r.rendu === null, r.rendu);
+    check('et le dit dans etatApi', r.etat !== 'ok', r.etat);
+    await p.close();
+  }
+
+  // ── Les icones de modes ────────────────────────────────────────────────
+  // Aucune suite ne simulait /v1/gamemodes : les controles faisaient un VRAI
+  // appel reseau, donc leur resultat dependait de la machine. Le rapprochement
+  // se fait sur le nom normalise, en essayant hash, name et scHash — c'est ce
+  // qui evite d'ecrire les identifiants en dur, et c'est justement ce qui
+  // n'etait verifie nulle part.
+  console.log('\n== les icones de modes ==');
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ list: [
+        { hash: 'Brawl-Ball', imageUrl: 'http://i/bb.png' },   // via hash
+        { name: 'gemGrab', imageUrl2: 'http://i/gg.png' },     // via name, imageUrl2
+        { scHash: 'Heist', imageUrl: 'http://i/he.png' },      // via scHash
+        { hash: 'Bounty' },                                    // sans image : ignore
+        { hash: 'Inconnu', imageUrl: 'http://i/x.png' },       // mode qu'on ne connait pas
+      ] }) }));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    const r = await p.evaluate(async () => {
+      await chargerModes();
+      return { images: IMAGES_MODES, garde: lireObjet('manager:modes') };
+    });
+    check('un mode rapproché par son « hash »',
+      r.images.brawlBall === 'http://i/bb.png', r.images);
+    check('un autre par son « name », avec imageUrl2',
+      r.images.gemGrab === 'http://i/gg.png', r.images);
+    check('un troisième par son « scHash »',
+      r.images.heist === 'http://i/he.png', r.images);
+    check('un mode sans image n\'entre pas',
+      r.images.bounty === undefined, r.images);
+    check('un mode inconnu de l\'app est ignoré',
+      Object.keys(r.images).length === 3, r.images);
+    check('et le résultat est gardé pour la prochaine ouverture',
+      r.garde.brawlBall === 'http://i/bb.png', r.garde);
+    await p.close();
+  }
+
+  // Une reponse vide ne doit pas effacer les icones de la derniere fois.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify({ list: [] }) }));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.setItem('manager:modes',
+      JSON.stringify({ brawlBall: 'http://i/garde.png' })));
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    const r = await p.evaluate(async () => {
+      const avant = IMAGES_MODES.brawlBall;
+      await chargerModes();
+      return { avant: avant, apres: IMAGES_MODES.brawlBall };
+    });
+    check('une réponse vide n\'efface pas les icônes gardées',
+      r.apres === 'http://i/garde.png', r);
+    await p.close();
+  }
 
   // ── counters.js arrive apres le premier dessin ─────────────────────────
   // Il pesait 322 Ko sur les 524 qu'il fallait attendre avant de voir quoi

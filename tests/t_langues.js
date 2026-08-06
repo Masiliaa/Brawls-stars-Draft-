@@ -18,6 +18,10 @@ const check = (nom, cond, detail = '') => {
   const nav = await chromium.launch(
     process.env.CHROME ? { executablePath: process.env.CHROME } : {});
   const page = await nav.newPage({ locale: 'fr-FR' });
+  /* L'API coupee par defaut : un controle ne doit pas dependre du reseau de
+     la machine qui le fait tourner. Voir tests/t_app.js pour le detail. */
+  await page.route('**/api.brawlapi.com/**', r => r.abort());
+
 
   const erreurs = [];
   page.on('pageerror', e => erreurs.push('pageerror: ' + e.message));
@@ -283,6 +287,10 @@ const check = (nom, cond, detail = '') => {
   // largeur : la barre doit tenir même sur le plus étroit des iPhone.
   for (const largeur of [320, 375, 430]) {
     const etroite = await nav.newPage({ viewport: { width: largeur, height: 800 } });
+  /* L'API coupee par defaut : un controle ne doit pas dependre du reseau de
+     la machine qui le fait tourner. Voir tests/t_app.js pour le detail. */
+  await etroite.route('**/api.brawlapi.com/**', r => r.abort());
+
     await etroite.goto('http://127.0.0.1:' + PORT + '/index.html',
                        { waitUntil: 'domcontentloaded' });
     for (const l of ['fr', 'en', 'es']) {
