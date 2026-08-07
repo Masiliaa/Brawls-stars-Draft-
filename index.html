@@ -39,11 +39,23 @@
   Ce sont des scripts classiques, pas des modules : ils fonctionnent aussi
   bien en ouvrant le fichier directement que depuis un hébergeur.
 
-  counters.js N'EST PAS dans cette liste, et c'est voulu : à lui seul il
-  pesait 322 Ko sur les 524 qu'il fallait attendre avant de voir la moindre
-  chose — 11,1 s d'écran noir en 3G lente, mesuré. app.js le demande après
-  le premier dessin, pour que le choix de la carte, qui est toujours le
-  premier geste, n'attende pas la table des duels.
+  Les explications de matchup NE SONT PAS dans cette liste, et c'est voulu,
+  pour deux raisons distinctes :
+
+    — elles pesaient 322 Ko sur les 524 qu'il fallait attendre avant de voir
+      la moindre chose, soit 11,1 s d'écran noir en 3G lente. app.js les
+      demande APRÈS le premier dessin, pour que le choix de la carte — qui
+      est toujours le premier geste — n'attende pas la table des duels ;
+
+    — elles existaient en trois langues dans un seul fichier, alors qu'on
+      n'en lit qu'une. app.js demande counters-<langue>.js, la langue étant
+      déjà connue (choix enregistré, sinon navigator.languages). 172 Ko en
+      français au lieu de 323 : −47 %.
+
+  counters.js reste la SOURCE, avec ses trois langues et ses marqueurs
+  @DATA: que refresh.py écrit. Il n'est simplement plus servi au navigateur.
+  outils/counters_par_langue.py en engendre les trois variantes, et
+  tests/t_refresh.py vérifie qu'elles sont à jour.
 -->
 <script src="langues.js"></script>
 <script src="outils.js"></script>
@@ -61,7 +73,15 @@
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () {
+    navigator.serviceWorker.register("sw.js").then(function () {
+      /* Le worker ne contrôle pas encore la page au premier chargement : le
+         fichier d'explications est donc déjà passé à côté de lui. On lui dit
+         lequel garder, sinon une première visite suivie d'une coupure laisse
+         l'app sans aucun duel. */
+      return navigator.serviceWorker.ready;
+    }).then(function (reg) {
+      if (reg.active) reg.active.postMessage({ garder: "counters-" + langue + ".js" });
+    }).catch(function () {
       /* Navigation privée, page servie en http, navigateur ancien : ce n'est
          pas un incident, c'est juste l'app sans son filet. */
     });

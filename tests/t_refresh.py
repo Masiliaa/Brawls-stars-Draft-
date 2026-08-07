@@ -841,5 +841,39 @@ check("aucune fiche n'apparait ni ne disparait",
 encore, ajouts = AT.appliquer(apres, fausse)
 check("repasser une seconde fois ne change rien", ajouts == 0 and encore == apres)
 
+print("\n== counters-<langue>.js sont a jour ==")
+# counters.js porte les trois langues et n'est plus servi au navigateur ;
+# l'app charge counters-<langue>.js, engendre depuis lui. Un fichier engendre
+# peut se demoder sans bruit : si quelqu'un touche a counters.js sans relancer
+# le generateur, l'app servirait de vieilles phrases. Ce controle regenere en
+# memoire et compare — il ne peut donc pas passer a cote.
+sys.path.insert(0, os.path.join(R.RACINE, "outils"))
+import counters_par_langue as CPL
+
+attendus = CPL.fichiers_attendus()
+check("trois langues engendrees", sorted(attendus) ==
+      ["counters-en.js", "counters-es.js", "counters-fr.js"], sorted(attendus))
+for nom, contenu in sorted(attendus.items()):
+    chemin = os.path.join(R.RACINE, nom)
+    existe = os.path.exists(chemin)
+    check(nom + " existe", existe)
+    if existe:
+        check(nom + " est a jour (relancer outils/counters_par_langue.py sinon)",
+              open(chemin, encoding="utf-8").read() == contenu)
+
+# La structure « qui bat qui » doit etre IDENTIQUE a la source dans les trois :
+# seules les phrases changent. Un generateur qui perdrait une paire ferait
+# changer le conseil sans que rien ne le dise.
+table = CPL.lire_table(open(CPL.SOURCE, encoding="utf-8").read())
+paires_src = sum(len(v.get(s, [])) for v in table.values() for s in ("perd", "bat"))
+check("la source a un nombre de paires plausible", paires_src > 900, paires_src)
+for lg in CPL.LANGUES:
+    rendu = CPL.rendre(table, lg)
+    cibles = re.findall(r'\["([a-z0-9]+)",', rendu)
+    check("counters-%s.js garde les %d paires" % (lg, paires_src),
+          len(cibles) == paires_src, len(cibles))
+    check("counters-%s.js ne laisse aucune phrase vide" % lg,
+          '",""]' not in rendu)
+
 print("\n== %d ok, %d echecs ==" % (ok, fail))
 sys.exit(1 if fail else 0)

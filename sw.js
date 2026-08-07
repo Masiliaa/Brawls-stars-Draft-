@@ -26,7 +26,7 @@
    nécessaire pour donnees.js, qui passe par le réseau en premier de toute
    façon ; c'est nécessaire pour que les anciens caches soient nettoyés. */
 
-var VERSION = "manager-v3";
+var VERSION = "manager-v4";
 
 var COQUILLE = [
   "./",
@@ -36,10 +36,10 @@ var COQUILLE = [
   "./outils.js",
   "./langues.js",
   "./donnees.js",
-  /* Demandé par app.js après le premier dessin, pas par index.html — mais
-     il fait partie de l'app au même titre que les autres, et sans lui hors
-     ligne le conseil retomberait sur le cycle de familles. */
-  "./counters.js",
+  /* counters-<langue>.js n'est PAS ici, et c'est voulu : les pré-charger
+     tous les trois à l'installation ferait télécharger les 460 Ko qu'on vient
+     justement d'éviter. Celui qui est réellement demandé est gardé au vol —
+     voir le gestionnaire de fetch. */
   "./etat.js",
   "./moteur.js",
   "./vues.js",
@@ -79,6 +79,31 @@ self.addEventListener("activate", function (e) {
   );
 });
 
+/* La page dit quelle langue elle lit ; on garde ce fichier-là.
+   ------------------------------------------------------------------------
+   Mesuré : à la PREMIÈRE visite, le service worker ne contrôle pas encore la
+   page au moment où app.js demande counters-<langue>.js. Le fichier passe donc
+   à côté du gestionnaire de fetch et n'entre pas dans le cache. Quelqu'un qui
+   ouvre l'app puis coupe le réseau sans jamais recharger se retrouvait sans
+   aucun duel — c'est-à-dire sans la moitié du conseil.
+
+   On ne peut pas le pré-charger à l'installation : le worker ne sait pas quelle
+   langue sera lue, et pré-charger les trois annulerait tout le gain. C'est donc
+   la page qui le dit, une fois le worker prêt.
+
+   Le nom est vérifié avant d'être utilisé : un message vient de la page, donc
+   d'ailleurs, et « garder ce que le message demande » sans regarder ferait de
+   ce cache une décharge ouverte. */
+self.addEventListener("message", function (e) {
+  var nom = e.data && e.data.garder;
+  if (typeof nom !== "string" || !/^counters-[a-z]{2}\.js$/.test(nom)) return;
+  e.waitUntil(caches.open(VERSION).then(function (c) {
+    return c.match(nom).then(function (deja) {
+      return deja ? null : c.add(nom).catch(function () { /* tant pis */ });
+    });
+  }));
+});
+
 self.addEventListener("fetch", function (e) {
   var req = e.request;
 
@@ -96,8 +121,13 @@ self.addEventListener("fetch", function (e) {
      que ce fichier : hors ligne, l'app se lançait sans son identité
      d'application installée. */
   if (req.method !== "GET") return;
+  /* Le fichier d'explications de la langue lue : gardé au vol, sans être
+     pré-chargé. Sans ça, hors ligne, le conseil perdrait ses explications —
+     mais le pré-charger reviendrait à télécharger les trois langues, ce que
+     tout ce découpage sert à éviter. */
+  var estCounters = /\/counters-[a-z]{2}\.js$/.test(req.url.split("?")[0]);
   if (URLS_COQUILLE.indexOf(req.url.split("?")[0]) < 0
-      && req.mode !== "navigate") return;
+      && !estCounters && req.mode !== "navigate") return;
 
   e.respondWith(
     fetch(req).then(function (reponse) {

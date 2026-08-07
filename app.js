@@ -161,7 +161,12 @@ var ACTIONS = {
   ouvrirMode: function () { menuOuvert = (menuOuvert === "Mode") ? null : "Mode"; },
 
   /* Choix fait dans un menu : on applique et le menu se referme tout seul. */
-  langue: function (v) { definirLangue(v); },
+  /* Changer de langue demande le fichier d'explications de cette langue-là.
+     En attendant, l'app garde celui d'avant : la structure « qui bat qui » est
+     la même dans les trois, seules les phrases diffèrent. Le conseil reste
+     donc juste, et seule l'explication rattrape son retard — mieux que de
+     bloquer l'écran pour une phrase. */
+  langue: function (v) { definirLangue(v); chargerCounters(langue); },
   mode: function (v) { definirMode(v); },
 
   /* — Navigation — */
@@ -419,13 +424,24 @@ render();
    En cas d'échec on ne bloque rien : COUNTERS reste vide, le moteur
    retombe sur le cycle de familles — c'est déjà ce qu'il fait quand une
    paire manque — et le pied de page dit que les matchups sont absents. */
-(function chargerCounters() {
+var languesChargees = {};
+
+function chargerCounters(pourLangue) {
+  /* Une seule langue est téléchargée : celle qu'on lit.
+     ----------------------------------------------------------------------
+     counters.js portait les explications dans les trois langues à la fois —
+     155 Ko de français, 126 d'anglais, 6,6 d'espagnol. Un utilisateur n'en
+     lit qu'une : les deux autres partaient pour rien, à chaque ouverture,
+     sur un téléphone. counters-fr.js fait 172 Ko contre 323 : −47 %.
+
+     La langue est déjà connue à ce moment : chargerLangue() a lu le choix
+     enregistré, ou à défaut celle de l'appareil (navigator.languages). */
+  if (languesChargees[pourLangue]) return;
+  languesChargees[pourLangue] = true;
+
   var balise = document.createElement("script");
-  balise.src = "counters.js";
-  balise.onload = function () {
-    COUNTERS_PRET = true;
-    render();
-  };
+  balise.src = "counters-" + pourLangue + ".js";
+  balise.onload = function () { COUNTERS_PRET = true; render(); };
   balise.onerror = function () {
     /* Prêt ne veut pas dire rempli : ça veut dire « on sait à quoi s'en
        tenir ». Sans ça l'app resterait à annoncer un chargement qui
@@ -434,7 +450,9 @@ render();
     render();
   };
   document.head.appendChild(balise);
-})();
+}
+
+chargerCounters(langue);
 
 /* Les icônes des modes se chargent à part : elles ne conditionnent aucun
    calcul, donc leur arrivée n'a pas à retarder le premier dessin. Et on ne

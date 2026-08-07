@@ -840,7 +840,77 @@ const check = (nom, cond, detail = '') => {
     await p.close();
   }
 
-  // ── counters.js arrive apres le premier dessin ─────────────────────────
+  // ── Une seule langue est telechargee ───────────────────────────────────
+  // counters.js portait les trois langues : 155 Ko de francais, 126
+  // d'anglais, 6,6 d'espagnol, pour un utilisateur qui n'en lit qu'une.
+  // La detection existait deja (choix enregistre, sinon navigator.languages) ;
+  // ce sont les donnees qui ne la suivaient pas.
+  console.log('\n== une seule langue est téléchargée ==');
+  for (const [loc, attendue, bout] of [
+    ['fr-FR', 'fr', 'Presse son'],
+    ['es-ES', 'es', null],
+    ['en-GB', 'en', 'Pressures his'],
+    ['de-DE', 'en', 'Pressures his'],   // langue non parlée : repli
+  ]) {
+    const ctx = await nav.newContext({ locale: loc });
+    const p = await ctx.newPage();
+    await p.route('**/api.brawlapi.com/**', r => r.abort());
+    const vus = [];
+    p.on('response', r => {
+      const f = r.url().split('/').pop();
+      if (/^counters/.test(f)) vus.push(f);
+    });
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'networkidle' });
+    await p.waitForFunction(() => COUNTERS_PRET, null, { timeout: 15000 }).catch(() => {});
+    const r = await p.evaluate(() => ({ langue: langue,
+      fiches: Object.keys(COUNTERS).length,
+      exemple: (COUNTERS['8bit'] && COUNTERS['8bit'].perd[0][1]) || '' }));
+    check(loc + ' → langue ' + attendue, r.langue === attendue, r.langue);
+    check(loc + ' : UN seul fichier chargé, celui de la langue',
+      vus.length === 1 && vus[0] === 'counters-' + attendue + '.js', vus);
+    check(loc + ' : la table est complète', r.fiches === 105, r.fiches);
+    if (bout) {
+      check(loc + ' : les phrases sont dans la bonne langue',
+        r.exemple.indexOf(bout) === 0, r.exemple.slice(0, 40));
+    }
+    await ctx.close();
+  }
+
+  // Changer de langue en cours de route demande l'autre fichier — et l'app
+  // continue de conseiller pendant ce temps, puisque « qui bat qui » est
+  // identique dans les trois : seules les phrases changent.
+  {
+    const ctx = await nav.newContext({ locale: 'fr-FR' });
+    const p = await ctx.newPage();
+    await p.route('**/api.brawlapi.com/**', r => r.abort());
+    const vus = [];
+    p.on('response', r => {
+      const f = r.url().split('/').pop();
+      if (/^counters/.test(f)) vus.push(f);
+    });
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'networkidle' });
+    await p.waitForFunction(() => COUNTERS_PRET, null, { timeout: 15000 }).catch(() => {});
+    const avant = await p.evaluate(() => COUNTERS['8bit'].perd[0][1].slice(0, 12));
+    await p.evaluate(() => { ACTIONS.langue('en'); render(); });
+    await p.waitForFunction(() => COUNTERS['8bit'].perd[0][1].indexOf('Pressures') === 0,
+      null, { timeout: 15000 }).catch(() => {});
+    const apres = await p.evaluate(() => ({
+      langue: langue, phrase: COUNTERS['8bit'].perd[0][1].slice(0, 12),
+      fiches: Object.keys(COUNTERS).length }));
+    check('passer en anglais charge le fichier anglais',
+      vus.join(',') === 'counters-fr.js,counters-en.js', vus);
+    check('et les phrases changent bien de langue',
+      avant.indexOf('Presse') === 0 && apres.phrase.indexOf('Pressures') === 0,
+      { avant, apres: apres.phrase });
+    check('la table reste complète', apres.fiches === 105, apres.fiches);
+    // Repasser au francais ne retelecharge pas : le fichier est deja la.
+    await p.evaluate(() => { ACTIONS.langue('fr'); render(); });
+    await p.waitForTimeout(300);
+    check('revenir en arrière ne retélécharge rien', vus.length === 2, vus);
+    await ctx.close();
+  }
+
+  // ── counters-<langue>.js arrive apres le premier dessin ─────────────────────────
   // Il pesait 322 Ko sur les 524 qu'il fallait attendre avant de voir quoi
   // que ce soit : 11,1 s d'ecran noir en 3G lente, mesure. Il est donc
   // charge a part. Ce qui doit rester vrai pendant qu'il charge : l'app est
@@ -851,10 +921,10 @@ const check = (nom, cond, detail = '') => {
     const p = await nav.newPage({ locale: 'fr-FR' });
     const boum = [];
     p.on('pageerror', e => boum.push(e.message));
-    // On retient counters.js le temps de regarder l'ecran.
+    // On retient le fichier d'explications le temps de regarder l'ecran.
     let relacher;
     const bloque = new Promise(r => { relacher = r; });
-    await p.route('**/counters.js', async route => {
+    await p.route('**/counters-*.js', async route => {
       await bloque;
       await route.continue();
     });
@@ -899,7 +969,7 @@ const check = (nom, cond, detail = '') => {
   // le dit.
   {
     const p = await nav.newPage({ locale: 'fr-FR' });
-    await p.route('**/counters.js', route => route.abort());
+    await p.route('**/counters-*.js', route => route.abort());
     await p.goto('http://127.0.0.1:' + PORT + '/index.html',
       { waitUntil: 'domcontentloaded' });
     await p.waitForFunction(() => COUNTERS_PRET, null, { timeout: 15000 });
