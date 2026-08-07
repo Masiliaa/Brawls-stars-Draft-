@@ -4,6 +4,12 @@
 //
 // Nécessite playwright et un Chromium. CHROME=/chemin/vers/chrome pour
 // imposer un binaire, PORT=... pour changer de port.
+// Les cartes sont designees par leur IDENTIFIANT, jamais par leur nom
+// affiche. Le releve hebdomadaire ajoute les noms traduits : le 07/08/2026,
+// « Safe Zone » est devenue « Zone securisee » en francais, et tous les
+// controles qui la cliquaient par son nom anglais sont tombes d'un coup —
+// alors que rien de l'app n'avait bouge. L'identifiant, lui, est stable :
+// refresh.py le conserve d'une saison a l'autre.
 const { chromium } = require('playwright');
 const PORT = process.env.PORT || 8765;
 
@@ -539,8 +545,8 @@ const check = (nom, cond, detail = '') => {
   check('les modes sont listés',
     (await page.locator('[data-act="ouvrirModeCarte"]').count()) === 6);
   await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
-  check('liste des cartes affichée', await page.getByText('Safe Zone').first().isVisible());
-  await page.getByText('Safe Zone').first().click();
+  check('liste des cartes affichée', await page.locator('[data-act="carte"][data-v="safe-zone"]').first().isVisible());
+  await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   check('hero affiché après choix', await page.locator('.hero .name').first().isVisible());
   // L'étiquette « Prends » en capitales orange a disparu avec la carte qui la
   // portait. Ce qui doit rester vérifié, c'est que le verdict porte sa mesure :

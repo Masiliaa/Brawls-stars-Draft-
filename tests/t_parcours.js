@@ -5,6 +5,12 @@
 // Contrairement à t_app.js qui teste le moteur de calcul, ce fichier
 // simule ce que fait vraiment quelqu'un : cliquer, taper, recharger.
 // Aucune fonction n'est appelée directement — tout passe par l'écran.
+// Les cartes sont designees par leur IDENTIFIANT, jamais par leur nom
+// affiche. Le releve hebdomadaire ajoute les noms traduits : le 07/08/2026,
+// « Safe Zone » est devenue « Zone securisee » en francais, et tous les
+// controles qui la cliquaient par son nom anglais sont tombes d'un coup —
+// alors que rien de l'app n'avait bouge. L'identifiant, lui, est stable :
+// refresh.py le conserve d'une saison a l'autre.
 const { chromium } = require('playwright');
 const PORT = process.env.PORT || 8765;
 const BASE = 'http://127.0.0.1:' + PORT;
@@ -152,7 +158,7 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="ouvrirModeCarte"]').count()) === 6);
   await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
 
-  await page.getByText('Safe Zone').first().click();
+  await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   check('un brawler est conseillé', await page.locator('.hero .name').isVisible());
   check('le mode est affiché',
     (await page.locator('.carte-active').first().textContent()).includes('Braquage'));
@@ -200,7 +206,7 @@ const check = (nom, cond, detail = '') => {
   const avant = await page.locator('[data-act="rme"]').count();
   await page.locator('[data-act="cartes"]').first().click();
   await page.locator('[data-act="ouvrirModeCarte"][data-v="heist"]').click();
-  await page.getByText('Safe Zone').first().click();
+  await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   check('les picks sont conservés',
     (await page.locator('[data-act="rme"]').count()) === avant, avant);
   await page.locator('[data-act="reset"]').click();
@@ -390,7 +396,8 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('[data-act="rma"]').count()) === 0 &&
     (await page.locator('[data-act="rmb"]').count()) === 0);
   check('la carte est conservée',
-    (await page.locator('.carte-active').first().textContent()).includes('Safe Zone'));
+    (await page.locator('.carte-active').first().textContent())
+      .includes(await page.evaluate(() => nomCarte(carteParId('safe-zone')))));
 
   // Le conseil de ban n'apparaît qu'en phase de ban, c'est-à-dire quand
   // aucun pick n'est encore saisi — donc juste ici.
@@ -480,8 +487,8 @@ const check = (nom, cond, detail = '') => {
   // Le roster a été vidé juste avant : deux boutons portent data-act="roster"
   // (la barre du haut et l'encadré d'invite). On prend le premier.
   await page.locator('[data-act="cartes"]').first().click();
-  await page.locator('#q').fill('Safe Zone');
-  await page.getByText('Safe Zone').first().click();
+  await page.locator('#q').fill('safe');
+  await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   await page.locator('[data-act="roster"]').first().click();
   await page.locator('[data-act="tout"]').click();
   await page.locator('.bar .actions [data-act="draft"]').click();
@@ -592,8 +599,8 @@ const check = (nom, cond, detail = '') => {
   // aller vérifier son roster en pleine draft coûterait ses picks.
   console.log('\n== le nom du produit repart de zéro ==');
   await page.locator('[data-act="cartes"]').first().click();
-  await page.locator('#q').fill('Safe Zone');
-  await page.getByText('Safe Zone').first().click();
+  await page.locator('#q').fill('safe');
+  await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   await ajouter('addE', 2);
   await ajouter('addB', 1);
 
@@ -729,8 +736,8 @@ const check = (nom, cond, detail = '') => {
   //    carte. Refermer et rouvrir coûtait trois gestes pour revenir là où on
   //    était, dans une app qui vise moins de 25 secondes.
   await page.locator('[data-act="cartes"]').first().click();
-  await page.locator('#q').fill('Safe Zone');
-  await page.getByText('Safe Zone').first().click();
+  await page.locator('#q').fill('safe');
+  await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   const carteAvant = await page.evaluate(() => carteId);
   await page.reload({ waitUntil: 'networkidle' });
   check('la carte est retenue d\'une ouverture à l\'autre',
