@@ -13,8 +13,8 @@
    hériter de la date d'une autre. */
 /* @DATA:MAJ */
 var MAJ={tiers:["29/07/2026","Brawl Time Ninja"],
-         cartes:["03/08/2026","topbrawl.com"],
-         matchups:["03/08/2026","brawlcalculator.com"],
+         cartes:["07/08/2026","topbrawl.com"],
+         matchups:["07/08/2026","brawlcalculator.com"],
          synergie:null},SAISON=52;
 /* @END:MAJ */
 
@@ -38,33 +38,33 @@ gemGrab:{c:"#B98BFF"},heist:{c:"#57D9A3"},hotZone:{c:"#FF5D8F"}};
    La 3e valeur apparaît dès que les taux de sélection ont pu être relevés. */
 /* @DATA:MAPS */
 var MAPS=[
-{id:"center-stage",img:15000132,nom:"Center Stage",noms:{"fr":"Milieu de scène"},mode:"brawlBall",top:[["Damian",57.91,14.28],["Griff",57.25,41.31],["Jacky",57.72,2.45],["Bolt",57.01,3.45],["Surge",55.29,24.26],["Rico",54.24,35.38],["Bibi",54.14,17.69],["Ash",55.56,2.33]]},
-{id:"pinball-dreams",img:15000118,nom:"Pinball Dreams",mode:"brawlBall",top:[["Damian",57.94,14.32],["Surge",55.7,22.25],["Starr Nova",55.49,17.15],["Shade",55.42,10.21],["8-Bit",55.29,10.19],["Griff",54.42,42.94],["Doug",56.03,1.87],["Ash",54.87,1.81]]},
-{id:"sneaky-fields",img:15000050,nom:"Sneaky Fields",mode:"brawlBall",top:[["Damian",58.09,16.48],["Rosa",59.45,2.93],["Doug",56.32,8.04],["Maisie",58.71,1.64],["Jacky",56.37,4.5],["Griff",55.1,41.98],["Bibi",54.31,23.91],["Jessie",55.71,1.69]]},
-{id:"triple-dribble",img:15000025,nom:"Triple Dribble",mode:"brawlBall",top:[["Surge",57.17,24.44],["Larry & Lawrie",58.55,3.41],["Ziggy",60.82,1.4],["Barley",57.12,5.97],["Damian",56.44,15.73],["Jacky",56.6,3.05],["Ash",57.2,1.99],["Lou",56.49,2.34]]},
-{id:"dry-season",img:15000083,nom:"Dry Season",mode:"bounty",top:[["Bolt",63.81,7.76],["Brock",54.79,41.62],["Sprout",56.16,2.8],["Mr. P",55.42,3.92],["Carl",54.89,6.72],["8-Bit",54.34,14.24],["Starr Nova",54.31,13.68],["Juju",66.67,0.31]]},
-{id:"hideout",img:15000022,nom:"Hideout",mode:"bounty",top:[["Bolt",65.49,9.14],["Pearl",58.04,4.64],["Brock",55.93,40.45],["Mico",56.55,2.45],["Maisie",61.45,0.65],["Mortis",54.44,16.42],["Damian",54.56,6.02],["Max",54.04,19.61]]},
-{id:"layer-cake",img:15000082,nom:"Layer Cake",mode:"bounty",top:[["Bolt",65.99,4.96],["Mr. P",61.28,3.68],["Brock",55.5,35.56],["Surge",54.88,24.57],["Tick",54.91,17.7],["Grom",54.5,8.95],["Starr Nova",53.62,16.56],["Ash",57.45,0.79]]},
-{id:"shooting-star",img:15000005,nom:"Shooting Star",mode:"bounty",top:[["Bolt",66.12,8.65],["Grom",57.65,7.53],["Sprout",57.65,4.55],["Brock",56.36,39.79],["Nani",55.98,26.07],["Piper",53.55,47.99],["Gigi",55.62,1.43],["Angelo",53.36,13.29]]},
-{id:"belle-s-rock",img:15000368,nom:"Belle's Rock",mode:"knockout",top:[["Bolt",59.12,6.96],["Brock",57.83,39.18],["Grom",56.29,11.46],["Pearl",56.79,2.98],["Tick",54.94,16.29],["Sprout",54.85,12.01],["Mr. P",55.35,4.76],["Gray",54.65,13.66]]},
-{id:"flaring-phoenix",img:15000440,nom:"Flaring Phoenix",noms:{"fr":"Phénix flamboyant"},mode:"knockout",top:[["Bolt",61.19,5.78],["Grom",57.48,9.9],["Brock",55.89,41.03],["Pearl",56.69,5.94],["Sprout",55.58,7.78],["Tick",55.15,16.51],["Gray",55.17,10.13],["Doug",55.89,2.68]]},
-{id:"new-horizons",img:15000703,nom:"New Horizons",mode:"knockout",top:[["Pearl",61.54,5.21],["Bolt",59.59,7.72],["Brock",57.83,39.55],["Mr. P",58.33,3.29],["Sprout",57.26,3.83],["Grom",55.73,5.4],["Gray",54.67,11.43],["Starr Nova",54.36,13.97]]},
-{id:"out-in-the-open",img:15000548,nom:"Out in the Open",mode:"knockout",top:[["Brock",61.34,37.1],["Bolt",59.39,5.39],["Eve",56.32,6.16],["Pearl",55.6,11.64],["8-Bit",55.38,12.98],["Mr. P",53.9,2.81],["Carl",53.09,5.32],["Squeak",52.85,10.38]]},
-{id:"crystal-arcade",img:15000008,nom:"Crystal Arcade",mode:"gemGrab",top:[["Bolt",62.83,8.74],["Damian",57.9,12.78],["Starr Nova",56.79,18.5],["Bo",55.66,21.76],["Clancy",56.93,3.33],["Mr. P",59.84,1.05],["Ash",56.34,2.79],["Surge",54.48,25.58]]},
-{id:"deathcap-trap",img:15000009,nom:"Deathcap Trap",mode:"gemGrab",top:[["Bolt",62.67,8.64],["Surge",58.32,26.03],["Damian",58.43,12.19],["Starr Nova",57.44,19.01],["8-Bit",55.78,18.43],["Bo",54.33,23.41],["Penny",54.4,7.25],["Crow",53.33,36.39]]},
-{id:"double-swoosh",img:15000115,nom:"Double Swoosh",mode:"gemGrab",top:[["Bolt",64.52,9.7],["Damian",59.06,12.6],["Bo",56.67,25.04],["Clancy",57.25,4.53],["Griff",54.35,40.49],["Tara",54.36,30.98],["Surge",54.33,25.33],["Jessie",55.65,2.76]]},
-{id:"gem-fort",img:15000010,nom:"Gem Fort",mode:"gemGrab",top:[["Bolt",66.09,9.04],["Surge",57.57,26.99],["Damian",57.37,14.77],["Bo",56.67,22.47],["8-Bit",55.22,15.43],["Rosa",57.21,1.93],["Janet",55.97,2.33],["Trunk",56.15,1.13]]},
-{id:"hard-rock-mine",img:15000007,nom:"Hard Rock Mine",mode:"gemGrab",top:[["Bolt",62.08,6.79],["Damian",61.07,13.91],["8-Bit",58.91,17.39],["Mr. P",60.8,1.09],["Surge",55.56,26.42],["Starr Nova",55.64,17.8],["Gigi",57.46,1.99],["Carl",55.11,5.64]]},
-{id:"rustic-arcade",img:15000343,nom:"Rustic Arcade",noms:{"fr":"Arcade rustique"},mode:"gemGrab",top:[["Bolt",66.22,10.33],["Starr Nova",58.26,16.78],["8-Bit",57.47,19.31],["Bo",56.11,21.86],["Damian",55.86,8.37],["Stu",54.46,13.66],["Surge",54.24,23.79],["Chuck",56.56,1.0]]},
-{id:"undermine",img:15000011,nom:"Undermine",mode:"gemGrab",top:[["Bolt",62.45,7.88],["Janet",59.57,3.01],["Starr Nova",57.13,18.42],["Damian",57.29,12.85],["Surge",56.28,26.14],["Bo",55.83,23.93],["Bea",57.3,1.44],["Buster",57.93,1.18]]},
-{id:"bridge-too-far",img:15000072,nom:"Bridge Too Far",mode:"heist",top:[["8-Bit",65.33,23.74],["Colt",57.23,53.49],["Chuck",57.11,16.4],["Mico",57.08,14.37],["Carl",56.47,7.53],["Starr Nova",55.89,9.48],["Eve",55.99,6.43],["Alli",54.93,3.02]]},
-{id:"hot-potato",img:15000053,nom:"Hot Potato",noms:{"fr":"C'est chaud patate"},mode:"heist",top:[["Bibi",59.21,11.74],["Nita",57.05,20.19],["Carl",56.88,8.63],["Shade",56.72,5.11],["Edgar",55.66,34.91],["Mico",55.75,19.86],["8-Bit",55.69,21.65],["Bull",55.62,17.32]]},
-{id:"kaboom-canyon",img:15000018,nom:"Kaboom Canyon",mode:"heist",top:[["Starr Nova",60.0,14.39],["Mico",59.49,19.82],["8-Bit",58.57,22.55],["Bolt",58.61,7.83],["Carl",56.5,10.92],["Jessie",54.57,18.83],["Surge",54.43,19.21],["Nita",54.55,9.35]]},
-{id:"safe-zone",img:15000019,nom:"Safe Zone",mode:"heist",top:[["Chuck",64.78,17.1],["Bolt",62.66,6.77],["Starr Nova",60.17,12.17],["Mico",56.75,22.31],["8-Bit",56.58,23.84],["Jessie",56.32,20.87],["Melodie",54.76,10.07],["Eve",54.27,4.49]]},
-{id:"dueling-beetles",img:15000306,nom:"Dueling Beetles",mode:"hotZone",top:[["Damian",59.51,13.8],["Bolt",59.55,5.16],["Starr Nova",57.98,16.03],["Sandy",58.39,3.8],["Surge",55.57,22.74],["Bo",55.37,27.2],["Griff",55.12,40.22],["Bibi",54.84,12.58]]},
-{id:"open-business",img:15000292,nom:"Open Business",mode:"hotZone",top:[["Starr Nova",61.09,16.96],["Surge",60.46,23.29],["Bolt",59.44,6.01],["Damian",56.6,12.64],["Tick",56.33,12.86],["Sandy",56.54,4.53],["Bibi",55.51,9.92],["Kenji",55.03,7.46]]},
-{id:"parallel-plays",img:15000293,nom:"Parallel Plays",mode:"hotZone",top:[["Hank",58.77,8.06],["Damian",57.26,13.61],["R-T",57.24,8.36],["Doug",56.81,15.83],["Bolt",58.25,3.41],["Bibi",56.58,26.89],["Juju",56.71,16.28],["Surge",56.05,27.01]]},
-{id:"ring-of-fire",img:15000300,nom:"Ring of Fire",mode:"hotZone",top:[["Damian",62.87,10.3],["Bolt",62.63,7.69],["Starr Nova",60.09,13.69],["8-Bit",58.36,20.65],["Surge",57.84,22.43],["Bo",56.97,34.17],["Mina",58.02,4.71],["Poco",57.1,6.2]]}];
+{id:"center-stage",img:15000132,nom:"Center Stage",noms:{"fr":"Milieu de scène","es":"Palco central"},mode:"brawlBall",top:[["Jacky",62.37,2.99],["Ash",60.96,2.59],["Bibi",55.98,19.03],["Rico",54.98,34.82],["Griff",54.86,40.48],["Buster",56.54,1.68],["Bolt",54.5,3.2],["Bull",53.2,16.64]]},
+{id:"pinball-dreams",img:15000118,nom:"Pinball Dreams",mode:"brawlBall",top:[["Bibi",57.23,19.36],["Doug",57.05,2.31],["Shade",55.4,9.19],["Ash",56.0,2.13],["Ollie",60.87,0.53],["Ziggy",59.3,0.68],["Rico",53.56,29.56],["Starr Nova",53.38,13.8]]},
+{id:"sneaky-fields",img:15000050,nom:"Sneaky Fields",mode:"brawlBall",top:[["Jacky",57.28,4.78],["Bibi",55.85,28.01],["Ash",56.02,3.84],["Sandy",57.03,2.05],["Frank",54.65,15.48],["Nita",54.44,12.17],["Gigi",56.8,1.32],["Doug",54.21,8.31]]},
+{id:"triple-dribble",img:15000025,nom:"Triple Dribble",mode:"brawlBall",top:[["Willow",58.57,8.52],["Ash",60.34,2.34],["Bibi",56.79,25.13],["Jacky",58.37,3.33],["Shade",55.66,15.56],["Dynamike",54.61,19.93],["Larry & Lawrie",55.32,3.01],["Barley",53.97,5.81]]},
+{id:"dry-season",img:15000083,nom:"Dry Season",mode:"bounty",top:[["Bolt",62.3,6.66],["Grom",59.23,6.45],["Mico",59.2,2.31],["Brock",56.23,40.88],["Pearl",56.06,4.78],["Carl",55.3,7.07],["Tick",54.8,13.76],["Gigi",55.78,1.94]]},
+{id:"hideout",img:15000022,nom:"Hideout",mode:"bounty",top:[["Bolt",60.46,7.6],["Brock",56.36,40.36],["Mr. P",57.34,2.75],["Pearl",55.35,5.62],["Sprout",56.46,2.24],["Grom",54.96,8.13],["Janet",61.18,0.65],["Charlie",56.41,1.78]]},
+{id:"layer-cake",img:15000082,nom:"Layer Cake",mode:"bounty",top:[["Mr. P",62.63,3.75],["Bolt",59.71,3.77],["Carl",58.52,6.87],["Doug",59.11,2.07],["Tick",56.36,18.0],["Pearl",57.56,3.16],["Brock",55.51,34.97],["Ash",61.9,0.81]]},
+{id:"shooting-star",img:15000005,nom:"Shooting Star",mode:"bounty",top:[["Bolt",63.11,8.16],["Tick",57.17,13.12],["Grom",57.11,8.1],["Brock",55.47,38.83],["Sprout",56.09,3.61],["Glowy",59.09,0.91],["Willow",63.64,0.46],["Pearl",54.81,3.96]]},
+{id:"belle-s-rock",img:15000368,nom:"Belle's Rock",mode:"knockout",top:[["Brock",57.37,39.29],["Sprout",57.3,10.8],["Bolt",57.78,5.98],["Mico",57.06,11.59],["Grom",56.74,13.41],["Doug",60.0,1.33],["Tick",55.72,17.22],["Carl",56.01,5.84]]},
+{id:"flaring-phoenix",img:15000440,nom:"Flaring Phoenix",noms:{"fr":"Phénix flamboyant","es":"Fénix en llamas"},mode:"knockout",top:[["Pearl",61.03,6.21],["Grom",58.51,11.24],["Brock",57.58,40.34],["Tick",56.65,17.1],["Buster",57.4,3.53],["Sprout",55.61,7.48],["Doug",56.57,2.38],["Darryl",55.74,3.9]]},
+{id:"new-horizons",img:15000703,nom:"New Horizons",mode:"knockout",top:[["Mico",58.29,6.47],["Sprout",58.82,3.93],["Grom",57.68,6.12],["Bolt",57.49,6.72],["Brock",56.09,39.17],["Pearl",56.53,5.77],["Piper",54.84,32.03],["Edgar",54.67,22.45]]},
+{id:"out-in-the-open",img:15000548,nom:"Out in the Open",mode:"knockout",top:[["Pearl",60.56,11.74],["Brock",59.4,36.88],["Angelo",57.29,16.55],["Eve",55.98,7.28],["Mr. P",56.58,2.68],["R-T",58.33,1.17],["Piper",53.93,35.44],["Carl",54.27,6.16]]},
+{id:"crystal-arcade",img:15000008,nom:"Crystal Arcade",mode:"gemGrab",top:[["Bolt",64.13,8.58],["Bo",57.86,22.41],["Ash",58.66,2.02],["Moe",56.62,1.74],["Jessie",55.15,3.94],["Nori",55.93,1.88],["Clancy",54.4,3.98],["Starr Nova",53.67,16.69]]},
+{id:"deathcap-trap",img:15000009,nom:"Deathcap Trap",mode:"gemGrab",top:[["Bolt",58.88,7.98],["Carl",57.11,6.95],["Bo",55.14,25.2],["Damian",54.79,9.23],["Moe",56.6,1.69],["Mr. P",57.34,1.14],["Stu",54.06,14.62],["Starr Nova",53.72,15.97]]},
+{id:"double-swoosh",img:15000115,nom:"Double Swoosh",mode:"gemGrab",top:[["Bolt",62.55,8.48],["Ash",60.06,2.72],["Bo",57.61,25.81],["Rosa",58.39,4.47],["Trunk",61.34,0.93],["Doug",56.44,3.83],["Moe",58.05,1.6],["Pearl",55.27,5.12]]},
+{id:"gem-fort",img:15000010,nom:"Gem Fort",noms:{"fr":"Fort de gemmes","es":"Fuerte de gemas"},mode:"gemGrab",top:[["Bolt",62.85,7.84],["Ash",58.66,3.21],["Bo",55.99,23.94],["Clancy",55.88,4.12],["Jessie",55.16,4.92],["Buster",56.32,1.38],["R-T",59.21,0.6],["Tara",53.54,24.9]]},
+{id:"hard-rock-mine",img:15000007,nom:"Hard Rock Mine",mode:"gemGrab",top:[["Bolt",59.54,6.21],["Ash",59.71,2.78],["Doug",59.61,1.61],["Bo",56.08,24.84],["Rico",55.95,32.52],["Pearl",55.01,3.89],["Damian",54.18,11.12],["Carl",54.33,5.78]]},
+{id:"rustic-arcade",img:15000343,nom:"Rustic Arcade",noms:{"fr":"Arcade rustique"},mode:"gemGrab",top:[["Bolt",65.26,9.56],["Bo",57.25,22.52],["Stu",56.16,14.66],["Finx",57.53,1.16],["Max",54.12,18.26],["Mr. P",56.96,1.25],["Pearl",54.62,5.06],["Carl",54.36,6.91]]},
+{id:"undermine",img:15000011,nom:"Undermine",mode:"gemGrab",top:[["Bolt",59.96,7.04],["Bo",56.05,24.89],["Clancy",56.87,3.29],["Starr Nova",54.7,15.84],["Surge",54.36,27.59],["Janet",54.79,2.65],["Gale",54.14,3.16],["Charlie",54.18,2.56]]},
+{id:"bridge-too-far",img:15000072,nom:"Bridge Too Far",mode:"heist",top:[["Eve",61.41,5.66],["8-Bit",59.14,23.53],["Nori",62.21,1.4],["Colt",56.92,52.04],["Kaze",57.07,12.98],["Chuck",55.24,16.24],["Gigi",58.87,1.14],["Jessie",54.5,19.98]]},
+{id:"hot-potato",img:15000053,nom:"Hot Potato",noms:{"fr":"C'est chaud patate","es":"Patata caliente"},mode:"heist",top:[["Bibi",60.14,11.69],["Nita",59.03,22.14],["Mico",57.89,20.39],["Edgar",57.37,34.8],["Bull",55.93,18.7],["Nori",59.01,1.31],["Carl",55.43,8.71],["Jessie",54.74,21.41]]},
+{id:"kaboom-canyon",img:15000018,nom:"Kaboom Canyon",mode:"heist",top:[["Mico",63.01,20.42],["Nori",67.25,1.38],["Bibi",58.38,4.11],["Jessie",56.32,20.39],["Edgar",56.0,32.0],["Melodie",56.26,10.93],["Eve",57.17,3.92],["Carl",56.15,10.62]]},
+{id:"safe-zone",img:15000019,nom:"Safe Zone",noms:{"fr":"Zone sécurisée","es":"Refugio"},mode:"heist",top:[["Chuck",64.2,17.89],["Mico",59.22,21.86],["Jessie",57.57,23.69],["Nori",59.81,1.68],["Bolt",56.96,5.02],["Carl",55.75,13.17],["8-Bit",54.68,22.98],["Starr Nova",54.68,10.0]]},
+{id:"dueling-beetles",img:15000306,nom:"Dueling Beetles",mode:"hotZone",top:[["Jessie",59.94,8.04],["Doug",58.76,3.93],["Bibi",56.7,13.26],["Tick",56.19,15.58],["Bo",55.22,28.68],["Draco",58.06,1.51],["Mina",55.23,5.04],["Amber",56.23,2.28]]},
+{id:"open-business",img:15000292,nom:"Open Business",noms:{"fr":"C'est ouvert !","es":"Campo abierto"},mode:"hotZone",top:[["Tick",57.45,13.43],["Sandy",58.54,4.23],["Jessie",57.55,8.15],["Mina",57.56,5.19],["Gray",57.93,2.15],["Hank",60.0,1.07],["Ash",58.33,1.52],["Surge",55.2,23.81]]},
+{id:"parallel-plays",img:15000293,nom:"Parallel Plays",noms:{"es":"Estrategias paralelas"},mode:"hotZone",top:[["Trunk",59.59,7.63],["Doug",58.56,16.08],["Juju",58.24,14.17],["Bibi",57.54,28.77],["R-T",57.52,8.19],["Hank",57.55,7.57],["Surge",54.63,28.19],["Jacky",54.49,8.79]]},
+{id:"ring-of-fire",img:15000300,nom:"Ring of Fire",mode:"hotZone",top:[["Poco",61.96,6.93],["Bolt",61.12,6.88],["Bo",59.87,33.95],["Ash",66.67,0.78],["Griff",57.09,32.78],["Jessie",57.25,8.22],["Tick",56.15,16.42],["Draco",60.56,1.12]]}];
 /* @END:MAPS */
 
 /* Classement S/A/B/C/D par mode. Chaîne de noms séparés par des virgules,
