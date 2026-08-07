@@ -38,10 +38,18 @@ function fbImg(img) {
   else img.remove();
 }
 
-/* Début de balise <img> avec la première source et la file d'attente. */
+/* Début de balise <img> avec la première source et la file d'attente.
+
+   Les adresses sont ÉCHAPPÉES comme n'importe quel autre texte : b.img vient
+   de l'API, donc de l'extérieur. Elles ne l'étaient pas. Mesuré, avec une
+   adresse contenant un guillemet suivi de « data-piege="oui" » : l'attribut
+   se retrouvait posé sur la balise. La source est de confiance aujourd'hui,
+   et ce n'est pas une raison — c'est exactement le genre d'hypothèse qui
+   cesse d'être vraie sans prévenir. */
 function baliseImage(sources) {
   var valides = sources.filter(Boolean);
-  return '<img src="' + valides[0] + '" data-fb="' + valides.slice(1).join("|") + '"';
+  return '<img src="' + echapper(valides[0])
+       + '" data-fb="' + echapper(valides.slice(1).join("|")) + '"';
 }
 
 /* b.img vient de l'API : c'est la seule adresse certaine. Celle de

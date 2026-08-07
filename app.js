@@ -35,6 +35,10 @@ if (AU_CLAVIER) document.body.classList.add("clavier");
    ne pas se tromper. L'ordre de lecture dit la dépendance. */
 var catalogueEnAttente = null;
 
+/* « L'écran des brawlers a déjà été noté comme vu depuis qu'on y est entré ».
+   Remis à faux dès qu'on en sort — voir render(). */
+var rosterNote = false;
+
 function soldeCatalogue() {
   if (!catalogueEnAttente) return;
   appliquerCatalogue(catalogueEnAttente);
@@ -72,9 +76,20 @@ function render() {
 
      etatApi ne suffit pas à s'en garder : il dit « l'appel a réussi », pas
      « la liste à l'écran vient de là ». catalogueEnAttente, lui, dit
-     exactement qu'une autre liste va remplacer celle-ci. */
+     exactement qu'une autre liste va remplacer celle-ci.
+
+     « et pas déjà noté » : une fois par VISITE de l'écran, pas à chaque
+     dessin. render() tourne à chaque case cochée — mesuré, dix cases donnaient
+     onze réécritures de manager:vus, 9 Ko, alors que le contenu est identique
+     d'un clic à l'autre. Remplir un roster de 105 en écrivait près de 100, en
+     écriture bloquante sur le fil principal. */
   var surLeRoster = (ecran === "roster");
-  if (surLeRoster && !catalogueEnAttente) { noterCatalogueVu(); recalculerNouveaux(); }
+  if (!surLeRoster) rosterNote = false;
+  if (surLeRoster && !catalogueEnAttente && !rosterNote) {
+    noterCatalogueVu();
+    recalculerNouveaux();
+    rosterNote = true;
+  }
 
   conteneur.innerHTML = vueHTML();
 
@@ -213,7 +228,17 @@ var ACTIONS = {
 
   /* — Mes persos — */
   tout: function () {
-    roster = new Set(brawlers.map(function (b) { return b.k; }));
+    /* Le catalogue en attente s'il y en a un, sinon celui qui est posé.
+       ----------------------------------------------------------------------
+       Sur l'écran des brawlers, le catalogue reçu de l'API n'est
+       DÉLIBÉRÉMENT pas posé — il attend qu'on quitte l'écran pour ne pas
+       réorganiser la grille sous le doigt. « Tout cocher » travaillait donc
+       sur la liste périmée : mesuré, 105 cochés alors que 107 attendaient.
+       L'utilisateur croit avoir tout coché, et il lui en manque deux.
+       On ne retire jamais rien du roster au passage : une clé cochée reste
+       cochée même si le catalogue change. */
+    var reference = catalogueEnAttente || brawlers;
+    reference.forEach(function (b) { roster.add(b.k); });
     sauverRoster();
   },
   rien: function () { roster = new Set(); sauverRoster(); },
@@ -416,7 +441,15 @@ render();
    les redemande pas quand on les a déjà : elles ne changent pour ainsi dire
    jamais, alors qu'un appel réseau de plus au démarrage se dispute la bande
    passante avec donnees.js sur le lien 4G où l'app doit répondre en 25 s. */
-if (!Object.keys(IMAGES_MODES).length) {
+/* On redemande tant qu'il MANQUE une icône, pas seulement quand il n'y en a
+   aucune.
+   ------------------------------------------------------------------------
+   C'était « if (!Object.keys(IMAGES_MODES).length) ». Une première réponse
+   partielle — l'API en donne trois sur six, ou son format change pour un mode
+   — était gardée telle quelle et plus jamais redemandée : mesuré, une icône
+   gardée, puis un rechargement où l'API avait les six, et toujours une seule.
+   Les trois modes muets le restaient pour de bon. */
+if (Object.keys(IMAGES_MODES).length < Object.keys(MODES).length) {
   chargerModes().then(function () { if (ecran === "cartes") render(); });
 }
 

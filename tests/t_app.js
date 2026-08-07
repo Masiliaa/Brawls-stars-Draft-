@@ -662,6 +662,124 @@ const check = (nom, cond, detail = '') => {
     await p.close();
   }
 
+  // ── Quatre choses qui marchaient mal sans mentir ───────────────────────
+  console.log('\n== quatre frictions mesurées ==');
+
+  // 1. L'adresse d'image vient de l'API, donc de l'exterieur : elle doit etre
+  //    echappee comme n'importe quel autre texte. Mesure avant correction :
+  //    une adresse contenant un guillemet posait un attribut sur la balise.
+  {
+    const r = await page.evaluate(() => {
+      const piege = 'http://x/a.png" data-piege="oui';
+      const d = document.createElement('div');
+      d.innerHTML = portrait({ nom: 'Test', k: 'test', img: piege }, 40, false);
+      const img = d.querySelector('img');
+      return { injecte: img.hasAttribute('data-piege'), src: img.getAttribute('src') };
+    });
+    check('une adresse d\'image piégée n\'injecte pas d\'attribut',
+      r.injecte === false, r);
+    check('et l\'adresse est gardée telle quelle dans src',
+      r.src === 'http://x/a.png" data-piege="oui', r.src);
+  }
+
+  // 2. « manager:vus » etait reecrit a CHAQUE dessin, donc a chaque case
+  //    cochee : dix cases, onze reecritures, 9 Ko. Une fois par visite suffit.
+  {
+    const p = await nav.newPage({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' });
+    let corps = null;
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify(corps) }));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    const noms = await p.evaluate(() => brawlers.map(b => b.nom));
+    corps = { list: noms.map(n => ({ name: n, released: true, class: { name: 'Tank' },
+      rarity: { id: 4, name: 'Epic', color: '#a0f' } })) };
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForFunction(() => etatApi === 'ok', null, { timeout: 15000 });
+    await p.evaluate(() => {
+      window.__n = 0;
+      const vrai = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (k) {
+        if (k === 'manager:vus') window.__n++;
+        return vrai.apply(this, arguments);
+      };
+      ecran = 'roster'; render();
+    });
+    for (let i = 0; i < 10; i++) await p.locator('#grid .cel').nth(i).click();
+    const n = await p.evaluate(() => window.__n);
+    check('« vus » est écrit une fois par visite, pas à chaque case', n <= 1, n);
+    // Et il doit quand meme etre ecrit en repartant de l'ecran.
+    await p.locator('.bar .actions [data-act="draft"]').click();
+    await p.locator('[data-act="roster"]').first().click();
+    const apres = await p.evaluate(() => window.__n);
+    check('mais il l\'est de nouveau à la visite suivante', apres > n, { n, apres });
+    await p.close();
+  }
+
+  // 3. Une premiere reponse PARTIELLE de /v1/gamemodes etait gardee et plus
+  //    jamais redemandee : les modes muets le restaient pour de bon.
+  {
+    const p = await nav.newPage({ locale: 'fr-FR' });
+    await p.route('**/api.brawlapi.com/v1/brawlers**', r => r.abort());
+    let complet = false;
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ list: complet
+        ? [['Brawl-Ball', 'bb'], ['gemGrab', 'gg'], ['Heist', 'he'],
+           ['Bounty', 'bo'], ['knockout', 'ko'], ['hotZone', 'hz']]
+            .map(([h, i]) => ({ hash: h, imageUrl: 'http://i/' + i + '.png' }))
+        : [{ hash: 'Brawl-Ball', imageUrl: 'http://i/bb.png' }] }) }));
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    await p.reload({ waitUntil: 'networkidle' });
+    const partiel = await p.evaluate(() => Object.keys(IMAGES_MODES).length);
+    complet = true;
+    await p.reload({ waitUntil: 'networkidle' });
+    // Attente BORNEE, et qui ne jette pas : si l'app ne redemande jamais, le
+    // controle doit ECHOUER proprement, pas planter la suite et emporter tout
+    // ce qui suit. Une premiere version utilisait waitForFunction sans
+    // rattrapage — avec l'ancien code elle expirait, et les controles d'apres
+    // n'etaient meme pas executes.
+    await p.waitForFunction(() => Object.keys(IMAGES_MODES).length > 1,
+      null, { timeout: 5000 }).catch(() => {});
+    const apres = await p.evaluate(() => Object.keys(IMAGES_MODES).length);
+    check('un jeu d\'icônes incomplet est redemandé',
+      partiel === 1 && apres === 6, { partiel, apres });
+    await p.close();
+  }
+
+  // 4. « Tout cocher » travaillait sur la liste PERIMEE pendant que le
+  //    catalogue attendait : 105 coches alors que 107 attendaient.
+  {
+    const p = await nav.newPage({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' });
+    let go; const att = new Promise(r => { go = r; }); let corps = null;
+    await p.route('**/api.brawlapi.com/v1/gamemodes**', r => r.abort());
+    await p.route('**/api.brawlapi.com/v1/brawlers**', async r => {
+      await att; await r.fulfill({ status: 200, contentType: 'application/json',
+                                   body: JSON.stringify(corps) }); });
+    await p.goto('http://127.0.0.1:' + PORT + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.evaluate(() => localStorage.clear());
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    const noms = await p.evaluate(() => brawlers.map(b => b.nom));
+    corps = { list: noms.concat(['Zilpha', 'Vondra']).map(n => ({
+      name: n, released: true, class: { name: 'Tank' },
+      rarity: { id: 4, name: 'Epic', color: '#a0f' } })) };
+    await p.evaluate(() => { ecran = 'roster'; render(); });
+    go();
+    await p.waitForFunction(() => etatApi === 'ok', null, { timeout: 5000 })
+      .catch(() => {});
+    const r = await p.evaluate(() => {
+      ACTIONS.tout(); render();
+      return { coches: roster.size,
+               affiches: brawlers.length,
+               enAttente: catalogueEnAttente ? catalogueEnAttente.length : null };
+    });
+    check('« tout cocher » coche le vrai catalogue, pas la liste périmée',
+      r.coches === r.enAttente && r.enAttente > r.affiches, r);
+    await p.close();
+  }
+
   // ── Les icones de modes ────────────────────────────────────────────────
   // Aucune suite ne simulait /v1/gamemodes : les controles faisaient un VRAI
   // appel reseau, donc leur resultat dependait de la machine. Le rapprochement
