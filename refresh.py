@@ -2159,6 +2159,8 @@ def main():
     ap.add_argument("--ttl", type=int, default=7, help="âge max du cache, en jours")
     ap.add_argument("--sans-cache", action="store_true")
     ap.add_argument("--blanc", action="store_true", help="n'écrit pas donnees.js")
+    ap.add_argument("--sans-bascule", action="store_true",
+                    help="télécharge les images sans toucher à ASSETS_LOCAUX")
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
                          "'events', 'rotation', 'ranked', 'ninja', 'carte-ninja', 'pool' "
@@ -2226,11 +2228,16 @@ def main():
 
     if a.assets:
         complet = telecharger_assets(net, noms, ids_cartes(html))
-        html = ecrire_bloc(html, "ASSETS",
-                           "var ASSETS_LOCAUX=%s;" % ("true" if complet else "false"))
-        if not complet:
-            souci("aucune image récupérée : ASSETS_LOCAUX reste à false, l'app "
-                  "continue de charger les images depuis les CDN")
+        if a.sans_bascule:
+            note("--sans-bascule : les images sont téléchargées, ASSETS_LOCAUX "
+                 "n'est pas touché. La bascule reste une décision à part, "
+                 "prise en la mesurant.")
+        else:
+            html = ecrire_bloc(html, "ASSETS",
+                               "var ASSETS_LOCAUX=%s;" % ("true" if complet else "false"))
+            if not complet:
+                souci("aucune image récupérée : ASSETS_LOCAUX reste à false, "
+                      "l'app continue de charger les images depuis les CDN")
         touche = True
 
     tr.enregistrer()

@@ -16,6 +16,10 @@ on:
     - cron: "0 6 * * 1"
   workflow_dispatch:
     inputs:
+      images:
+        description: "Télécharger les images des brawlers et des cartes"
+        type: boolean
+        default: false
       diagnostic:
         description: "Diagnostic seul, sans rien écrire"
         type: choice
@@ -57,12 +61,34 @@ jobs:
         continue-on-error: true
         run: python3 refresh.py --cartes --counters --synergie
 
+      # Les images ne sont pas dans le relevé hebdomadaire : elles ne changent
+      # qu'à la sortie d'un brawler, quelques fois par an, et c'est 120
+      # téléchargements. On les demande donc à la main, quand il le faut.
+      #
+      # --sans-bascule : on récupère les fichiers sans activer leur usage.
+      # Servir nos propres images plutôt que celles de deux projets de fans est
+      # une décision à mesurer, pas un effet de bord d'un téléchargement.
+      - name: Télécharger les images
+        if: inputs.images == true
+        continue-on-error: true
+        run: python3 refresh.py --assets --sans-bascule
+
+
       # Une phrase traduite entre deux relevés reste sinon dans
       # data/traductions.json sans jamais atteindre l'app. Cette étape ne va
       # sur aucun site : elle recopie, et ne touche qu'aux langues.
       - name: Recopier les traductions
         if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
         run: python3 outils/appliquer_traductions.py
+
+      # APRÈS la recopie des traductions, qui vient justement d'écrire dans
+      # counters.js : engendrer avant reviendrait à servir les phrases de la
+      # semaine dernière. L'app ne charge plus counters.js — elle charge
+      # counters-<langue>.js — donc c'est cette étape qui rend le relevé
+      # visible pour l'utilisateur.
+      - name: Réengendrer les fichiers par langue
+        if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
+        run: python3 outils/counters_par_langue.py
 
       - name: Contrôles
         if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
@@ -74,15 +100,24 @@ jobs:
       - name: Commiter si les données ont changé
         if: inputs.diagnostic == '' || inputs.diagnostic == 'non'
         run: |
-          if git diff --quiet -- donnees.js; then
+          # TOUT ce que le relevé produit, pas seulement donnees.js.
+          # ------------------------------------------------------------------
+          # Il n'y avait ici que donnees.js, et le commentaire disait que « les
+          # images restent locales à l'exécution » : elles étaient donc
+          # téléchargées puis jetées à la fin du travail, ce qui explique
+          # qu'assets/ soit resté incomplet et figé.
+          # Depuis que la table des duels a quitté donnees.js, counters.js
+          # subissait le même sort : réécrit chaque semaine, jamais commité.
+          # Et counters-<langue>.js, ce que l'app sert vraiment, en découle.
+          PRODUITS="donnees.js counters.js counters-fr.js counters-en.js counters-es.js assets"
+          if git diff --quiet -- $PRODUITS; then
             echo "Aucun changement : rien à commiter."
             exit 0
           fi
           git config user.name "Robot données"
           git config user.email "noreply@anthropic.com"
-          # Seul donnees.js est commité. Le cache et les images restent
-          # locaux à l'exécution.
-          git add donnees.js
+          git add $PRODUITS
+          git status --short | head -20
           git commit -m "Donnees rafraichies automatiquement"
           # Le relevé dure plusieurs minutes, pendant lesquelles la branche a
           # pu avancer. Sans ce rebase, l'envoi est refusé et tout le travail
