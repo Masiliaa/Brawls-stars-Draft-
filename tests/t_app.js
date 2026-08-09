@@ -474,8 +474,13 @@ const check = (nom, cond, detail = '') => {
     fbImg(el); const apres1 = el.getAttribute('src');
     return { chaine, apres1, ini: el.getAttribute('data-ini') };
   });
-  check('1re source = brawltime quand l’API n’a rien donné',
-    /media\.brawltime\.ninja/.test(img.chaine[0]), img.chaine);
+  // Le fichier local est en tete depuis qu'on sert nos propres images : ce
+  // qu'on verifie ici, c'est que brawltime reste le repli quand l'API n'a
+  // rien donne, pas qu'il soit premier.
+  check('brawltime en repli quand l’API n’a rien donné',
+    /media\.brawltime\.ninja/.test(img.chaine[img.chaine.length - 1]), img.chaine);
+  check('et le fichier local passe avant lui',
+    img.chaine[0] === 'assets/brawlers/larry___lawrie.png', img.chaine);
   check('slug correct', /larry___lawrie/.test(img.chaine[0]), img.chaine[0]);
   check('initiales en dernier recours', img.ini === 'LL', img.ini);
 
@@ -510,9 +515,16 @@ const check = (nom, cond, detail = '') => {
     const el = d.querySelector('img');
     return [el.getAttribute('src')].concat(el.getAttribute('data-fb').split('|'));
   });
-  check('URL de l’API en tête', ordre[0].includes('16000042'), ordre);
-  check('brawltime conservé en repli', /brawltime/.test(ordre[1]), ordre);
-  check('deux sources seulement, plus la source morte', ordre.length === 2, ordre);
+  check('le fichier local en tête, l’URL de l’API juste après',
+    ordre[0] === 'assets/brawlers/larry___lawrie.png'
+    && ordre[1].includes('16000042'), ordre);
+  check('brawltime conservé en dernier repli', /brawltime/.test(ordre[2]), ordre);
+  // Trois sources depuis qu'on sert nos propres images : la nôtre, celle que
+  // l'API donne, et brawltime. La quatrième — cdn.brawlify.com par NOM — est
+  // morte (404 pour tout le monde, vérifié le 29/07/2026) et ne revient pas.
+  check('trois sources, pas la source morte',
+    ordre.length === 3 && !ordre.some(u => /brawlers\/borderless\/[a-z]/.test(u)),
+    ordre);
 
   const finale = await page.evaluate(() => {
     const d = document.createElement('div');
@@ -680,12 +692,16 @@ const check = (nom, cond, detail = '') => {
       const d = document.createElement('div');
       d.innerHTML = portrait({ nom: 'Test', k: 'test', img: piege }, 40, false);
       const img = d.querySelector('img');
-      return { injecte: img.hasAttribute('data-piege'), src: img.getAttribute('src') };
+      return { injecte: img.hasAttribute('data-piege'),
+               src: img.getAttribute('src'),
+               fb: img.getAttribute('data-fb') };
     });
     check('une adresse d\'image piégée n\'injecte pas d\'attribut',
       r.injecte === false, r);
-    check('et l\'adresse est gardée telle quelle dans src',
-      r.src === 'http://x/a.png" data-piege="oui', r.src);
+    // Depuis que le fichier local passe en tete, l'adresse piegee n'est plus
+    // dans src mais dans la file de repli : c'est la qu'on la controle.
+    check('et l\'adresse piégée est gardée telle quelle, dans la file',
+      r.fb.indexOf('http://x/a.png" data-piege="oui') === 0, r.fb);
   }
 
   // 2. « manager:vus » etait reecrit a CHAQUE dessin, donc a chaque case
@@ -844,6 +860,77 @@ const check = (nom, cond, detail = '') => {
     check('une réponse vide n\'efface pas les icônes gardées',
       r.apres === 'http://i/garde.png', r);
     await p.close();
+  }
+
+  // ── Nos propres images ─────────────────────────────────────────────────
+  // L'app allait chercher 100 % de ses portraits chez media.brawltime.ninja
+  // — un autre projet de fans, dont on consommait la bande passante — alors
+  // que 105 portraits et 27 vignettes dorment dans le depot. Si ce serveur
+  // tombe, ralentit, ou qu'un reseau d'entreprise le bloque, l'app n'affiche
+  // que des initiales. Et hors ligne, aucune image du tout.
+  console.log('\n== nos propres images ==');
+  {
+    const r = await page.evaluate(() => {
+      const avecLocal = sourcesBrawler({ nom: 'Mortis', k: 'mortis', img: 'http://api/x.png' });
+      const vraiFlag = ASSETS_LOCAUX;
+      ASSETS_LOCAUX = false;
+      const sansLocal = sourcesBrawler({ nom: 'Mortis', k: 'mortis', img: 'http://api/x.png' });
+      ASSETS_LOCAUX = vraiFlag;
+      return { flag: vraiFlag, avecLocal: avecLocal.filter(Boolean),
+               sansLocal: sansLocal.filter(Boolean),
+               carte: sourcesCarte({ img: 15000132 }).filter(Boolean) };
+    });
+    check('les images locales sont activées', r.flag === true, r.flag);
+    check('le fichier local passe en premier',
+      r.avecLocal[0] === 'assets/brawlers/mortis.png', r.avecLocal);
+    check('les serveurs tiers restent en repli, dans l\'ordre',
+      r.avecLocal.length === 3 && /brawltime/.test(r.avecLocal[2]), r.avecLocal);
+    check('idem pour les vignettes de cartes',
+      r.carte[0] === 'assets/maps/15000132.png', r.carte);
+    check('sans le drapeau, on repart chez les tiers',
+      r.sansLocal[0] === 'http://api/x.png', r.sansLocal);
+  }
+
+  // Toutes les images que l'app peut demander doivent exister. Le nom du
+  // fichier vient de slugCdn() : un ecart entre ce que l'app demande et ce
+  // que refresh.py depose laisserait un trou, comble par un aller-retour
+  // inutile vers le CDN.
+  {
+    const attendus = await page.evaluate(() => ({
+      brawlers: brawlers.map(b => 'assets/brawlers/' + slugCdn(b.nom) + '.png'),
+      cartes: MAPS.map(m => 'assets/maps/' + m.img + '.png'),
+    }));
+    let manquants = [];
+    for (const chemin of attendus.brawlers.concat(attendus.cartes)) {
+      const r = await page.request.get('http://127.0.0.1:' + PORT + '/' + chemin);
+      if (r.status() !== 200) manquants.push(chemin);
+    }
+    check('les ' + attendus.brawlers.length + ' portraits existent',
+      manquants.filter(m => /brawlers/.test(m)).length === 0,
+      manquants.filter(m => /brawlers/.test(m)).slice(0, 4));
+    check('les ' + attendus.cartes.length + ' vignettes existent',
+      manquants.filter(m => /maps/.test(m)).length === 0,
+      manquants.filter(m => /maps/.test(m)).slice(0, 4));
+  }
+
+  // Un brawler sorti depuis le dernier releve n'a pas encore son fichier :
+  // la chaine doit repartir vers le CDN, pas afficher un trou.
+  {
+    const r = await page.evaluate(() =>
+      sourcesBrawler({ nom: 'Zilpha', k: 'zilpha', img: null }).filter(Boolean));
+    check('une image locale absente retombe sur le serveur extérieur',
+      r[0] === 'assets/brawlers/zilpha.png' && /brawltime/.test(r[1]), r);
+  }
+
+  // 105 portraits d'un coup sur l'ecran des brawlers, alors qu'on en voit une
+  // vingtaine : 13,2 s en 4G avant le chargement differe, 6,8 s apres.
+  {
+    const r = await page.evaluate(() => {
+      const d = document.createElement('div');
+      d.innerHTML = portrait({ nom: 'Mortis', k: 'mortis' }, 40, false);
+      return d.querySelector('img').getAttribute('loading');
+    });
+    check('les portraits sont chargés au fil du défilement', r === 'lazy', r);
   }
 
   // ── Une seule langue est telechargee ───────────────────────────────────

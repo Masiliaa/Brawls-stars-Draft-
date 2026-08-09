@@ -21,7 +21,7 @@ var MAJ={tiers:["29/07/2026","Brawl Time Ninja"],
 /* Passe à true quand refresh.py --assets a rapatrié les images dans
    assets/. L'app essaie alors le fichier local avant les CDN. */
 /* @DATA:ASSETS */
-var ASSETS_LOCAUX=false;
+var ASSETS_LOCAUX=true;
 /* @END:ASSETS */
 
 /* Les 6 modes du classé, avec la couleur qui les identifie à l'écran.

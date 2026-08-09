@@ -17,16 +17,18 @@
    connexion normale sert toujours la dernière version ; le cache ne prend la
    main que lorsque le réseau ne répond pas.
 
-   Ce qui est gardé : uniquement les fichiers de l'app, servis depuis le même
-   domaine. Les images des brawlers viennent d'un autre serveur et ne sont pas
-   interceptées — un cache d'images grossirait sans limite, et leur absence
-   dégrade l'affichage sans empêcher de jouer.
+   Ce qui est gardé : les fichiers de l'app, et depuis le 07/08/2026 les
+   portraits et les vignettes, qui sont désormais les nôtres. Cette ligne
+   disait l'inverse — « les images viennent d'un autre serveur et ne sont pas
+   interceptées » — et c'était vrai tant qu'elles venaient de brawltime. Elles
+   viennent de chez nous : hors ligne, il n'y avait plus aucune image du tout.
+   Elles ne sont pas pré-chargées pour autant, seulement gardées au vol.
 
    VERSION : à incrémenter dès qu'un fichier de COQUILLE change. Ce n'est pas
    nécessaire pour donnees.js, qui passe par le réseau en premier de toute
    façon ; c'est nécessaire pour que les anciens caches soient nettoyés. */
 
-var VERSION = "manager-v4";
+var VERSION = "manager-v5";
 
 var COQUILLE = [
   "./",
@@ -107,27 +109,34 @@ self.addEventListener("message", function (e) {
 self.addEventListener("fetch", function (e) {
   var req = e.request;
 
-  /* On ne garde QUE la coquille, nommée fichier par fichier — et non « tout
-     ce qui vient du même domaine ».
+  /* On ne garde QUE ce qui est nommé ici — jamais « tout ce qui vient du même
+     domaine ».
      ----------------------------------------------------------------------
-     Le critère « même domaine » semblait équivalent, il ne l'est pas :
-     donnees.js porte ASSETS_LOCAUX, que refresh.py bascule à true dès qu'il a
-     récupéré le jeu complet d'images. Ce jour-là, 3,5 Mo de portraits
-     deviennent du même domaine, passent par ici et se mettent en cache sans
-     limite ni expiration — exactement ce que ce fichier annonce comme exclu.
-     Et personne ne regarderait sw.js ce jour-là.
+     Le critère « même domaine » semblait équivalent, il ne l'est pas : il
+     avalerait tout ce qu'on ajouterait au site un jour, sans limite ni
+     expiration, et personne ne regarderait sw.js ce jour-là.
 
-     La liste manquait déjà manifest.webmanifest, ajouté par le même commit
-     que ce fichier : hors ligne, l'app se lançait sans son identité
-     d'application installée. */
+     Trois familles, chacune pour une raison différente :
+       — la coquille, pré-chargée à l'installation ;
+       — counters-<langue>.js, gardé au vol : les pré-charger tous les trois
+         annulerait le gain du découpage par langue ;
+       — assets/, gardé au vol AUSSI, et c'est nouveau. Le commentaire
+         précédent s'en méfiait — 3,5 Mo entrant dans le cache sans qu'on le
+         décide — et cette méfiance était juste tant que la bascule se faisait
+         toute seule. Elle est maintenant explicite, et « au vol » veut dire
+         « ce que l'utilisateur a réellement regardé » : quelqu'un qui ouvre
+         le draft garde six portraits, pas cent cinq. Ce qui borne le cache,
+         c'est le défilement, pas une liste. */
   if (req.method !== "GET") return;
   /* Le fichier d'explications de la langue lue : gardé au vol, sans être
      pré-chargé. Sans ça, hors ligne, le conseil perdrait ses explications —
      mais le pré-charger reviendrait à télécharger les trois langues, ce que
      tout ce découpage sert à éviter. */
-  var estCounters = /\/counters-[a-z]{2}\.js$/.test(req.url.split("?")[0]);
-  if (URLS_COQUILLE.indexOf(req.url.split("?")[0]) < 0
-      && !estCounters && req.mode !== "navigate") return;
+  var sansParam = req.url.split("?")[0];
+  var aGarder = /\/counters-[a-z]{2}\.js$/.test(sansParam)
+             || /\/assets\/(brawlers|maps)\/[^/]+\.png$/.test(sansParam);
+  if (URLS_COQUILLE.indexOf(sansParam) < 0
+      && !aGarder && req.mode !== "navigate") return;
 
   e.respondWith(
     fetch(req).then(function (reponse) {
