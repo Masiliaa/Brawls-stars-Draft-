@@ -20,6 +20,10 @@ on:
         description: "Télécharger les images des brawlers et des cartes"
         type: boolean
         default: false
+      blanc:
+        description: "Relever pour de vrai, mais n'écrire aucun fichier"
+        type: boolean
+        default: false
       diagnostic:
         description: "Diagnostic seul, sans rien écrire"
         type: choice
@@ -60,7 +64,11 @@ jobs:
         # raison de tout arrêter : les autres blocs peuvent avoir été relevés
         # correctement, et les avertissements restent visibles dans le journal.
         continue-on-error: true
-        run: python3 refresh.py --cartes --counters --synergie
+        # --blanc relève tout et n'écrit rien : c'est la seule façon d'essayer
+        # un nouveau relevé sur les vraies pages sans risquer donnees.js.
+        run: |
+          python3 refresh.py --tiers --cartes --counters --synergie \
+            ${{ inputs.blanc == true && '--blanc' || '' }}
 
       # Les images ne sont pas dans le relevé hebdomadaire : elles ne changent
       # qu'à la sortie d'un brawler, quelques fois par an, et c'est 120
