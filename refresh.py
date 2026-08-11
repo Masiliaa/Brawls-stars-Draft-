@@ -1999,6 +1999,72 @@ def deboguer_modes(net):
                   % (len(autres), ", ".join(autres[:4])))
 
 
+RX_LIEN_BRAWLER = re.compile(r"/tier-list/brawler/([^/?#\"]+)")
+LETTRES_TIER = ("S", "A", "B", "C", "D")
+
+
+def deboguer_tiers(net):
+    """Où la page de brawltime coupe-t-elle entre S et A ?
+
+    On connaît déjà l'ORDRE des brawlers : la page les liste du meilleur au
+    pire, et un simple GET suffit à les lire tous — pas de navigateur. Ce
+    qu'on ne connaît pas, c'est l'endroit des coupures. Sans elles, on a un
+    classement continu et pas des paliers, or c'est la lettre que le moteur
+    lit.
+
+    L'hypothèse à vérifier, et c'est tout l'objet de cette sonde : dans le
+    flux aplati, chaque lettre est un bloc de texte, suivi des liens de son
+    palier. Si c'est vrai, le relevé automatique est une dizaine de lignes.
+    Si c'est faux — les cinq lettres collées, puis tous les liens — alors la
+    page range les paliers autrement et il faudra lire le HTML brut.
+
+    On imprime donc les DEUX : ce que donne le découpage par lettre, et le
+    nombre total de liens. L'écart entre les deux dit laquelle est vraie.
+    """
+    for mode in ("brawlBall", "knockout"):
+        url = "%s/tier-list/mode/%s" % (BASE_NINJA, mode)
+        print("\n--- %s" % url)
+        try:
+            page = net.get(url)
+        except Exception as e:
+            print("  injoignable : %s: %s" % (e.__class__.__name__, e))
+            continue
+
+        blocs = aplatir(page)
+        tous = [m.group(1) for b in blocs if b["type"] == "lien"
+                for m in [RX_LIEN_BRAWLER.search(b.get("href") or "")] if m]
+        print("  %d lien(s) de brawler sur la page, %d distinct(s)"
+              % (len(tous), len(set(tous))))
+
+        # Découpage : une lettre ouvre un palier, les liens suivants lui
+        # appartiennent jusqu'à la lettre d'après.
+        courant, paliers = None, {}
+        for b in blocs:
+            texte = (b.get("texte") or "").strip()
+            if b["type"] == "texte" and texte in LETTRES_TIER:
+                courant = texte
+                paliers.setdefault(courant, [])
+                continue
+            if b["type"] != "lien" or courant is None:
+                continue
+            m = RX_LIEN_BRAWLER.search(b.get("href") or "")
+            if m and m.group(1) not in paliers[courant]:
+                paliers[courant].append(m.group(1))
+
+        if not paliers:
+            print("  aucune lettre S/A/B/C/D isolée dans le flux"
+                  "  <-- l'hypothèse est fausse")
+            continue
+        ranges = sum(len(v) for v in paliers.values())
+        print("  paliers repérés : %s" % ", ".join(
+            "%s=%d" % (L, len(paliers.get(L, []))) for L in LETTRES_TIER))
+        print("  %d brawler(s) rangé(s) sur %d  <-- doit valoir 105 pour servir"
+              % (ranges, len(set(tous))))
+        for L in LETTRES_TIER:
+            if paliers.get(L):
+                print("    %s : %s" % (L, ", ".join(paliers[L])[:76]))
+
+
 def deboguer_carte_ninja(net):
     """Une fiche de carte chez brawltime donne-t-elle les taux de victoire ?
 
@@ -2122,6 +2188,8 @@ def deboguer(net, quoi):
         return deboguer_pool(net)
     if quoi == "carte-ninja":
         return deboguer_carte_ninja(net)
+    if quoi == "tiers":
+        return deboguer_tiers(net)
     if quoi == "ninja":
         # Adresses relevees a la main sur les sites, pas devinees : les trois
         # sondes precedentes ont echoue faute d'avoir su ou aller.
@@ -2164,7 +2232,8 @@ def main():
     ap.add_argument("--debug", metavar="PAGE",
                     help="'counters', 'maps', 'carte' (une fiche de carte), "
                          "'events', 'rotation', 'ranked', 'ninja', 'carte-ninja', 'pool' "
-                         "(cherche le pool classe), ou une adresse complète")
+                         "(cherche le pool classe), 'tiers' (ou la page coupe "
+                         "entre S et A), ou une adresse complète")
     a = ap.parse_args()
 
     net = Reseau(delai=a.delai, ttl_jours=a.ttl, cache=not a.sans_cache)
