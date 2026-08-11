@@ -875,5 +875,68 @@ for lg in CPL.LANGUES:
     check("counters-%s.js ne laisse aucune phrase vide" % lg,
           '",""]' not in rendu)
 
+print("\n== tiers par mode ==")
+# La page range les brawlers par lettre, puis REPETE les memes liens dans les
+# tableaux qui suivent. Sans sentinelle, ces liens retombaient dans D : la
+# sonde du 11/08 a compte 116 ranges pour 105 existants. On rejoue exactement
+# cette forme, en miniature.
+PAGE_TIERS = """
+<html><body>
+<h2>Best Brawlers</h2>
+<table><tr><td>1</td><td><a href="/tier-list/brawler/surge"><img></a></td>
+<td>77.0%</td><td>1.17%</td></tr></table>
+<h2>Tier List</h2>
+<div>S</div>
+<a href="/tier-list/brawler/surge"><img></a>
+<a href="/tier-list/brawler/nori"><img></a>
+<div>A</div>
+<a href="/tier-list/brawler/starr_nova"><img></a>
+<a href="/tier-list/brawler/8-bit"><img></a>
+<div>B</div><a href="/tier-list/brawler/mr__p"><img></a>
+<div>C</div><a href="/tier-list/brawler/larry___lawrie"><img></a>
+<div>D</div><a href="/tier-list/brawler/rosa"><img></a>
+<p>This tier list was voted by the Brawl Time Ninja community. 48148 votes.</p>
+<h2>Best Teams</h2>
+<a href="/tier-list/brawler/surge">Surge</a>
+<a href="/tier-list/brawler/piper">Piper</a>
+<a href="/tier-list/brawler/inconnu42">Qui ca</a>
+</body></html>
+"""
+# Piper n'est nulle part dans la grille et ne figure QUE dans le tableau
+# d'apres : c'est le seul cas que le dedoublonnage ne rattrape pas, donc le
+# seul qui mette reellement la sentinelle a l'epreuve.
+NOMS_T = ["Surge", "Nori", "Starr Nova", "8-Bit", "Mr. P", "Larry & Lawrie",
+          "Rosa", "Piper"]
+PAR_CLE = {R.clef(n): n for n in NOMS_T}
+paliers, inconnus = R.tiers_depuis_page(PAGE_TIERS, lambda c: PAR_CLE.get(c))
+ranges = sum(len(v) for v in paliers.values())
+check("chaque lettre ouvre son palier", sorted(paliers) == ["A", "B", "C", "D", "S"],
+      sorted(paliers))
+check("S garde l'ordre de la page", paliers.get("S") == ["Surge", "Nori"], paliers.get("S"))
+check("les identifiants a rallonge sont nommes",
+      paliers.get("C") == ["Larry & Lawrie"], paliers.get("C"))
+check("le tableau du haut ne range rien", ranges == len(NOMS_T) - 1, ranges)
+check("les liens d'apres la grille ne retombent pas dans D",
+      paliers.get("D") == ["Rosa"], paliers.get("D"))
+check("un brawler qu'on ne sait pas nommer n'est pas invente",
+      all("inconnu42" not in ",".join(v) for v in paliers.values()))
+# Il est apres la sentinelle, donc pas meme signale : la grille est deja close.
+check("la sentinelle ferme la lecture", inconnus == [], inconnus)
+
+# Sans sentinelle, la meme page se serait mal lue : contre-epreuve.
+SANS = PAGE_TIERS.replace("This tier list was voted by the Brawl Time Ninja "
+                          "community. 48148 votes.", "Autre chose")
+p2, _ = R.tiers_depuis_page(SANS, lambda c: PAR_CLE.get(c))
+check("sans sentinelle, Piper tomberait dans D",
+      p2.get("D") == ["Rosa", "Piper"], p2.get("D"))
+
+TA = R.tiers_actuels(open(R.FICHIER_DONNEES, encoding="utf-8").read())
+check("tiers_actuels rend les 6 modes", sorted(TA) == sorted(R.MODES), sorted(TA))
+check("chaque mode a ses 5 lettres",
+      all(sorted(TA[m]) == ["A", "B", "C", "D", "S"] for m in TA))
+check("rendre_tiers refait le bloc a l'identique",
+      R.rendre_tiers(TA) == R.lire_bloc(
+          open(R.FICHIER_DONNEES, encoding="utf-8").read(), "TIERS"))
+
 print("\n== %d ok, %d echecs ==" % (ok, fail))
 sys.exit(1 if fail else 0)

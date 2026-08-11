@@ -1326,6 +1326,151 @@ def scraper_synergie(net, brawlers):
 
 
 # ---------------------------------------------------------------------------
+# Tiers par mode — le dernier bloc encore tapé à la main
+# ---------------------------------------------------------------------------
+#
+# Il l'est resté longtemps, et ça se voyait : relevé le 29/07, encore en place
+# le 11/08. Les trois autres blocs se rafraîchissaient tout seuls chaque lundi
+# pendant que celui-ci vieillissait — or c'est LUI qui donne le point de
+# départ du score, avant même la carte et les ennemis.
+#
+# Ce qu'on recopie, et ce que ça vaut
+# -----------------------------------
+# La page dit d'elle-même : « This tier list was voted by the Brawl Time Ninja
+# community ». C'est un avis collectif, pas une mesure — 48 000 votes, remis à
+# zéro à chaque saison. On le recopie tel quel et le pied de page le dit ;
+# le faire passer pour une statistique serait la règle 5 enfreinte.
+#
+# La même page porte aussi un tableau mesuré (33,6 M de parties). Il n'est pas
+# lu ici : il ne sort que dix lignes à la fois, sur onze pages, et demande un
+# navigateur. C'est le second choix, prévu séparément.
+#
+# Comment la page se lit
+# ----------------------
+# Vérifié par --debug tiers, pas supposé : dans le flux aplati chaque lettre
+# est un bloc de texte qui ouvre son palier, et les liens qui suivent lui
+# appartiennent. Un simple GET suffit — pas de navigateur.
+#
+# Deux pièges, tous deux mesurés :
+#   — les tableaux qui SUIVENT la grille relient les mêmes brawlers, et ils
+#     retombaient dans D : 116 rangés pour 105 existants. D'où la sentinelle,
+#     la phrase du vote, qui ferme la grille.
+#   — la page ne donne que des identifiants, jamais les noms affichés. On ne
+#     les invente pas : on reprend ceux que porte déjà donnees.js, et on
+#     signale ceux qu'on ne sait pas nommer plutôt que de les ranger au
+#     hasard. Un brawler absent de TIERS est déjà prévu par le moteur —
+#     POINTS_TIER_INCONNU — donc il est ignoré, pas perdu.
+
+RX_LIEN_BRAWLER = re.compile(r"/tier-list/brawler/([^/?#\"]+)")
+LETTRES_TIER = ("S", "A", "B", "C", "D")
+RX_FIN_GRILLE = re.compile(r"tier list was voted|voted by the .{0,40}community",
+                           re.I)
+
+
+def tiers_depuis_page(page, nom_pour):
+    """{lettre: [noms]} pour un mode. Vide si la page ne se lit plus.
+
+    `nom_pour` traduit un identifiant de la page en nom affiché ; il rend
+    None pour un brawler qu'on ne sait pas nommer."""
+    courant, paliers, vus, inconnus = None, {}, set(), []
+    for b in aplatir(page):
+        texte = (b.get("texte") or "").strip()
+        if b["type"] == "texte":
+            if texte in LETTRES_TIER:
+                courant = texte
+                paliers.setdefault(courant, [])
+                continue
+            # La grille finie, tout ce qui suit relie les mêmes brawlers
+            # depuis d'autres tableaux. On s'arrête là.
+            if courant and RX_FIN_GRILLE.search(texte):
+                break
+        if b["type"] != "lien" or courant is None:
+            continue
+        m = RX_LIEN_BRAWLER.search(b.get("href") or "")
+        if not m:
+            continue
+        cle = clef(m.group(1))
+        if not cle or cle in vus:
+            continue
+        vus.add(cle)
+        nom = nom_pour(cle)
+        if nom:
+            paliers[courant].append(nom)
+        else:
+            inconnus.append(m.group(1))
+    return paliers, inconnus
+
+
+def scraper_tiers(net, anciens, noms):
+    """{mode: {lettre: "nom,nom,…"}} — les modes illisibles gardent l'existant.
+
+    Un mode qui échoue ne doit pas en emporter cinq autres : on remplace ce
+    qu'on a pu relire, on garde le reste, et on dit lesquels."""
+    print("\n[0] Tiers par mode — brawltime.ninja (classement voté)")
+    par_cle = {clef(n): n for n in noms}
+    sortie, repris, tous_inconnus = {}, [], set()
+
+    for mode in MODES:
+        url = "%s/tier-list/mode/%s" % (BASE_NINJA, mode)
+        try:
+            page = net.get(url)
+        except Exception as e:
+            souci("tier list de %s illisible (%s)" % (mode, e.__class__.__name__))
+            page = None
+
+        paliers, inconnus = ({}, []) if not page else tiers_depuis_page(
+            page, lambda c: par_cle.get(c))
+        tous_inconnus.update(inconnus)
+        ranges = sum(len(v) for v in paliers.values())
+
+        # Le même seuil que pour les cartes : en dessous, ce n'est plus un
+        # relevé maigre mais un parseur cassé, et on refuse d'écrire.
+        if ranges < COUVERTURE_MIN or not all(paliers.get(L) for L in LETTRES_TIER):
+            if paliers:
+                souci("%s : %d brawler(s) rangé(s) sur %d attendus — le mode "
+                      "garde ses tiers actuels" % (mode, ranges, COUVERTURE_MIN))
+            repris.append(mode)
+            if mode in anciens:
+                sortie[mode] = anciens[mode]
+            continue
+        sortie[mode] = {L: ",".join(paliers[L]) for L in LETTRES_TIER}
+        note("%s : %s" % (mode, " ".join("%s=%d" % (L, len(paliers[L]))
+                                         for L in LETTRES_TIER)))
+
+    if tous_inconnus:
+        souci("%d brawler(s) de la page qu'on ne sait pas nommer, donc non "
+              "rangés (ils gardent le tier inconnu) : %s"
+              % (len(tous_inconnus), ", ".join(sorted(tous_inconnus)[:8])))
+    if len(repris) == len(MODES):
+        souci("aucun mode relu — TIERS reste inchangé")
+        return None
+    if repris:
+        note("%d mode(s) repris tels quels : %s" % (len(repris), ", ".join(repris)))
+    return sortie
+
+
+def tiers_actuels(html):
+    """Le bloc TIERS en place, {mode: {lettre: chaîne}}."""
+    bloc = lire_bloc(html, "TIERS")
+    out = {}
+    for mode, corps in re.findall(r"(\w+):\{(.*?)\}", bloc, re.S):
+        out[mode] = dict(re.findall(r'([SABCD]):"((?:[^"\\]|\\.)*)"', corps))
+    return out
+
+
+def rendre_tiers(par_mode):
+    """Même mise en page que le bloc écrit à la main : un mode par ligne."""
+    lignes = []
+    for mode in MODES:
+        if mode not in par_mode:
+            continue
+        corps = ",".join('%s:%s' % (L, js(par_mode[mode].get(L, "")))
+                         for L in LETTRES_TIER)
+        lignes.append("%s:{%s}" % (mode, corps))
+    return "var TIERS={\n" + ",\n".join(lignes) + "};"
+
+
+# ---------------------------------------------------------------------------
 # Tâche 1 — images en local
 # ---------------------------------------------------------------------------
 
@@ -1999,10 +2144,6 @@ def deboguer_modes(net):
                   % (len(autres), ", ".join(autres[:4])))
 
 
-RX_LIEN_BRAWLER = re.compile(r"/tier-list/brawler/([^/?#\"]+)")
-LETTRES_TIER = ("S", "A", "B", "C", "D")
-
-
 def deboguer_tiers(net):
     """Où la page de brawltime coupe-t-elle entre S et A ?
 
@@ -2217,6 +2358,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tout", action="store_true", help="tâches 1 à 5")
+    ap.add_argument("--tiers", action="store_true",
+                    help="tiers par mode (classement vote de brawltime)")
     ap.add_argument("--counters", action="store_true", help="tâche 2")
     ap.add_argument("--cartes", action="store_true", help="tâches 4 et 5")
     ap.add_argument("--synergie", action="store_true", help="tâche 3")
@@ -2246,8 +2389,8 @@ def main():
         return 0
 
     if a.tout:
-        a.counters = a.cartes = a.synergie = a.assets = True
-    if not any([a.counters, a.cartes, a.synergie, a.assets]):
+        a.tiers = a.counters = a.cartes = a.synergie = a.assets = True
+    if not any([a.tiers, a.counters, a.cartes, a.synergie, a.assets]):
         ap.print_help()
         return 1
 
@@ -2259,6 +2402,15 @@ def main():
     tr = Traducteur()
     touche = False
     counters_touche = False
+
+    if a.tiers:
+        table = scraper_tiers(net, tiers_actuels(html), noms)
+        if table:
+            html = ecrire_bloc(html, "TIERS", rendre_tiers(table))
+            maj["tiers"] = [aujourdhui, "brawltime.ninja (vote communautaire)"]
+            touche = True
+            # Le bloc vient de changer : les noms qu'on en tire aussi.
+            noms = noms_depuis_tiers(html)
 
     if a.cartes:
         anciennes = cartes_actuelles(html)
