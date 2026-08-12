@@ -131,6 +131,48 @@ def lire_json(url, texte, chemin=None):
     return 0
 
 
+def lire_reseau(url):
+    """Imprime les appels qu'une page fait pour se construire.
+
+    C'est la question qui précède tout scraper : d'où viennent les chiffres ?
+    Une adresse en application/json dans cette liste est un robinet possible
+    — de niveau 2 dans la hiérarchie de CLAUDE.md — à condition que le
+    robots.txt de SON hôte l'autorise, ce qui se vérifie ensuite, robinet
+    par robinet."""
+    net = R.Reseau(cache=False)
+    try:
+        appels = net.get_reseau(url)
+    finally:
+        net.fermer()
+    if appels is None:
+        print("Chromium indisponible : ce mode en a besoin, il n'a pas "
+              "de repli — l'onglet réseau n'existe que dans un navigateur.")
+        return 2
+
+    titre("%s\nAPPELS RÉSEAU — %d réponse(s)" % (url, len(appels)))
+
+    donnees, autres = [], {}
+    for a in appels:
+        if "json" in a["type"]:
+            donnees.append(a)
+        else:
+            famille = a["type"].split(";")[0].strip() or "(sans type)"
+            autres[famille] = autres.get(famille, 0) + 1
+
+    titre("RÉPONSES JSON — %d  (les robinets possibles)" % len(donnees))
+    vues = set()
+    for a in donnees:
+        court = a["url"].split("?")[0]
+        marque = "" if court not in vues else "   (déjà vu, autre requête)"
+        vues.add(court)
+        print("  %3d  %s%s" % (a["statut"], couper(a["url"], 88), marque))
+
+    titre("LE RESTE, PAR TYPE")
+    for fam in sorted(autres, key=autres.get, reverse=True):
+        print("  %4d ×  %s" % (autres[fam], fam))
+    return 0
+
+
 def lire(url, brut=False, liens_max=LIENS_MAX, sans_cache=False, entier=False,
          valeurs=None):
     net = R.Reseau(cache=not sans_cache)
@@ -237,6 +279,9 @@ def main():
     ap.add_argument("--entier", action="store_true",
                     help="ne rien couper : indispensable pour lire un texte "
                          "juridique, où le mot coupé est celui qui compte")
+    ap.add_argument("--reseau", action="store_true",
+                    help="imprimer les appels que la page fait pour se "
+                         "construire, au lieu de son contenu")
     a = ap.parse_args()
 
     if not re.match(r"^https?://", a.url):
@@ -244,6 +289,8 @@ def main():
         return 2
 
     try:
+        if a.reseau:
+            return lire_reseau(a.url)
         return lire(a.url, brut=a.brut, liens_max=a.liens,
                     sans_cache=a.sans_cache, entier=a.entier,
                     valeurs=a.valeurs)

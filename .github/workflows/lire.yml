@@ -41,6 +41,10 @@ on:
         description: "JSON : valeurs distinctes à ce chemin (ex. list[].rarity)"
         type: string
         default: ""
+      reseau:
+        description: "Montrer les appels que la page fait (l'onglet réseau)"
+        type: boolean
+        default: false
 
 # Lecture seule : ce flux ne commite rien et n'a rien à modifier.
 permissions:
@@ -60,8 +64,10 @@ jobs:
 
       # Sans navigateur, on ne voit qu'une fraction d'une page moderne : la
       # plupart des sites construisent leur contenu une fois chargés.
+      # Le mode réseau a besoin du navigateur même si --brut est coché :
+      # l'onglet réseau n'existe que dans un navigateur.
       - name: Installer Chromium
-        if: inputs.brut != true
+        if: inputs.brut != true || inputs.reseau == true
         run: |
           pip install --quiet playwright
           python -m playwright install --with-deps chromium
@@ -72,4 +78,5 @@ jobs:
             --liens "${{ inputs.liens }}" --sans-cache \
             ${{ inputs.brut == true && '--brut' || '' }} \
             ${{ inputs.entier == true && '--entier' || '' }} \
+            ${{ inputs.reseau == true && '--reseau' || '' }} \
             ${{ inputs.valeurs != '' && format('--valeurs {0}', inputs.valeurs) || '' }}

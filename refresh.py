@@ -310,7 +310,22 @@ class Reseau:
             except ImportError:
                 return None
             self._pw = sync_playwright().start()
-            self._nav = self._pw.chromium.launch()
+            # CHROME : même variable que les tests Node. Sans elle, Playwright
+            # prend son Chromium à lui ; avec elle, on peut pointer un
+            # Chromium déjà présent quand les versions ne s'alignent pas.
+            options = {}
+            executable = os.environ.get("CHROME")
+            if executable:
+                options["executable_path"] = executable
+            # Chromium ne lit pas HTTPS_PROXY tout seul. Là où un proxy de
+            # sortie est imposé (l'environnement de développement), il faut
+            # le lui passer ; là où il n'y en a pas (les serveurs de GitHub),
+            # cette variable est absente et rien ne change. La confiance TLS,
+            # elle, est déjà réglée côté système — on ne la désactive jamais.
+            proxy = os.environ.get("HTTPS_PROXY")
+            if proxy:
+                options["proxy"] = {"server": proxy}
+            self._nav = self._pw.chromium.launch(**options)
         return self._nav
 
     def get_rendu(self, url):
@@ -353,6 +368,56 @@ class Reseau:
         with open(chemin, "wb") as f:
             f.write(html.encode("utf-8"))
         return html
+
+    def get_reseau(self, url):
+        """Rend la page en notant chaque réponse qu'elle reçoit.
+
+        C'est l'« onglet réseau » d'un navigateur, en script. Il répond à la
+        première question de la hiérarchie des sources (CLAUDE.md) : d'où
+        cette page tire-t-elle ses chiffres, et le robinet est-il lisible
+        directement ? Le brief le demandait dès juillet (« regarde l'onglet
+        réseau ») — c'est resté lettre morte faute d'outil pour le faire.
+
+        Renvoie [{url, statut, type}], dans l'ordre d'arrivée. Rien n'est mis
+        en cache : on veut la liste des appels, pas leur contenu. On observe
+        les appels que fait une page qu'on a le droit de lire ; interroger
+        ensuite l'un de ces robinets directement redemandera son propre
+        passage par autorise()."""
+        nav = self._navigateur()
+        if nav is None:
+            return None
+        if not self.autorise(url):
+            raise PermissionError("robots.txt interdit %s" % url)
+
+        hote = urllib.parse.urlparse(url).netloc
+        attente = self.delai - (time.time() - self.dernier.get(hote, 0))
+        if attente > 0:
+            time.sleep(attente)
+        appels = []
+        page = nav.new_page(user_agent=UA)
+
+        def noter(rep):
+            try:
+                appels.append({"url": rep.url, "statut": rep.status,
+                               "type": (rep.headers or {}).get("content-type", "")})
+            except Exception:
+                pass    # une réponse illisible ne vaut pas un plantage
+
+        page.on("response", noter)
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=45000)
+            # Même défilement que get_rendu, et pour la même raison : une
+            # section construite à l'approche de l'écran ne demande ses
+            # données que si on descend jusqu'à elle.
+            page.wait_for_timeout(2000)
+            for _ in range(DEFILEMENTS):
+                page.mouse.wheel(0, 3000)
+                page.wait_for_timeout(500)
+            page.wait_for_timeout(1500)
+        finally:
+            page.close()
+            self.dernier[hote] = time.time()
+        return appels
 
     def get_rendu_onglets(self, url, onglets):
         """La page vue après avoir ouvert chacun de ses onglets.

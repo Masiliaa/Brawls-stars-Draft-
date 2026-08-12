@@ -129,6 +129,13 @@ Le flux ouvre la page dans Chromium sur les serveurs de GitHub, et imprime
 titres, texte visible et liens dans le journal — que Claude lit à distance.
 Il ne commite rien (`permissions: contents: read`) et respecte robots.txt.
 
+Depuis le 12/08, la case « Montrer les appels réseau » imprime à la place
+les adresses que la page appelle pour se construire — c'est l'outil qui
+répond à la question du niveau 2 de la section 10 : cette page a-t-elle un
+robinet JSON ? (La politique réseau a aussi été élargie ce jour-là aux
+quatre sources du robot : leurs pages se lisent désormais d'ici, en une
+seconde. Les hôtes hors liste passent toujours par le flux.)
+
 Deux lectures de contrôle, réussies : `brawl360.com` (667 223 caractères) et
 `metapick-ai.com/draft-tool`.
 
