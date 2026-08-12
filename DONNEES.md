@@ -5,43 +5,38 @@ et à quel point ils sont vérifiés. Il sert de garde-fou : tant qu'une source
 n'est pas confirmée, le bloc correspondant reste vide et le pied de page de
 l'app le dit à l'utilisateur.
 
-## Ce qui bloque aujourd'hui
+## Où en sont les données (12/08/2026)
 
-Les tâches 2 à 5 du brief demandent de récupérer des données sur
-`brawlcalculator.com`, `brawlstats.net` et `brawltime.ninja`. **Aucun de ces
-domaines n'est joignable depuis l'environnement où le code a été écrit** :
-la passerelle réseau répond `403 Forbidden` à chaque tentative, y compris
-sur `api.brawlapi.com` et les deux CDN d'images.
+Ce fichier a longtemps dit que rien n'avait pu être relevé. C'était vrai le
+29/07 ; ça ne l'est plus, et le laisser en l'état a induit en erreur — il a
+été réécrit pour redire la vérité, et doit être tenu à jour à chaque fois
+qu'un bloc change de statut.
 
-```
-$ curl -sS https://brawlcalculator.com/counters/
-curl: (56) CONNECT tunnel failed, response 403
-```
+Le relevé tourne **chaque lundi sur les serveurs de GitHub** (flux
+« Données », `.github/workflows/donnees.yml`), qui ont le réseau. Il commite
+lui-même ce qui a changé. L'environnement où le code s'écrit, lui, reste
+filtré (403 sur les quatre sources) : un scraper ne peut pas s'y essayer, il
+s'essaie dans le flux, avec l'entrée « blanc » pour relever sans rien écrire.
+Pour lire une page à la main : flux « Lire une page ».
 
-Rien n'a donc été relevé, et **rien n'a été inventé pour compenser** :
-`COUNTERS` et `SYNERGIE` sont livrés vides, `MAPS` est inchangé. Le travail
-livré est la mécanique complète — moteur de score, format des données,
-scraper, contrôles — prête à se remplir dès qu'elle tourne depuis un poste
-non filtré.
-
-Pour débloquer, au choix :
-
-1. **Lancer `refresh.py` depuis ta machine.** C'est le chemin prévu. Une
-   commande, aucune dépendance à installer.
-2. **Autoriser les domaines dans l'environnement d'exécution.** Ils se
-   règlent à la création de l'environnement — voir
-   <https://code.claude.com/docs/en/claude-code-on-the-web>. Une fois
-   ouverts, une nouvelle session peut faire le relevé elle-même.
+Pour accélérer le développement, l'option reste ouverte d'autoriser les
+domaines dans les réglages de l'environnement —
+<https://code.claude.com/docs/en/claude-code-on-the-web>.
 
 ## Sources, par bloc
 
-| Bloc | Source | Vérifiée ? | État |
+| Bloc | Source | Nature | État |
 |---|---|---|---|
-| `TIERS` | Brawl Time Ninja, saison 52 | oui, relevé manuel du 29/07/2026 | en place, non re-scrapé par `refresh.py` |
-| `MAPS` | Brawl Time Ninja | oui, relevé manuel du 29/07/2026 | en place, **16 cartes sur 18**, sans taux d'utilisation |
-| `COUNTERS` | `brawlcalculator.com/counters/` | structure décrite dans le brief, **jamais atteinte depuis ici** | vide |
-| `SYNERGIE` | `brawlstats.net` | non vérifiée | vide |
-| images | `api.brawlapi.com` puis `media.brawltime.ninja` | **testées le 29/07/2026 depuis un poste non filtré** | brawltime répond ; l'API reste à confirmer |
+| `TIERS` | brawltime.ninja | **vote de la communauté** (~48 000 votes/saison), pas une mesure | relevé automatique hebdo depuis le 12/08 (`--tiers`) |
+| `MAPS` | topbrawl.com | taux de victoire et d'utilisation mesurés | 27 cartes, relevé hebdo ; le moteur amortit les faibles échantillons |
+| `COUNTERS` | brawlcalculator.com | **jugement d'experts**, constitué à la main | 1 132 duels, relevé hebdo — mais la source elle-même bouge peu |
+| `SYNERGIE` | brawlstats.net | annoncée mesurée, jamais confirmée | **vide depuis le premier jour** — l'étape tourne et ne produit rien |
+| images | `assets/` en local (via api.brawlapi.com puis media.brawltime.ninja) | — | complètes : 105 portraits, 27 vignettes, `ASSETS_LOCAUX=true` |
+
+La couverture de `COUNTERS` est mesurée : 1 132 paires sur 10 920 possibles,
+soit **10,4 %**. Les 89,6 % restants passent par le cycle des trois familles,
+qui a besoin de la classe de chaque brawler, donc de l'API. C'est la donnée
+la plus faible du conseil — chantier ouvert.
 
 ### Sur la nature de `COUNTERS`
 
@@ -60,11 +55,12 @@ inutile. Un contrôle empêche désormais sa réapparition.
 
 Ce qui reste, dans l'ordre d'essai :
 
-1. `assets/{slug}.png` en local, si `ASSETS_LOCAUX` vaut `true` ;
-2. l'adresse renvoyée par `api.brawlapi.com` — la seule certaine ;
-3. `media.brawltime.ninja/brawlers/{slug}/avatar.png` — **confirmée** : elle a
-   servi à télécharger la plupart des portraits depuis un vrai poste, mais
-   elle ne connaît pas les brawlers récents (Damian, Nori) ;
+1. `assets/{slug}.png` en local — **c'est le cas nominal depuis le 07/08** :
+   le jeu est complet (105 + 27) et `ASSETS_LOCAUX` vaut `true` ; le service
+   worker garde au vol ce qui a été regardé, pour le hors-ligne ;
+2. l'adresse renvoyée par `api.brawlapi.com` ;
+3. `media.brawltime.ninja/brawlers/{slug}/avatar.png` — ne connaît pas
+   toujours les brawlers récents ;
 4. les initiales.
 
 Le CDN brawlify range bien les portraits sous `/brawlers/borderless/`, mais
@@ -90,50 +86,53 @@ page de l'app, avec le lien vers la policy.
 **Si l'app est un jour monétisée ou porte de la publicité, cela change de
 catégorie** et la policy doit être relue.
 
-### Sur le seuil de 0,3 %
+### Sur les faibles taux d'utilisation
 
-La tâche 4 demande d'écarter les brawlers sous 0,3 % de taux d'utilisation.
-`refresh.py` sait appliquer ce filtre mais a besoin des taux, qu'aucune
-source scrapée ne fournit encore. Tant que `data/userates.json` n'existe pas,
-le script **le signale explicitement** au lieu de laisser croire que le
-critère est tenu. Format attendu :
-
-```json
-{ "center-stage": { "bolt": { "wr": 73.1, "ur": 4.2 } } }
-```
+Les taux d'utilisation sont relevés avec les taux de victoire et stockés en
+troisième position dans `MAPS[].top`. Un taux de victoire assis sur trop peu
+de parties ne vaut pas un taux assis sur beaucoup : sous `SEUIL_FIABLE`
+(5 % d'utilisation — un seuil **choisi**, pas mesuré), `moteur.js` amortit le
+bonus de carte au lieu d'écarter la ligne. Le chiffre affiché reste celui de
+la source ; c'est la pondération qui est un jugement.
 
 ## Utilisation de `refresh.py`
 
 ```bash
-python3 refresh.py --tout          # tâches 1 à 5
-python3 refresh.py --counters      # table de matchups seule
+python3 refresh.py --tout          # tout relever
+python3 refresh.py --tiers         # tiers par mode (vote brawltime)
+python3 refresh.py --counters      # table de matchups
 python3 refresh.py --cartes        # pool de cartes + classements
-python3 refresh.py --assets        # images en local, bascule ASSETS_LOCAUX
-python3 refresh.py --blanc         # tout scraper sans écrire donnees.js
-python3 refresh.py --debug counters # montre ce que le parseur lit
+python3 refresh.py --synergie      # duos (source muette à ce jour)
+python3 refresh.py --assets        # images en local (--sans-bascule : sans
+                                   # toucher ASSETS_LOCAUX)
+python3 refresh.py --blanc         # tout relever sans rien écrire
+python3 refresh.py --debug tiers   # montre ce que le parseur lit
 ```
 
-Bibliothèque standard uniquement — pas de `pip install`. Le script respecte
-`robots.txt`, espace ses requêtes (`--delai`, 1,5 s par défaut) et met les
-réponses en cache dans `.cache/` (`--ttl`, 7 jours).
+Bibliothèque standard, plus Chromium via Playwright **quand il est là** :
+certains sites construisent leur page dans le navigateur, et sans lui on ne
+voit qu'une fraction du contenu. Sans Chromium, le script se rabat sur le
+téléchargement brut et le dit. Il respecte `robots.txt`, espace ses requêtes
+(`--delai`, 1,5 s par défaut) et met les réponses en cache dans `.cache/`
+(`--ttl`, 7 jours).
 
 **Codes de sortie** : `0` rien à signaler · `2` avertissements, blocs
 concernés laissés en l'état · `3` échec inattendu, `donnees.js` non modifié.
 
 ### Si le parseur ne trouve rien
 
-Les sélecteurs de `refresh.py` sont écrits d'après la description du brief,
-**pas d'après le HTML réel** — il n'a jamais pu être lu depuis ici. Le
-script est volontairement tolérant : il cherche des titres par expression
-régulière plutôt que des classes CSS. S'il rapporte « structure changée » :
+Les parseurs ont été mis au point contre les vraies pages, mais un site qui
+change de mise en page les casse sans prévenir. Le script est volontairement
+tolérant — des titres par expression régulière plutôt que des classes CSS —
+et chaque source a sa sonde :
 
 ```bash
-python3 refresh.py --debug counters
+python3 refresh.py --debug counters   # ou tiers, maps, pool, ranked…
 ```
 
-affiche les blocs vus par le parseur (type, texte, lien). Les motifs à
-ajuster sont les expressions passées à `sections()` dans
-`scraper_counters()` et `scraper_cartes()`.
+affiche les blocs vus par le parseur (type, texte, lien). Depuis
+l'environnement filtré, la même sonde se lance par le flux « Données »,
+champ « diagnostic », et se lit dans le journal.
 
 ## Traduction des explications
 
@@ -144,9 +143,13 @@ tout seul :
   `{"English sentence": {"fr": "…", "es": "…"}}` ;
 - il dépose les phrases et les langues manquantes dans
   `data/a_traduire.json`, prêtes à être remplies ;
-- **l'anglais d'origine est toujours conservé** dans `donnees.js`, et l'app
-  s'en sert en repli. Une phrase non traduite s'affiche donc en anglais —
-  visible, donc corrigeable, plutôt que faussement traduite.
+- **l'anglais d'origine est toujours conservé** dans `counters.js` (le
+  fichier source, toutes langues), et l'app s'en sert en repli. Une phrase
+  non traduite s'affiche donc en anglais — visible, donc corrigeable,
+  plutôt que faussement traduite ;
+- l'app, elle, ne charge que `counters-<langue>.js`, engendré par
+  `outils/counters_par_langue.py` — une langue au lieu de trois, mesuré
+  à −47 % sur la charge initiale.
 
 Pour les traduire, remplir les valeurs vides de `data/a_traduire.json`,
 recopier le tout dans `data/traductions.json`, relancer. Le cache est
@@ -155,29 +158,25 @@ persistant : une phrase traduite une fois ne revient plus.
 ## Tests
 
 ```bash
-python3 tests/t_refresh.py            # parseur et réécriture de donnees.js
+python3 tests/t_refresh.py            # parseurs et réécriture des blocs
 
 (python3 -m http.server 8765 &)       # les suivants ont besoin d'un serveur
 node tests/t_app.js                   # moteur de calcul
 node tests/t_parcours.js              # parcours utilisateur complet
 node tests/t_langues.js               # audit des traductions
+node tests/t_ecrans.js                # mise en page aux tailles d'iPhone
+node outils/audit.js                  # textes en dur, clés, régressions
 ```
 
-Les deux derniers exigent `npm i playwright` et un Chromium —
+Les suites navigateur exigent Playwright et un Chromium —
 `CHROME=/chemin/vers/chrome` si Playwright ne trouve pas le sien,
-`PORT=...` pour changer de port.
+`PORT=...` pour changer de port. Elles tournent aussi en CI
+(`.github/workflows/tests.yml`), à chaque poussée.
 
-**276 contrôles au total, tous verts.**
-
-| Suite | Ce qu'elle vérifie | Nb |
-|---|---|---|
-| `t_refresh.py` | parseur HTML tolérant, aller-retour de réécriture des blocs, dates par source, téléchargement des portraits (API prioritaire, brawlers hors tier lists, abandon si réseau mort), traduction des phrases de matchup | 63 |
-| `t_app.js` | tri des conseils, exclusion des bans et picks, repli du cycle de familles, bonus et malus de matchup, plafond de synergie, ordre de pick (exposition, fiabilité du contre), formulations du pied de page, chaîne de repli des images, cohérence du détail en mode Analyse | 72 |
-| `t_parcours.js` | chaque fichier servi, cocher/décocher, recherche, roster qui survit au rechargement, limites de picks, annuler, nouveau draft, changement de carte, bans conseillés, menus Rapide/Analyse et langue (ouverture, choix direct, fermeture au clic à côté et par Échap) | 69 |
-| `t_langues.js` | mêmes clés dans les 3 langues, aucun texte vide ou oublié en français, {accolades} préservées, repli de `t()`, séparateur décimal, chaque écran traduit y compris le mode Analyse, la ligne de situation et les bans conseillés, aucun débordement de la barre de 320 à 430 px | 72 |
-
-Ils ont servi de filet lors du découpage en fichiers : le comportement est
-resté identique d'un bout à l'autre de la réorganisation.
+**684 contrôles au total** (208 + 160 + 189 + 72 + 55), plus l'audit.
+Le détail de ce que chaque suite couvre est dans son fichier — le tenir
+à jour ici doublonnait, et ce fichier a déjà menti une fois en retard
+d'une version.
 
 ## Bans conseillés
 
@@ -301,16 +300,22 @@ une traduction manque. Voir « Traduction des explications » ci-dessus.
 Chaque fichier répond à une seule question. Ils se chargent dans cet ordre,
 déclaré en bas de `index.html`.
 
-| Fichier | À quoi il sert | Lignes |
-|---|---|---|
-| `index.html` | la page, presque vide : elle ne fait que charger le reste | 47 |
-| `style.css` | toute l'apparence | 154 |
-| `outils.js` | petites fonctions de base (nettoyer un nom, échapper du texte) | 51 |
-| `donnees.js` | **d'où viennent les chiffres** — seul fichier réécrit par `refresh.py` | 84 |
-| `etat.js` | ce que l'app retient : carte choisie, picks, brawlers cochés | 112 |
-| `moteur.js` | **comment le brawler conseillé est calculé** | 313 |
-| `vues.js` | comment tout ça est affiché | 305 |
-| `app.js` | ce qui se passe quand on touche l'écran | 114 |
+| Fichier | À quoi il sert |
+|---|---|
+| `index.html` | la page, presque vide : elle ne fait que charger le reste |
+| `style.css` | toute l'apparence |
+| `outils.js` | petites fonctions de base (nettoyer un nom, échapper du texte) |
+| `langues.js` | tous les textes affichés, dans les trois langues |
+| `donnees.js` | **d'où viennent les chiffres** — réécrit par `refresh.py` |
+| `counters-fr/en/es.js` | les duels et leurs explications, une langue par fichier — engendrés, ne pas éditer à la main |
+| `etat.js` | ce que l'app retient : carte choisie, picks, brawlers cochés |
+| `moteur.js` | **comment le brawler conseillé est calculé** |
+| `vues.js` | comment tout ça est affiché |
+| `app.js` | ce qui se passe quand on touche l'écran |
+| `sw.js` | pour que l'app s'ouvre même sans réseau |
+
+(Les nombres de lignes qui figuraient ici sont partis : ils étaient déjà
+faux, et ils le redeviendraient.)
 
 Ce sont des scripts classiques, pas des modules : aucun outil de
 construction, et le tout fonctionne aussi en ouvrant le fichier directement.
@@ -327,7 +332,9 @@ construction, et le tout fonctionne aussi en ouvrant le fichier directement.
 
 - La clé `localStorage` reste `manager:roster` — un roster existant est déjà
   enregistré chez l'utilisateur.
-- Ce qui est déployé : `index.html`, `style.css`, les six fichiers `.js`, et
-  `assets/` si les images sont rapatriées. `refresh.py`, `tests/` et `data/`
-  sont des outils de développement, ils ne sont pas nécessaires en ligne.
+- Ce qui est déployé : `index.html`, `style.css`, `manifest.webmanifest`,
+  `sw.js`, les fichiers `.js` du tableau ci-dessus et `assets/`.
+  `refresh.py`, `counters.js` (le fichier source des trois langues),
+  `tests/`, `outils/` et `data/` sont des outils de développement, ils ne
+  sont pas nécessaires en ligne.
 - Le pied de page ne doit jamais présenter une heuristique comme une mesure.

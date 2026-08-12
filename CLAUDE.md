@@ -20,6 +20,16 @@ Format obligatoire, court :
 Ne jamais lancer directement dans une suite de commandes sans avoir dit
 qu'il existait autre chose.
 
+**Seuil, ajouté le 12/08/2026** — cette règle se déclenchait pour tout, et
+posait à l'utilisateur des choix qu'il ne pouvait pas trancher (le A/B des
+tiers a dû être réexpliqué deux fois). Elle ne vaut que si le choix est
+**difficile à défaire** ou **coûte du temps ou de l'argent réels**. Sinon :
+décider, faire, et dire en une phrase ce qui a été décidé et pourquoi —
+l'utilisateur corrige après coup s'il n'est pas d'accord. Et avant de faire
+trancher : vérifier soi-même tout ce qui peut l'être, pour que la question
+posée soit la vraie (règle apprise le 11/08 : un des deux termes du choix
+était faux faute d'avoir lu la page en entier).
+
 ## 2. Ce qui dure passe avant ce qui est rapide
 
 Pour tout ce qui sera **refait plus d'une fois** (publier, mettre à jour,
@@ -204,7 +214,35 @@ permis d'**écarter** une piste fausse au lieu de la corriger pour rien.
 Un workflow sert à couvrir large quand on ne sait pas où chercher. Il ne sert
 pas à vérifier : ça, ça se mesure.
 
-## 10. Phrases de rappel
+## 10. La hiérarchie des sources de données
+
+Ajoutée le 12/08/2026. Avant d'écrire ou de modifier un scraper, vérifier
+les niveaux dans l'ordre, et ne descendre qu'avec la preuve que le niveau
+au-dessus n'existe pas :
+
+1. **API publique documentée** — le mieux : stable, prévue pour ça.
+2. **Endpoint JSON accessible** — les sites modernes peignent leurs pages à
+   partir de données brutes ; le robinet est parfois lisible directement.
+3. **Lecture des pages** (ce que fait `refresh.py`) — fragile : casse quand
+   le site change d'habillage.
+4. **Collecte maison** (API officielle Supercell) — le plus lourd ; demande
+   une adresse IP fixe qu'on n'a pas. Pour plus tard.
+
+Chaque vérification se note ici, datée, pour ne pas la refaire :
+
+- brawltime.ninja — niveau 2 vérifié le 11-12/08 : `_payload.json` → 404 ;
+  `cube.brawltime.ninja` (le service que leur site interroge) **existe mais
+  son robots.txt l'interdit aux robots**. Leurs pages HTML, elles, sont
+  autorisées. → niveau 3, et c'est le chemin légitime.
+- api.brawlapi.com — niveau 1, utilisé. Catalogue seulement : noms, classes,
+  raretés, images. **Aucune statistique** (vérifié le 11/08 : structure
+  complète relue, pas de taux de victoire ni de tiers).
+
+`robots.txt` tranche toujours : un robinet interdit aux robots est un
+robinet fermé, on ne contourne pas — c'est la règle jamais levée de la
+section 7, et c'est elle qui évite le bannissement.
+
+## 11. Phrases de rappel
 
 L'utilisateur peut écrire à tout moment :
 
