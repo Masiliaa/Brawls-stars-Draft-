@@ -186,8 +186,14 @@ function barreHaut() {
      Il pointe maintenant sur « accueil », qui repart de zéro : plus de carte,
      plus de picks. Le geste a donc toujours un effet, depuis n'importe où.
      C'est aussi ce que veut dire cliquer le nom d'un produit : recommencer. */
-  var logo = '<button class="tt logo" data-act="accueil" title="'
-           + echapper(t("retourAccueil")) + '">Le Manager</button>';
+  /* Le nom du produit est le titre de niveau 1 de la page — et il était le
+     seul candidat. L'audit du 23/08 n'a trouvé AUCUN titre h1-h6 : un lecteur
+     d'écran n'avait donc aucun point de repère pour se situer, ni rien à
+     annoncer en arrivant sur la page. Le <h1> enveloppe le bouton plutôt que
+     de le remplacer : le geste « revenir à l'accueil » ne change pas. */
+  var logo = '<h1 class="titre-page"><button class="tt logo" data-act="accueil"'
+           + ' title="' + echapper(t("retourAccueil"))
+           + '">Le Manager</button></h1>';
 
   return '<div class="bar">' + logo
        + '<div class="actions">' + menuMode + menuLangue
@@ -337,7 +343,7 @@ function blocRarete(g) {
      survol. */
   var titre = t(complet ? "decocherGroupe" : "cocherGroupe", { groupe: etiquette });
   return '<div class="rangee-rarete">'
-       + '<span class="titre-rarete">' + echapper(etiquette) + "</span>"
+       + '<h2 class="titre-rarete">' + echapper(etiquette) + "</h2>"
        + '<span class="compte-rarete">'
        + echapper(t("rosterCompte", { n: coches, total: g.liste.length })) + "</span>"
        + '<button class="b alt sm" data-act="groupe" data-v="' + g.id
@@ -448,8 +454,8 @@ function listeCartesHTML() {
           || sansAccents(nomCarte(c)).indexOf(filtre) !== -1;
     });
     if (!trouvees.length) {
-      return html + '<div class="lab" style="margin-top:18px">'
-           + echapper(t("aucuneCarte")) + "</div>";
+      return html + '<h2 class="lab" style="margin-top:18px">'
+           + echapper(t("aucuneCarte")) + "</h2>";
     }
     trouvees.forEach(function (carte) {
       html += '<section class="groupe-mode" style="--m:' + MODES[carte.mode].c + '">'
@@ -485,8 +491,8 @@ var CLE_TITRE_CHOIX = { ennemi: "choixEnnemi", allie: "choixAllie", ban: "choixB
 
 function ecranChoix() {
   return barreHaut()
-       + '<div class="lab" style="margin-top:0">'
-       + echapper(t(CLE_TITRE_CHOIX[cibleAjout])) + "</div>"
+       + '<h2 class="lab" style="margin-top:0">'
+       + echapper(t(CLE_TITRE_CHOIX[cibleAjout])) + "</h2>"
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercher"))
        + '" value="' + echapper(recherche) + '">'
        + astuceClavier()
@@ -552,7 +558,7 @@ function bandeRecentes() {
   var recentes = cartesRecentes();
   if (!recentes.length) return "";
 
-  var html = '<div class="titre-doux">' + echapper(t("cartesRecentes")) + "</div>"
+  var html = '<h2 class="titre-doux">' + echapper(t("cartesRecentes")) + "</h2>"
            + '<div class="recentes">';
   recentes.forEach(function (c) {
     html += '<button class="recente" data-act="carte" data-v="' + c.id + '"'
@@ -929,7 +935,7 @@ function blocBans() {
      l'exécute. */
   /* Même intitulé que la saisie : en minuscules, sans capitales espacées.
      Sept intitulés criés sur un écran, c'était sept fois personne. */
-  var html = '<div class="titre-doux">' + echapper(t("aBannir")) + "</div>";
+  var html = '<h2 class="titre-doux">' + echapper(t("aBannir")) + "</h2>";
   liste.forEach(function (x) {
     html += '<button class="row conseil-ban" data-act="banConseil" data-v="'
           + x.k + '" title="' + echapper(t("bannirCelui", { nom: x.nom })) + '">'

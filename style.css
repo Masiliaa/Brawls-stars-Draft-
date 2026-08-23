@@ -104,6 +104,12 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    au doigt, mais il fallait viser une bande de la hauteur d'un trait, donc il
    semblait ne marcher qu'une fois sur deux. La marge negative annule la place
    prise par le rembourrage, pour que la barre garde sa hauteur. */
+/* Le <h1> n'est qu'une enveloppe semantique : il ne doit rien ajouter a
+   l'oeil. Il cede sa place comme le bouton qu'il contient, et n'apporte ni
+   marge ni corps de texte propres. */
+.bar .titre-page{margin:0;font-size:inherit;font-weight:inherit;line-height:1;
+  flex:0 1 auto;min-width:0;display:flex;margin-right:auto}
+.bar .titre-page .logo{margin-right:0}
 .bar .logo{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;
   text-overflow:ellipsis;margin-right:auto;
   display:inline-flex;align-items:center;min-height:44px;padding:0 10px;margin-left:-10px;
@@ -111,7 +117,9 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   background:none;border:none;text-align:left;cursor:pointer;
   font-family:inherit;-webkit-appearance:none}
 .bar .logo:active{color:var(--texte)}
-.bar .actions{display:flex;gap:6px;flex:none}
+/* 8 px entre deux cibles, pas 6 : en dessous, le pouce touche le voisin.
+   Releve par l'audit du 23/08 — « Rapide » et « FR » etaient a 7 px. */
+.bar .actions{display:flex;gap:var(--e2);flex:none}
 
 .b{display:inline-flex;align-items:center;justify-content:center;gap:7px;
   font-family:inherit;text-transform:none;font-size:14px;font-weight:500;
@@ -243,7 +251,7 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    même trait gris, et rien qui dise qu'on peut les toucher. Ce sont des
    surfaces posées, espacées — la même matière que partout ailleurs. */
 .autre{display:flex;align-items:center;gap:13px;width:100%;
-  padding:var(--e2) var(--e3);margin-bottom:6px;
+  padding:var(--e2) var(--e3);margin-bottom:10px;
   background:var(--surface);border:none;border-radius:var(--r1);
   box-shadow:var(--arete);font:inherit;color:inherit;text-align:left;
   cursor:pointer;-webkit-appearance:none;min-height:56px}
@@ -270,6 +278,9 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* En mode analyse la saisie suit directement la ligne de la carte, qui porte
    déjà son filet : deux traits collés avec du vide entre eux. */
 .ligne-carte + .etat{border-top:none;margin-top:var(--e3);padding-top:0}
+/* La zone sensible d'un portrait fait 44 px et OCCUPE 44 px : le rembourrage
+   n'est plus repris par une marge negative. Une cible plus large que la place
+   qu'elle prend rendait l'ecart declare ici faux — 8 px annonces, 4 reels. */
 .etat .r{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
 /* 76 px pour « en face » etait large, et avec des cibles a 44 px la rangee
    debordait : « Nouveau draft » partait seul a la ligne. 64 px suffit aux
@@ -278,7 +289,7 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* Le portrait dessine 36 px, la zone sensible en fait 44 : le rembourrage
    est repris par une marge négative, donc rien ne bouge à l'œil. C'est la
    méthode déjà employée par le logo et par la mention Supercell. */
-.etat .t{position:relative;background:transparent;border:none;padding:4px;margin:-4px;
+.etat .t{position:relative;background:transparent;border:none;padding:4px;
   cursor:pointer;line-height:0;-webkit-appearance:none;flex:none}
 /* Le « + » de la première rangée est le geste le plus fréquent du draft :
    c'est lui qu'on touche à chaque pick adverse. Il est plein, les autres
@@ -307,6 +318,11 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   color:var(--doux);font-size:8px;line-height:14px;text-align:center;
   pointer-events:none}
 
+/* Ces intitules sont des <h2> depuis le 23/08 : a l'oeil c'etaient deja des
+   titres, mais aucun h1-h6 n'existait sur la page — un lecteur d'ecran ne
+   pouvait donc pas sauter de section en section. On annule ce que le
+   navigateur met sur un titre, pour que rien ne bouge a l'oeil. */
+.lab,.titre-doux,.titre-rarete{margin-block:0;font-weight:inherit}
 .lab{font-family:inherit;text-transform:uppercase;font-size:var(--t1);font-weight:700;letter-spacing:.16em;
   color:var(--faible);margin:var(--e5) 0 var(--e3);text-shadow:none}
 .wrap{display:flex;flex-wrap:wrap;gap:var(--e2)}
@@ -325,11 +341,16 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    qui porte la mention Supercell. Une mention legale illisible n'est pas
    affichee : c'est exactement la regle qu'on s'etait donnee en refusant de
    la cacher derriere un repli. */
-.note{margin-top:var(--e6);font-size:10.5px;font-weight:400;color:var(--faible);line-height:1.75}
+/* 10,5 px, c'etait sous le plancher de lisibilite. Une mention legale illisible
+   n'est pas affichee — meme raison qui avait deja refuse de la replier. */
+.note{margin-top:var(--e6);font-size:var(--t1);font-weight:400;color:var(--faible);line-height:1.75}
 /* Une mention legale qu'on ne peut pas toucher n'en est pas une : le lien
    passe a 32 px de haut sans changer de taille de texte. */
+/* Une mention legale qu'on ne peut pas toucher n'en est pas une. Elle etait
+   deja passee de 15 a 32 px ; l'audit la trouve encore a 36, sous les 44
+   que le reste de l'app tient maintenant. */
 .note a{color:var(--doux);text-decoration:underline;
-  display:inline-block;padding:9px 0}
+  display:inline-block;padding:13px 0;min-height:44px}
 .intro{font-size:var(--t3);font-weight:400;color:var(--doux);margin:0 0 var(--e3);line-height:1.55}
 /* Le nom du produit s'affichait « Le Manageı » sur un iPhone : les trois
    boutons de la barre prenaient 250 px sur les 358 disponibles, et le nom
