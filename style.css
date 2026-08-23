@@ -32,11 +32,18 @@
      Le parti pris de départ ne change pas : pas de police display imposée,
      pas de capitales forcées, rien qui clignote. */
   --fond:#08090e; --carte:#101320; --carte2:#151827; --trait:#232a40;
-  --texte:#eef0f6; --doux:#8b93b0; --faible:#79829e; --vif:#7c8cf8;
-  /* --faible reste au-dessus de 4,5:1 sur le nouveau fond (mesuré 5,1:1).
-     C'est la contrainte qui avait déjà fait éclaircir #5f5f68 : sur un
-     téléphone en plein jour, « changer » et les taux de victoire
-     disparaissaient. */
+  --texte:#eef0f6; --doux:#a9afc8; --faible:#9fa6c0; --vif:#98a4fb;
+  /* Les trois couleurs de texte atteignent 7:1 sur le PIRE des trois fonds
+     de l'app, mesuré le 23/08 — pas seulement sur le fond de page, qui est
+     le plus sombre et donc le plus facile :
+         --doux   #a9afc8  8,10:1        --faible #9fa6c0  7,29:1
+         --vif    #98a4fb  7,58:1 en texte, 8,35:1 sous le noir quand il
+                           sert de fond au « + »
+     4,5:1 est le seuil legal et il etait tenu ; 7:1 est ce que vise un
+     ecran sombre regarde dans le noir, et c'est la que cette app est
+     employee. L'ecart entre --doux et --faible est conserve : deux niveaux
+     de gris, pas un seul, sinon la hierarchie du texte disparait.
+     C'est la meme contrainte qui avait deja fait eclaircir #5f5f68. */
 
   /* Une surface = un dégradé très court PLUS une arête claire. Les deux
      ensemble, jamais l'un sans l'autre. */
@@ -402,7 +409,7 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* Une mention legale qu'on ne peut pas toucher n'en est pas une. Elle etait
    deja passee de 15 a 32 px ; l'audit la trouve encore a 36, sous les 44
    que le reste de l'app tient maintenant. */
-.note a{color:var(--doux);text-decoration:underline;
+.note a{color:var(--doux);text-decoration:underline;font-size:var(--t2);
   display:inline-block;padding:13px 0;min-height:44px}
 .intro{font-size:var(--t3);font-weight:400;color:var(--doux);margin:0 0 var(--e3);line-height:1.55}
 /* Sur l'ecran roster, la consigne suit la recherche au lieu de la preceder :
@@ -725,8 +732,14 @@ body.clavier .inp:focus-visible{outline:none;border-color:var(--texte)}
 
 /* Pied de page : les sources se replient, la mention Supercell reste. */
 .note .supercell{margin-top:9px}
+/* Les deux seuls elements du pied de page qu'on TOUCHE : ce qui ouvre les
+   sources, et le lien de la Fan Content Policy. Ils passent a 13 px — le
+   corps de la note, qui se lit une fois, garde son petit corps. Un texte
+   sur lequel on appuie doit se lire ; c'est la meme regle qui avait deja
+   fait passer ce lien de 15 a 32 puis a 44 px de haut. */
 .note summary{cursor:pointer;list-style:none;color:var(--faible);
-  font-weight:600;padding:4px 0}
+  font-size:var(--t2);font-weight:600;padding:var(--e2) 0;min-height:44px;
+  display:flex;align-items:center}
 .note summary::-webkit-details-marker{display:none}
 .note summary::after{content:" ›";display:inline-block}
 .note[open] summary::after{content:" ⌄"}
