@@ -448,9 +448,18 @@ const check = (nom, cond, detail = '') => {
     MAJ.matchups = null;
     return s;
   });
+  // Ce controle citait « Brawl Time Ninja, 29/07/2026 » en dur — la valeur
+  // qu'avait donnees.js le jour ou il a ete ecrit. Le releve des tiers etant
+  // devenu automatique, il est tombe des le premier passage du robot : il
+  // verifiait une DONNEE, pas le comportement qu'il annonce.
+  // Ce qu'on veut vraiment savoir : chaque bloc porte SA date et SA source,
+  // et jamais celle du voisin. On lit donc ce que donnees.js contient.
+  const vraiTiers = await page.evaluate(() => MAJ.tiers);
+  const segMatchups = note3.split('Matchups')[1] || '';
   check('date propre à chaque source',
-    /Tiers par mode · source Brawl Time Ninja, 29\/07\/2026/.test(note3) &&
-    /source brawlcalculator\.com, 01\/09\/2026/.test(note3), note3);
+    note3.includes('source ' + vraiTiers[1] + ', ' + vraiTiers[0]) &&
+    segMatchups.includes('01/09/2026') &&
+    !segMatchups.includes(vraiTiers[0]), note3);
   const note4 = await page.evaluate(() => {
     COUNTERS = { a: {} }; MAJ.matchups = null;
     const s = noteHTML(); COUNTERS = {}; return s;

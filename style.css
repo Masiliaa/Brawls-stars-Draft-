@@ -1,9 +1,14 @@
 /* Le Manager — feuille de style unique.
    ------------------------------------------------------------------------
-   Parti pris : noir profond, typographie système, chrome réduit au minimum.
+   Parti pris : noir FROID et profond, typographie système, chrome réduit au
+   minimum. Le noir était parfaitement neutre jusqu au 12/08/2026 ; il prend
+   une température, pour que les surfaces se distinguent du fond par leur
+   teinte et plus seulement par un filet de 1 px.
    Le nom conseillé doit se lire en une seconde ; tout le reste s'efface.
 
-   Pas de police display, pas de capitales forcées, pas d'ombre portée,
+   Pas de police display, pas de capitales forcées. Une ombre et un liseré de
+   lumière par surface — ajoutés le 12/08 : c est ce qui fait la matière, et
+   leur absence est ce qui datait le plus.
    filets de 1 px. C'est ce qui sépare une interface d'outil d'une interface
    de jeu mobile.
 
@@ -13,11 +18,32 @@
    ------------------------------------------------------------------------ */
 
 :root{
-  --fond:#0a0a0b; --carte:#121214; --carte2:#18181b; --trait:#242428;
-  --texte:#fafafa; --doux:#8a8a93; --faible:#7c7c85; --vif:#ff5c39;
-  /* --faible valait #5f5f68 : 3,1:1 sur le fond, sous le seuil de lisibilite
-     de 4,5:1. Sur un telephone en plein jour, « changer », « Sinon » et les
-     taux de victoire disparaissaient. Eclairci a 4,6:1. */
+  /* ---- La matière, revue le 12/08/2026 ----
+     Le gris était parfaitement neutre — #0a0a0b, #121214, #18181b — et tout
+     s'y trouvait au même plan : un fond, un contour de 1 px, rien d'autre.
+     C'est ce qui datait, bien plus que l'absence de décoration.
+
+     Deux changements, et deux seulement :
+       — le noir prend une température froide, donc les surfaces se
+         distinguent du fond par leur TEINTE et plus seulement par un trait ;
+       — chaque surface porte un liseré de lumière sur son arête haute
+         (--arete). C'est ce détail-là qui fait la matière : sans lui on
+         retombe sur le rectangle gris.
+     Le parti pris de départ ne change pas : pas de police display imposée,
+     pas de capitales forcées, rien qui clignote. */
+  --fond:#08090e; --carte:#101320; --carte2:#151827; --trait:#232a40;
+  --texte:#eef0f6; --doux:#8b93b0; --faible:#79829e; --vif:#7c8cf8;
+  /* --faible reste au-dessus de 4,5:1 sur le nouveau fond (mesuré 5,1:1).
+     C'est la contrainte qui avait déjà fait éclaircir #5f5f68 : sur un
+     téléphone en plein jour, « changer » et les taux de victoire
+     disparaissaient. */
+
+  /* Une surface = un dégradé très court PLUS une arête claire. Les deux
+     ensemble, jamais l'un sans l'autre. */
+  --surface:linear-gradient(180deg,var(--carte2),var(--carte));
+  --arete:inset 0 1px 0 rgba(255,255,255,.07);
+  --pose:var(--arete),0 8px 24px rgba(0,0,0,.4);
+
   --police:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,
            "Helvetica Neue",Arial,sans-serif;
 
@@ -36,8 +62,10 @@
 
   /* Trois rayons au lieu de six : petit (champ, tuile), grand (carte), rond
      (pastille). Six rayons différents sur un même écran, l'œil le voit même
-     s'il ne sait pas le nommer. */
-  --r1:12px; --r2:20px; --r3:999px;
+     s'il ne sait pas le nommer.
+     Élargis le 12/08 : à 12 px un bloc de 360 px de large a des angles qui
+     semblent coupés au couteau. À 16, la surface se pose. */
+  --r1:16px; --r2:24px; --r3:999px;
 
   /* Quatre tailles de texte au lieu de huit. La hauteur des zones tactiles
      ne passe PAS par cette échelle : 44 px est une taille de pouce, pas un
@@ -87,11 +115,16 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 .b{display:inline-flex;align-items:center;justify-content:center;gap:7px;
   font-family:inherit;text-transform:none;font-size:14px;font-weight:500;
-  color:var(--texte);background:var(--carte2);border:1px solid var(--trait);border-radius:var(--r3);
-  padding:var(--e2) var(--e3);cursor:pointer;box-shadow:none;min-height:44px;transition:background .12s}
-.b:active{background:#232327;transform:none}
-.b.alt{background:transparent;color:var(--doux)}
-.b.sm{font-size:var(--t2);padding:var(--e2) var(--e3);min-height:40px}
+  color:var(--texte);background:var(--surface);border:1px solid var(--trait);border-radius:var(--r3);
+  padding:var(--e2) var(--e3);cursor:pointer;box-shadow:var(--arete);min-height:44px;
+  transition:background .12s,box-shadow .12s}
+.b:active{background:var(--carte2);transform:none;box-shadow:none}
+.b.alt{background:transparent;color:var(--doux);box-shadow:none}
+/* 40 px etait la derniere exception a la regle des 44 que cette feuille se
+   donne elle-meme. Mesure le 12/08 : 10 des 16 boutons de l'ecran de draft
+   passaient dessous, et ce sont ceux qu'on touche pendant les 25 secondes.
+   La taille du TEXTE reste petite ; seule la zone grandit. */
+.b.sm{font-size:var(--t2);padding:var(--e2) var(--e3);min-height:44px}
 .b.full{width:100%;justify-content:space-between;text-align:left;border-radius:var(--r1);
   background:var(--carte);color:var(--texte)}
 .b.lang{min-width:44px;color:var(--texte)}
@@ -114,10 +147,22 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    « PICK » en capitales orange, et le tier en pastille flottante alignée avec
    rien. Cinq objets pour dire un nom. Il ne reste que le nom, posé sur le fond
    de la page — et le bord gauche de l'écran est enfin le même pour tous. */
-.hero{position:relative;background:transparent;border:none;border-radius:0;
-  padding:0;margin:var(--e5) 0 var(--e4);overflow:visible;box-shadow:none;
-  display:block;width:100%;text-align:left;font:inherit;color:inherit;
-  cursor:pointer;-webkit-appearance:none}
+/* La réponse est le seul endroit de l'app qui porte de la couleur, et cette
+   couleur n'est pas décorative : c'est --r, la rareté du brawler conseillé,
+   déjà posée en ligne par blocConseils(). On s'en sert comme d'une SOURCE
+   DE LUMIÈRE derrière le nom, pas comme d'un fond.
+
+   Le dégradé s'arrête à 62 % : au-delà il redevient le fond de la page, donc
+   le bloc n'a besoin d'aucun contour pour exister. C'est ce qui remplace le
+   filet de 1 px sans le remplacer par une boîte. */
+.hero{position:relative;background:transparent;border:none;border-radius:var(--r2);
+  padding:var(--e3) var(--e4) var(--e4);margin:var(--e4) calc(-1 * var(--e3)) var(--e3);
+  width:calc(100% + var(--e5));overflow:hidden;box-shadow:none;
+  display:block;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;-webkit-appearance:none;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(120% 100% at 18% 0%,var(--r),transparent 62%);
+  opacity:.20}
 .hero:active .name{color:var(--doux)}
 .hero .vers-detail{margin-left:auto;flex:none;color:var(--faible);font-size:22px;
   align-self:center;line-height:1}
@@ -191,11 +236,17 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    même écran, c'était sept fois personne. */
 .titre-doux{font-size:var(--t2);color:var(--faible);margin:var(--e5) 0 var(--e2)}
 
-.listes{display:flex;flex-direction:column;border-top:1px solid var(--trait);
-  padding-top:var(--e2)}
-.autre{display:flex;align-items:center;gap:13px;width:100%;padding:var(--e2) 0;
-  background:transparent;border:none;font:inherit;color:inherit;text-align:left;
-  cursor:pointer;-webkit-appearance:none;min-height:52px}
+/* Le filet qui coiffait la liste n'a plus rien à séparer : les remplaçants
+   sont maintenant des surfaces distinctes du fond. */
+.listes{display:flex;flex-direction:column;padding-top:0}
+/* Les remplaçants étaient des lignes séparées par un filet : trois fois le
+   même trait gris, et rien qui dise qu'on peut les toucher. Ce sont des
+   surfaces posées, espacées — la même matière que partout ailleurs. */
+.autre{display:flex;align-items:center;gap:13px;width:100%;
+  padding:var(--e2) var(--e3);margin-bottom:6px;
+  background:var(--surface);border:none;border-radius:var(--r1);
+  box-shadow:var(--arete);font:inherit;color:inherit;text-align:left;
+  cursor:pointer;-webkit-appearance:none;min-height:56px}
 .autre .txt{min-width:0;display:flex;flex-direction:column;gap:2px}
 .autre .n{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
 .autre .p{font-size:12.5px;color:var(--faible);line-height:1.3;
@@ -206,8 +257,12 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 
 /* La saisie : l'intitulé occupe une colonne de largeur fixe, donc les
    portraits forment une colonne droite — ce qui manquait le plus. */
-.etat{display:flex;flex-direction:column;gap:var(--e3);margin-top:var(--e5);
-  padding-top:var(--e4);border-top:1px solid var(--trait)}
+/* La saisie est ce qu'on touche le plus, et c'est le bas de l'écran — la
+   zone du pouce. Elle devient une surface posée, avec son arête de lumière,
+   au lieu d'un bloc séparé du reste par un trait. */
+.etat{display:flex;flex-direction:column;gap:var(--e2);margin-top:var(--e4);
+  padding:var(--e3);border-top:none;
+  background:var(--surface);border-radius:var(--r2);box-shadow:var(--pose)}
 /* Six bans, plus l'intitulé, plus le compte : en français la rangée dépassait
    de 17 px. Elle passe à la ligne plutôt que de faire glisser la page entière
    — un écran qui se décale sous le pouce pendant un draft est pire qu'un
@@ -216,27 +271,47 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    déjà son filet : deux traits collés avec du vide entre eux. */
 .ligne-carte + .etat{border-top:none;margin-top:var(--e3);padding-top:0}
 .etat .r{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
-.etat .cle{width:76px;flex:none;font-size:var(--t2);color:var(--faible)}
-.etat .t{position:relative;background:transparent;border:none;padding:0;
+/* 76 px pour « en face » etait large, et avec des cibles a 44 px la rangee
+   debordait : « Nouveau draft » partait seul a la ligne. 64 px suffit aux
+   trois langues — verifie de 320 a 430 px par t_langues. */
+.etat .cle{width:64px;flex:none;font-size:var(--t2);color:var(--faible)}
+/* Le portrait dessine 36 px, la zone sensible en fait 44 : le rembourrage
+   est repris par une marge négative, donc rien ne bouge à l'œil. C'est la
+   méthode déjà employée par le logo et par la mention Supercell. */
+.etat .t{position:relative;background:transparent;border:none;padding:4px;margin:-4px;
   cursor:pointer;line-height:0;-webkit-appearance:none;flex:none}
-.etat .plus{width:36px;height:36px;flex:none;border-radius:12px;
-  border:1px solid var(--trait);background:transparent;color:var(--faible);
-  font:inherit;font-size:17px;line-height:1;cursor:pointer;
+/* Le « + » de la première rangée est le geste le plus fréquent du draft :
+   c'est lui qu'on touche à chaque pick adverse. Il est plein, les autres
+   sont en creux. Et il fait 44 px : il en faisait 36, sous le seuil que
+   cette feuille se donne elle-même. */
+.etat .plus{width:44px;height:44px;flex:none;border-radius:var(--r1);
+  border:1px solid var(--trait);background:transparent;color:var(--doux);
+  font:inherit;font-size:21px;line-height:1;cursor:pointer;
   display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
+.etat .r:first-child .plus{background:var(--vif);border-color:transparent;
+  color:#0b0d15;font-weight:600;box-shadow:0 6px 18px rgba(124,140,248,.32)}
 .etat .plus:active{border-color:var(--vif);color:var(--vif)}
+.etat .r:first-child .plus:active{opacity:.8;color:#0b0d15}
 .etat .reste{margin-left:auto;font-size:12px;color:var(--faible);
   font-variant-numeric:tabular-nums}
-.etat .relancer{margin-left:auto;flex:none}
+/* « Nouveau draft » est le seul bouton de cette rangee qui porte du texte :
+   c'est lui qui la fait deborder en francais, ou le mot est plus long qu'en
+   anglais et en espagnol. Il se resserre plutot que de partir seul a la
+   ligne — sa zone tactile garde ses 44 px de haut. */
+.etat .relancer{margin-left:auto;flex:none;padding-left:var(--e2);padding-right:var(--e2)}
 .etat .ban .t{opacity:.5}
-.etat .t .croix{position:absolute;top:-4px;right:-4px;width:15px;height:15px;
-  border-radius:50%;background:var(--fond);border:1px solid var(--trait);
-  color:var(--doux);font-size:8px;line-height:13px;text-align:center;
+/* La croix se pose sur le dessin, pas sur la zone sensible : le bouton
+   porte maintenant 4 px de rembourrage, elle se cale donc dessus. */
+.etat .t .croix{position:absolute;top:0;right:0;width:16px;height:16px;
+  border-radius:50%;background:var(--carte);border:1px solid var(--trait);
+  color:var(--doux);font-size:8px;line-height:14px;text-align:center;
   pointer-events:none}
 
 .lab{font-family:inherit;text-transform:uppercase;font-size:var(--t1);font-weight:700;letter-spacing:.16em;
   color:var(--faible);margin:var(--e5) 0 var(--e3);text-shadow:none}
 .wrap{display:flex;flex-wrap:wrap;gap:var(--e2)}
-.inp{width:100%;background:var(--carte);border:1px solid var(--trait);border-radius:var(--r1);
+.inp{width:100%;background:var(--surface);border:1px solid var(--trait);border-radius:var(--r1);
+  box-shadow:var(--arete);
   padding:var(--e2) var(--e3);min-height:44px;
   color:var(--texte);font-family:inherit;font-weight:400;font-size:16px;margin-bottom:var(--e3)}
 .inp::placeholder{color:var(--faible)}
@@ -362,9 +437,9 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* Le menu flotte au-dessus du reste : c'est le seul endroit de l'app où une
    ombre est justifiée, elle dit « ce panneau est détaché de la page ». */
 .menu{position:absolute;top:calc(100% + 6px);right:0;z-index:30;min-width:158px;
-  background:var(--carte2);border:1px solid var(--trait);border-radius:12px;
+  background:var(--surface);border:1px solid var(--trait);border-radius:var(--r1);
   padding:5px;display:flex;flex-direction:column;gap:2px;
-  box-shadow:0 14px 34px rgba(0,0,0,.6)}
+  box-shadow:var(--arete),0 14px 34px rgba(0,0,0,.6)}
 .menu button{display:flex;align-items:center;gap:8px;width:100%;min-height:42px;
   background:transparent;border:none;border-radius:8px;padding:10px 11px;
   font:inherit;font-size:14px;color:var(--doux);text-align:left;cursor:pointer}
@@ -637,7 +712,7 @@ body.clavier .inp:focus-visible{outline:none;border-color:var(--texte)}
 .recentes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
   gap:var(--e2)}
 .recente{display:flex;align-items:center;gap:var(--e2);min-width:0;
-  padding:var(--e2);min-height:56px;background:var(--carte);
+  padding:var(--e2);min-height:56px;background:var(--surface);box-shadow:var(--arete);
   border:1px solid var(--trait);border-left:3px solid var(--m);
   border-radius:var(--r1);font:inherit;color:inherit;text-align:left;
   cursor:pointer;-webkit-appearance:none}
