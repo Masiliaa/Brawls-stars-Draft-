@@ -312,9 +312,15 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    qu'elle prend rendait l'ecart declare ici faux — 8 px annonces, 4 reels. */
 .etat .r{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
 /* 76 px pour « en face » etait large, et avec des cibles a 44 px la rangee
-   debordait : « Nouveau draft » partait seul a la ligne. 64 px suffit aux
-   trois langues — verifie de 320 a 430 px par t_langues. */
-.etat .cle{width:64px;flex:none;font-size:var(--t2);color:var(--faible)}
+   debordait : « Nouveau draft » partait seul a la ligne.
+   Remesure le 23/08 : a 64 px il manquait encore exactement 2 px en
+   francais (326 disponibles, 328 necessaires). 60 px les rend, et laisse
+   la place au plus long des trois intitules — c'est cette colonne qui met
+   les portraits en ligne droite, elle ne peut pas disparaitre.
+   A 320 px il manque 72 px : la rangee passe alors a la ligne, et c'est le
+   comportement voulu depuis le debut — mieux vaut une ligne de plus qu'un
+   ecran qui glisse sous le pouce. */
+.etat .cle{width:60px;flex:none;font-size:var(--t2);color:var(--faible)}
 /* Le portrait dessine 36 px, la zone sensible en fait 44 : le rembourrage
    est repris par une marge négative, donc rien ne bouge à l'œil. C'est la
    méthode déjà employée par le logo et par la mention Supercell. */
