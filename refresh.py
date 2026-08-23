@@ -2532,7 +2532,6 @@ def main():
 
     # Seuls les blocs réellement rafraîchis sont redatés : le pied de page ne
     # doit jamais annoncer comme fraîche une donnée qui n'a pas été relevée.
-    # TIERS n'est pas re-scrapé par ce script, sa date reste donc manuelle.
     if touche and not a.blanc:
         html = ecrire_bloc(html, "MAJ", rendre_maj(maj, saison))
         open(FICHIER_DONNEES, "w", encoding="utf-8").write(html)
@@ -2542,6 +2541,29 @@ def main():
             print("counters.js réécrit.")
     elif a.blanc:
         print("\n--blanc : donnees.js et counters.js laissés tels quels.")
+
+    # Le récapitulatif, en TOUTE fin de sortie.
+    # ----------------------------------------------------------------------
+    # Un relevé complet imprime plusieurs centaines de lignes, et son issue
+    # se trouvait quelque part au milieu. Le 12/08, pour savoir si les tiers
+    # s'étaient relevés, il a fallu remonter 800 lignes de journal — et
+    # renoncer. Quatre lignes à la fin répondent à la seule question qu'on se
+    # pose en ouvrant ce journal : qu'est-ce qui a bougé, et qu'est-ce qui
+    # n'a pas bougé ?
+    print("\n" + "=" * 60)
+    print("RÉCAPITULATIF" + ("  (--blanc : rien n'a été écrit)" if a.blanc else ""))
+    demande = [("tiers", a.tiers), ("cartes", a.cartes),
+               ("matchups", a.counters), ("synergie", a.synergie)]
+    for nom, voulu in demande:
+        if not voulu:
+            continue
+        bloc = maj.get(nom)
+        frais = bool(bloc) and bloc[0] == aujourdhui
+        print("  %-9s %s" % (nom, ("relevé le " + bloc[0] + " · " + bloc[1])
+                             if frais else
+                             ("INCHANGÉ" + (" (dernier relevé : %s)" % bloc[0] if bloc else " — jamais relevé"))))
+    if a.assets:
+        print("  %-9s %s" % ("images", "téléchargées"))
 
     if ERREURS:
         print("\n%d avertissement(s) :" % len(ERREURS))
