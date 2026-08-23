@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+  <style>
+    body{margin:0;background:#07080a;color:#e8ecea;
+      font-family:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased}
+    a{color:#c8f751}a:hover{color:#e8ecea}
+    .mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-variant-numeric:tabular-nums}
+    .cap{font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:700;
+      letter-spacing:.18em;text-transform:uppercase;color:#5d665f}
+    .cara{display:inline-flex;align-items:center;justify-content:center;flex:none;
+      border-radius:6px;font-weight:700;color:#07080a;line-height:1;overflow:hidden}
+    .cible{display:inline-flex;align-items:center;justify-content:center;
+      width:44px;height:44px;margin:-4px;flex:none;position:relative}
+    /* La grille de fond : discrete, mais c'est elle qui dit « instrument ». */
+    .quad{background-image:linear-gradient(#0d0f11 1px,transparent 1px),
+                          linear-gradient(90deg,#0d0f11 1px,transparent 1px);
+      background-size:26px 26px}
+  </style>
+</helmet>
+
+<div class="quad" style="width:390px;height:844px;background-color:#07080a;position:relative;overflow:hidden">
+  <div style="padding:16px 16px 0">
+
+    <!-- barre : tout en petites capitales monospace, aucun bouton arrondi -->
+    <div style="display:flex;align-items:center;gap:12px;min-height:44px;
+                border-bottom:1px solid #14181a;padding-bottom:12px">
+      <span style="font-size:14px;font-weight:700;letter-spacing:-.02em;margin-right:auto">LE MANAGER</span>
+      <span class="cap" style="color:#c8f751;border-bottom:2px solid #c8f751;padding-bottom:3px">Rapide</span>
+      <span class="cap">Analyse</span>
+      <span class="cap">FR</span>
+      <span class="cap">Roster</span>
+    </div>
+
+    <!-- contexte : une seule ligne dense, tout est lisible d'un coup -->
+    <div style="display:flex;align-items:center;gap:10px;margin-top:13px">
+      <span class="cap" style="color:#c8f751">BRAWL BALL</span>
+      <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Milieu de scène</span>
+      <span style="margin-left:auto;display:flex;gap:3px">
+        <span style="width:14px;height:5px;background:#c8f751"></span>
+        <span style="width:14px;height:5px;background:#1c2124"></span>
+        <span style="width:14px;height:5px;background:#1c2124"></span>
+      </span>
+      <span class="cap">1 après</span>
+    </div>
+
+    <!-- LA REPONSE : le nom colle a gauche, le score en mono a droite.
+         Deux chiffres de meme nature, alignes sur la meme colonne. -->
+    <div style="margin-top:20px;padding:16px;background:#0b0e10;border-left:3px solid #c8f751">
+      <div style="display:flex;align-items:flex-start;gap:13px">
+        <span class="cara" style="width:52px;height:52px;background:#e879c8;font-size:22px">S</span>
+        <div style="min-width:0;flex:1">
+          <div style="font-size:38px;font-weight:700;letter-spacing:-.035em;line-height:1">Surge</div>
+          <div class="cap" style="margin-top:5px">Tier S · Brawl Ball</div>
+        </div>
+        <div style="text-align:right;flex:none">
+          <div class="mono" style="font-size:30px;font-weight:700;color:#c8f751;line-height:1">107</div>
+          <div class="cap" style="margin-top:3px">points</div>
+        </div>
+      </div>
+      <!-- la barre decoupee : d'ou viennent les points -->
+      <div style="display:flex;height:6px;margin-top:14px;gap:2px">
+        <span style="flex:82;background:#c8f751"></span>
+        <span style="flex:15;background:#5fb3d9"></span>
+        <span style="flex:12;background:#d9a15f"></span>
+        <span style="flex:2;background:#3a2f2c"></span>
+      </div>
+      <div class="mono" style="display:flex;gap:14px;margin-top:9px;font-size:10.5px;color:#5d665f">
+        <span>tier +82</span><span>carte +15</span><span>face +12</span><span style="color:#c98a7e">risque −2</span>
+      </div>
+    </div>
+
+    <!-- le classement : dense, tout visible, une ligne par brawler -->
+    <div class="cap" style="margin:20px 0 8px">Le reste du roster</div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #101416">
+        <span class="mono" style="width:14px;font-size:11px;color:#5d665f">2</span>
+        <span class="cara" style="width:28px;height:28px;background:#f0a04a;font-size:12px">G</span>
+        <span style="font-size:14px;font-weight:500">Griff</span>
+        <span style="flex:1;height:4px;background:#101416;margin-left:6px"><span style="display:block;width:88%;height:100%;background:#3f4a44"></span></span>
+        <span class="mono" style="font-size:14px;font-weight:700;width:30px;text-align:right">94</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #101416">
+        <span class="mono" style="width:14px;font-size:11px;color:#5d665f">3</span>
+        <span class="cara" style="width:28px;height:28px;background:#6ed17a;font-size:12px">N</span>
+        <span style="font-size:14px;font-weight:500">Nori</span>
+        <span style="flex:1;height:4px;background:#101416;margin-left:6px"><span style="display:block;width:81%;height:100%;background:#3f4a44"></span></span>
+        <span class="mono" style="font-size:14px;font-weight:700;width:30px;text-align:right">87</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #101416">
+        <span class="mono" style="width:14px;font-size:11px;color:#5d665f">4</span>
+        <span class="cara" style="width:28px;height:28px;background:#f79bc8;font-size:12px">B</span>
+        <span style="font-size:14px;font-weight:500">Bibi</span>
+        <span style="flex:1;height:4px;background:#101416;margin-left:6px"><span style="display:block;width:74%;height:100%;background:#3f4a44"></span></span>
+        <span class="mono" style="font-size:14px;font-weight:700;width:30px;text-align:right">79</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #101416">
+        <span class="mono" style="width:14px;font-size:11px;color:#5d665f">5</span>
+        <span class="cara" style="width:28px;height:28px;background:#7cc4f0;font-size:12px">M</span>
+        <span style="font-size:14px;font-weight:500">Mortis</span>
+        <span style="flex:1;height:4px;background:#101416;margin-left:6px"><span style="display:block;width:69%;height:100%;background:#3f4a44"></span></span>
+        <span class="mono" style="font-size:14px;font-weight:700;width:30px;text-align:right">74</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- la saisie : une barre d'instrument, collee en bas, angles vifs -->
+  <div style="position:absolute;left:0;right:0;bottom:0;background:#0b0e10;
+              border-top:1px solid #1c2124;padding:14px 16px 20px">
+    <div style="display:flex;align-items:center;gap:9px">
+      <span class="cap" style="width:52px;flex:none">Face</span>
+      <span class="cible"><span class="cara" style="width:34px;height:34px;background:#f7d37a;font-size:13px">P</span></span>
+      <span class="cible"><span class="cara" style="width:34px;height:34px;background:#a98ce6;font-size:13px">B</span></span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;background:#c8f751;
+                   color:#07080a;font-size:22px;font-weight:700;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;margin-top:10px">
+      <span class="cap" style="width:52px;flex:none">Avec</span>
+      <span class="cible"><span class="cara" style="width:34px;height:34px;background:#7cc4f0;font-size:13px">G</span></span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border:1px solid #1c2124;
+                   color:#5d665f;font-size:22px;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;margin-top:10px">
+      <span class="cap" style="width:52px;flex:none">Bans</span>
+      <span class="mono" style="font-size:11px;color:#5d665f">6 restants</span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border:1px solid #1c2124;
+                   color:#5d665f;font-size:22px;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap">
+  <style>
+    body{margin:0;background:#0e0d0c;color:#f4efe7;
+      font-family:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased}
+    a{color:#e0522f}a:hover{color:#f4efe7}
+    .cap{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7d746a}
+    .cara{display:inline-flex;align-items:center;justify-content:center;flex:none;
+      border-radius:14px;font-weight:600;color:#14120f;line-height:1;overflow:hidden}
+    .cible{display:inline-flex;align-items:center;justify-content:center;
+      width:44px;height:44px;margin:-4px;flex:none;position:relative}
+  </style>
+</helmet>
+
+<div style="width:390px;height:844px;background:#0e0d0c;position:relative;overflow:hidden">
+
+  <!-- Une lueur chaude, unique, derriere la reponse. Pas un degrade de fond :
+       une source de lumiere, qui dit ou regarder. -->
+  <div style="position:absolute;left:-60px;top:120px;width:340px;height:340px;
+              background:radial-gradient(circle,rgba(224,82,47,.16),transparent 68%);
+              filter:blur(10px);pointer-events:none"></div>
+
+  <div style="position:relative;padding:22px 22px 0">
+
+    <!-- La barre : plus de pastilles a contour. Du texte, et un seul point
+         d'accent sur ce qui est actif. -->
+    <div style="display:flex;align-items:center;gap:20px;min-height:44px">
+      <span style="font-family:'Instrument Serif',serif;font-size:19px;letter-spacing:-.01em;
+                   color:#f4efe7;margin-right:auto">Le Manager</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:#f4efe7">
+        Rapide <span style="width:5px;height:5px;border-radius:50%;background:#e0522f"></span>
+      </span>
+      <span style="font-size:13px;font-weight:500;color:#7d746a">FR</span>
+      <span style="font-size:13px;font-weight:500;color:#7d746a">Roster</span>
+    </div>
+
+    <!-- La carte : un filet chaud tres fin, et le nom en serif. -->
+    <div style="margin-top:26px;padding-bottom:16px;border-bottom:1px solid #211e1b">
+      <div class="cap">Brawl Ball · 1 pick adverse après le tien</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-top:9px">
+        <span style="font-family:'Instrument Serif',serif;font-size:23px;letter-spacing:-.01em">Milieu de scène</span>
+        <span style="margin-left:auto;font-size:12px;color:#7d746a;border-bottom:1px solid #35302b;
+                     padding-bottom:2px">changer</span>
+      </div>
+    </div>
+
+    <!-- LA REPONSE. Le portrait devient une vraie image, pas une pastille ;
+         le nom passe en serif italique, taille optique. -->
+    <div style="margin-top:34px">
+      <div style="display:flex;align-items:center;gap:16px">
+        <span class="cara" style="width:60px;height:60px;background:linear-gradient(150deg,#e879c8,#b0388f);
+                                  font-size:24px;border-radius:16px">S</span>
+        <div style="min-width:0">
+          <div class="cap" style="color:#e0522f">Ton pick</div>
+          <div style="font-family:'Instrument Serif',serif;font-style:italic;font-size:56px;
+                      line-height:.86;letter-spacing:-.03em;margin-top:6px">Surge</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;margin-top:22px">
+        <span style="font-size:12px;font-weight:600;color:#e0522f;letter-spacing:.04em">TIER S</span>
+        <span style="width:1px;height:12px;background:#2a2622"></span>
+        <span style="font-size:13px;color:#a89e93">tier S en Brawl Ball</span>
+        <span style="margin-left:auto;color:#5c554e;font-size:18px">›</span>
+      </div>
+    </div>
+
+    <!-- Les suivants : plus de filets. Des blocs poses sur un fond a peine
+         plus clair, ce qui suffit a les separer. -->
+    <div style="margin-top:30px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:13px;background:#151311;
+                  border-radius:16px;padding:13px 15px">
+        <span class="cara" style="width:38px;height:38px;background:linear-gradient(150deg,#f0a04a,#d4682a);font-size:15px;border-radius:11px">G</span>
+        <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">Griff</span>
+          <span style="font-size:12px;color:#7d746a;line-height:1.3">bat Bull — perce les PV de tank</span>
+        </span>
+        <span style="margin-left:auto;flex:none;font-size:13px;font-weight:600;color:#a89e93">54,7 %</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:13px;background:#151311;
+                  border-radius:16px;padding:13px 15px">
+        <span class="cara" style="width:38px;height:38px;background:linear-gradient(150deg,#6ed17a,#35984a);font-size:15px;border-radius:11px">N</span>
+        <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">Nori</span>
+          <span style="font-size:12px;color:#7d746a;line-height:1.3">tier S en Brawl Ball</span>
+        </span>
+        <span style="margin-left:auto;flex:none;font-size:13px;font-weight:600;color:#a89e93">Tier S</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- La saisie se pose au bas de l'ecran, dans la zone du pouce, sur une
+       surface distincte. Les cibles font 44 px. -->
+  <div style="position:absolute;left:0;right:0;bottom:0;background:#131110;
+              border-top:1px solid #211e1b;border-radius:24px 24px 0 0;padding:18px 22px 24px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="cap" style="width:62px;flex:none">En face</span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:linear-gradient(150deg,#f7d37a,#dda32e);font-size:14px;border-radius:11px">P</span></span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:linear-gradient(150deg,#a98ce6,#7551c4);font-size:14px;border-radius:11px">B</span></span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border-radius:14px;
+                   background:#e0522f;color:#0e0d0c;font-size:22px;font-weight:600;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+      <span class="cap" style="width:62px;flex:none">Avec toi</span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:linear-gradient(150deg,#7cc4f0,#3d8fce);font-size:14px;border-radius:11px">G</span></span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border-radius:14px;
+                   border:1px solid #2a2622;color:#7d746a;font-size:22px;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+      <span class="cap" style="width:62px;flex:none">Bannis</span>
+      <span style="font-size:12px;color:#5c554e">6 restants</span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border-radius:14px;
+                   border:1px solid #2a2622;color:#7d746a;font-size:22px;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,38 +1,65 @@
 {
+  "pages": [
+    { "id": "page-1", "name": "Directions" },
+    { "id": "page-2", "name": "Ergonomie" }
+  ],
   "artboards": [
-    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Aujourd'hui" },
-    { "file": "OptionA.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "A · Le pouce trouve" },
-    { "file": "OptionB.dc.html", "x": 1180, "y": 0, "w": 390, "h": 844, "title": "B · Cible fixe" }
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Aujourd'hui", "page": "page-1" },
+    { "file": "DirectionA.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "A · Éditorial", "page": "page-1" },
+    { "file": "DirectionB.dc.html", "x": 1180, "y": 0, "w": 390, "h": 844, "title": "B · Vitrine", "page": "page-1" },
+    { "file": "DirectionC.dc.html", "x": 1770, "y": 0, "w": 390, "h": 844, "title": "C · Instrument", "page": "page-1" },
+    { "file": "OptionA.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Cibles à 44 px", "page": "page-2" },
+    { "file": "OptionB.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "« + » au bord droit", "page": "page-2" }
   ],
   "annotations": [
     {
-      "id": "mesure",
+      "id": "aujourdhui",
       "x": 0,
-      "y": -210,
+      "y": -250,
       "w": 390,
-      "text": "MESURÉ dans l'app, pas supposé.\n\nÉcran de draft, iPhone 390 px : 10 des 16 boutons sont sous les 44 px que la feuille de style de l'app se donne elle-même comme règle.\n\nLes plus petits sont ceux qu'on touche le plus pendant un draft : retirer un ennemi et « + » font 36 px.\n\nLes traits orange marquent l'abscisse des trois « + » : trois positions différentes, donc aucune habitude possible."
+      "page": "page-1",
+      "text": "AUJOURD'HUI\n\nCe qui date : les boutons-pastilles à contour gris, les filets de 1 px partout, un gris parfaitement neutre sans température, les portraits en petites pastilles plates, et aucune hiérarchie de matière — tout est au même plan.\n\nSa vraie force, à garder : le nom en très gros. C'est la réponse, et elle se lit en une seconde."
     },
     {
-      "id": "option-a",
+      "id": "dir-a",
       "x": 590,
-      "y": -210,
+      "y": -250,
       "w": 390,
-      "text": "A · LE POUCE TROUVE\n\nLa zone sensible passe à 44 px, le dessin reste à 36 : le rembourrage est repris par une marge négative, donc rien ne bouge à l'œil.\n\nC'est la méthode que style.css emploie déjà pour le logo et pour la mention Supercell — on ne fait que l'étendre.\n\nPour : aucun risque, aucune surprise, le dessin est intact.\nContre : les trois « + » restent à trois abscisses différentes."
+      "page": "page-1",
+      "text": "A · ÉDITORIAL — la typographie fait le travail\n\nNoir chaud, texte crème, un serif à taille optique pour le nom. Les filets disparaissent au profit du blanc. Une seule source de lumière, derrière la réponse. La saisie descend dans une surface arrondie, au pouce.\n\nPour : intemporel, calme, très lisible ; c'est le langage d'un outil sérieux.\nContre : peu spectaculaire — si tu voulais du « waouh », ce n'est pas celle-là."
     },
     {
-      "id": "option-b",
+      "id": "dir-b",
       "x": 1180,
-      "y": -210,
+      "y": -250,
       "w": 390,
-      "text": "B · CIBLE FIXE\n\nLe « + » quitte la file des portraits et se cale au bord droit : même endroit sur les trois rangées. Une seule abscisse à apprendre au lieu de trois.\n\n« Nouveau draft » descend sur sa propre ligne, sinon il se battait avec le « + » pour le bord droit.\n\nPour : le geste le plus fréquent devient un réflexe.\nContre : un vide s'installe entre les portraits et le « + », et la rangée perd un peu de sa densité."
+      "page": "page-1",
+      "text": "B · VITRINE — l'image d'abord\n\nLe portrait prend le tiers haut de l'écran, le nom se pose dessus. Surfaces en dégradé avec un liseré de lumière sur l'arête haute — c'est ce liseré qui donne la matière. La saisie flotte en bas.\n\nPour : le plus « 2026 » des trois, et on reconnaît un brawler à son visage avant son nom.\nContre : le plus coûteux — il faut de vraies images en grand, et le nom perd de la place."
     },
     {
-      "id": "cadre",
+      "id": "dir-c",
+      "x": 1770,
+      "y": -250,
+      "w": 390,
+      "page": "page-1",
+      "text": "C · INSTRUMENT — dense et chiffré\n\nGrille de fond, monospace pour tous les nombres, angles vifs, accent électrique. Le score et sa décomposition sont visibles tout de suite, et le classement tient sous la réponse sans défiler.\n\nPour : le plus d'information par écran, et ça assume que c'est un outil d'analyse.\nContre : plus froid, et demande de savoir lire des chiffres pendant un draft."
+    },
+    {
+      "id": "commun",
       "x": 0,
-      "y": 900,
+      "y": 960,
+      "w": 900,
+      "page": "page-1",
+      "text": "Les trois gardent : le fond sombre (on joue dans le noir), les cibles à 44 px, la saisie dans la zone du pouce, et le nom conseillé comme élément le plus fort de l'écran.\n\nLes portraits sont des pastilles à initiale — c'est le vrai repli de l'app, pas un raccourci de maquette. Les vraies images sont déjà dans le dépôt.\n\nLes polices viennent de Google Fonts (Instrument Serif, Bricolage Grotesque, Space Grotesk). À l'export PNG/PDF elles retombent sur la police système — à l'écran elles s'affichent bien."
+    },
+    {
+      "id": "ergo",
+      "x": 0,
+      "y": -250,
       "w": 700,
-      "text": "Ce qui n'est PAS remis en question ici : le noir profond, la typographie système, l'absence d'effets. C'est un choix écrit et assumé dans le dépôt (« ce qui sépare une interface d'outil d'une interface de jeu mobile »), et rien dans la mesure ne le contredit.\n\nCe qu'on corrige est ergonomique, pas décoratif."
+      "page": "page-2",
+      "text": "Ces deux-là répondent à une autre question, mesurée : 10 des 16 boutons de l'écran de draft sont sous 44 px, et les trois « + » tombent à trois abscisses différentes (190, 146 et 102 px du bord) — donc aucune habitude possible.\n\nLes corrections sont déjà intégrées dans les trois directions de la première page. Elles restent ici comme trace du relevé."
     }
   ],
-  "launch": { "view": "canvas" }
+  "launch": { "view": "canvas", "page": "page-1" }
 }

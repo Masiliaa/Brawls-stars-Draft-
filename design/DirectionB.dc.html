@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+  <style>
+    body{margin:0;background:#08090e;color:#eef0f6;
+      font-family:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased}
+    a{color:#7c8cf8}a:hover{color:#eef0f6}
+    /* Une surface = un fond legerement plus clair PLUS un liseré de lumiere
+       sur l'arete haute. C'est ce liseré qui donne la matiere ; sans lui on
+       retombe sur le rectangle gris de 2020. */
+    .surf{background:linear-gradient(180deg,#151827,#101320);border-radius:20px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 8px 24px rgba(0,0,0,.4)}
+    .cap{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#6b7392}
+    .cara{display:inline-flex;align-items:center;justify-content:center;flex:none;
+      border-radius:50%;font-weight:800;color:#0b0d15;line-height:1;overflow:hidden}
+    .cible{display:inline-flex;align-items:center;justify-content:center;
+      width:44px;height:44px;margin:-4px;flex:none;position:relative}
+  </style>
+</helmet>
+
+<div style="width:390px;height:844px;background:#08090e;position:relative;overflow:hidden">
+
+  <!-- LE PORTRAIT PREND LE HAUT DE L'ECRAN.
+       C'est le pari de cette direction : dans un jeu, on reconnait un
+       personnage a son visage bien avant de lire son nom. Le voile en bas
+       de l'image rattrape le texte pour qu'il reste lisible. -->
+  <div style="position:relative;height:330px;overflow:hidden">
+    <div style="position:absolute;inset:0;background:linear-gradient(160deg,#e879c8 0%,#8b3ba8 55%,#3a1d5e 100%)"></div>
+    <div style="position:absolute;inset:0;
+                background:radial-gradient(120% 80% at 70% 20%,rgba(255,255,255,.22),transparent 60%)"></div>
+    <!-- le visage, stylise : c'est une maquette, pas l'image finale -->
+    <div style="position:absolute;left:50%;top:112px;transform:translateX(-50%);
+                width:150px;height:150px;border-radius:50%;
+                background:linear-gradient(160deg,#f7b9e6,#c05aa8);
+                display:flex;align-items:center;justify-content:center;
+                font-size:64px;font-weight:800;color:#3a1d5e;
+                box-shadow:0 20px 60px rgba(0,0,0,.45)">S</div>
+    <div style="position:absolute;inset:0;
+                background:linear-gradient(180deg,rgba(8,9,14,.55) 0%,transparent 30%,rgba(8,9,14,.6) 72%,#08090e 100%)"></div>
+
+    <!-- la barre, posee SUR l'image -->
+    <div style="position:absolute;left:20px;right:20px;top:18px;display:flex;align-items:center;gap:14px;min-height:44px">
+      <span style="font-size:15px;font-weight:600;letter-spacing:-.01em;margin-right:auto;
+                   text-shadow:0 1px 8px rgba(0,0,0,.5)">Le Manager</span>
+      <span style="font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;
+                   background:rgba(255,255,255,.14);backdrop-filter:blur(8px)">Rapide</span>
+      <span style="font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;
+                   background:rgba(255,255,255,.14);backdrop-filter:blur(8px)">FR</span>
+    </div>
+
+    <!-- le nom, en bas de l'image -->
+    <div style="position:absolute;left:20px;right:20px;bottom:14px">
+      <div class="cap" style="color:#c9a8ea">Ton pick · Tier S</div>
+      <div style="font-size:52px;font-weight:800;letter-spacing:-.035em;line-height:.9;margin-top:4px">Surge</div>
+    </div>
+  </div>
+
+  <div style="padding:0 20px">
+
+    <!-- la carte -->
+    <div class="surf" style="padding:13px 16px;display:flex;align-items:center;gap:10px;margin-top:14px">
+      <span style="width:8px;height:8px;border-radius:2px;background:#7c8cf8;flex:none"></span>
+      <span style="font-size:14px;font-weight:600;letter-spacing:-.01em">Milieu de scène</span>
+      <span style="font-size:12px;color:#6b7392">Brawl Ball</span>
+      <span style="margin-left:auto;font-size:12px;color:#7c8cf8;font-weight:600">changer</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+      <span style="display:flex;gap:4px">
+        <span style="width:16px;height:4px;border-radius:2px;background:#7c8cf8"></span>
+        <span style="width:16px;height:4px;border-radius:2px;background:#242a3d"></span>
+        <span style="width:16px;height:4px;border-radius:2px;background:#242a3d"></span>
+      </span>
+      <span style="font-size:12px;color:#6b7392">1 pick adverse après le tien</span>
+    </div>
+
+    <!-- les suivants, en bande horizontale : le pouce fait glisser -->
+    <div class="cap" style="margin:18px 0 9px">Sinon</div>
+    <div style="display:flex;gap:9px">
+      <div class="surf" style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <span class="cara" style="width:40px;height:40px;background:linear-gradient(150deg,#f0a04a,#d4682a);font-size:16px">G</span>
+        <span style="font-size:13px;font-weight:600">Griff</span>
+        <span style="font-size:11px;color:#6b7392">54,7 %</span>
+      </div>
+      <div class="surf" style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <span class="cara" style="width:40px;height:40px;background:linear-gradient(150deg,#6ed17a,#35984a);font-size:16px">N</span>
+        <span style="font-size:13px;font-weight:600">Nori</span>
+        <span style="font-size:11px;color:#6b7392">Tier S</span>
+      </div>
+      <div class="surf" style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;opacity:.55">
+        <span class="cara" style="width:40px;height:40px;background:linear-gradient(150deg,#f79bc8,#c9538f);font-size:16px">B</span>
+        <span style="font-size:13px;font-weight:600">Bibi</span>
+        <span style="font-size:11px;color:#6b7392">Tier A</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- la saisie, sur une surface flottante en bas -->
+  <div class="surf" style="position:absolute;left:14px;right:14px;bottom:14px;padding:15px 16px;
+                           border-radius:24px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="cap" style="width:58px;flex:none">En face</span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:linear-gradient(150deg,#f7d37a,#dda32e);font-size:14px">P</span></span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:linear-gradient(150deg,#a98ce6,#7551c4);font-size:14px">B</span></span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border-radius:14px;
+                   background:linear-gradient(160deg,#8f9dff,#5f6ef0);color:#0b0d15;font-size:23px;font-weight:800;
+                   display:flex;align-items:center;justify-content:center;
+                   box-shadow:0 6px 18px rgba(95,110,240,.4)">+</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:11px">
+      <span class="cap" style="width:58px;flex:none">Avec toi</span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:linear-gradient(150deg,#7cc4f0,#3d8fce);font-size:14px">G</span></span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border-radius:14px;
+                   background:rgba(255,255,255,.07);color:#6b7392;font-size:23px;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:11px">
+      <span class="cap" style="width:58px;flex:none">Bannis</span>
+      <span style="font-size:12px;color:#6b7392">6 restants</span>
+      <span style="margin-left:auto;width:44px;height:44px;flex:none;border-radius:14px;
+                   background:rgba(255,255,255,.07);color:#6b7392;font-size:23px;
+                   display:flex;align-items:center;justify-content:center">+</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
