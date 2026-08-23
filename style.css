@@ -1,16 +1,16 @@
 /* Le Manager — feuille de style unique.
    ------------------------------------------------------------------------
    Parti pris : noir FROID et profond, typographie système, chrome réduit au
-   minimum. Le noir était parfaitement neutre jusqu au 12/08/2026 ; il prend
+   minimum. Le noir était parfaitement neutre jusqu'au 12/08/2026 ; il prend
    une température, pour que les surfaces se distinguent du fond par leur
    teinte et plus seulement par un filet de 1 px.
    Le nom conseillé doit se lire en une seconde ; tout le reste s'efface.
 
-   Pas de police display, pas de capitales forcées. Une ombre et un liseré de
-   lumière par surface — ajoutés le 12/08 : c est ce qui fait la matière, et
-   leur absence est ce qui datait le plus.
-   filets de 1 px. C'est ce qui sépare une interface d'outil d'une interface
-   de jeu mobile.
+   Pas de police display, pas de capitales forcées : c'est toujours ce qui
+   sépare une interface d'outil d'une interface de jeu mobile, et ça ne bouge
+   pas. En revanche chaque surface porte désormais un liseré de lumière sur
+   son arête haute, et la réponse un halo à la couleur du brawler. C'est cette
+   matière-là qui manquait — bien plus que de la décoration.
 
    Seules variables posées en ligne par le JavaScript, parce qu'elles
    dépendent de la donnée : --r (couleur de rareté d'un brawler), --m
