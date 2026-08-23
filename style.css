@@ -234,7 +234,18 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* L'intitulé d'une rareté : son nom, où l'on en est, et le bouton qui coche
    le groupe entier. Sur une ligne, pour ne pas manger la hauteur qui sert
    à voir les portraits. */
-.rangee-rarete{display:flex;align-items:center;gap:var(--e3);margin:var(--e5) 0 var(--e3)}
+/* L'en-tete COLLE en haut pendant qu'on defile.
+   ------------------------------------------------------------------------
+   Mesure : 106 brawlers repartis en sept raretes, sur 3,1 ecrans. Des qu'on
+   descend, le nom du groupe sort par le haut et on ne sait plus dans quelle
+   rarete on se trouve — or c'est le seul reperage de cet ecran.
+   Le fond est opaque, sinon les portraits defilent a travers. */
+/* L'enveloppe qui borne l'en-tete collant : sans elle il colle sur toute la
+   page, et les sept se superposent en haut. */
+.groupe-rarete{display:block}
+.rangee-rarete{position:sticky;top:0;z-index:5;
+  display:flex;align-items:center;gap:var(--e3);
+  margin:var(--e4) 0 var(--e3);padding:var(--e2) 0;background:var(--fond)}
 .rangee-rarete:first-child{margin-top:var(--e2)}
 .titre-rarete{font-size:var(--t2);font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;color:var(--doux)}

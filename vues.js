@@ -373,15 +373,23 @@ function blocRarete(g) {
   /* Sept boutons « Tout cocher » identiques ne disent pas lequel on active.
      Le titre porte le nom du groupe, seul repère utile à la voix comme au
      survol. */
+  /* Chaque rareté est enveloppée dans sa propre section, et ce n'est pas
+     décoratif : c'est ce qui BORNE son en-tête collant. Sans enveloppe, les
+     sept en-têtes collent au même endroit et s'empilent tous à 0 px — mesuré
+     le 23/08, on lisait « Communs · Rares · Super rares · Épiques » les uns
+     sur les autres. Une section par groupe, et l'en-tête ne dépasse plus les
+     limites de son propre groupe. */
   var titre = t(complet ? "decocherGroupe" : "cocherGroupe", { groupe: etiquette });
-  return '<div class="rangee-rarete">'
+  return '<section class="groupe-rarete">'
+       + '<div class="rangee-rarete">'
        + '<h2 class="titre-rarete">' + echapper(etiquette) + "</h2>"
        + '<span class="compte-rarete">'
        + echapper(t("rosterCompte", { n: coches, total: g.liste.length })) + "</span>"
        + '<button class="b alt sm" data-act="groupe" data-v="' + g.id
        + '" title="' + echapper(titre) + '">'
        + echapper(t(complet ? "toutDecocher" : "toutCocher")) + "</button></div>"
-       + '<div class="grid">' + cellules(montres, "roster") + "</div>";
+       + '<div class="grid">' + cellules(montres, "roster") + "</div>"
+       + "</section>";
 }
 
 /* Le corps de la grille, rendu à part : la frappe dans la recherche ne
