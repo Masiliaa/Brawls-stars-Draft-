@@ -467,6 +467,34 @@ const check = (nom, cond, detail = '') => {
   check('aucune date inventée pour une source non datée',
     /Matchups : 1 brawler ·/.test(note4) && !/source/.test(note4.split('Matchups')[1]), note4);
 
+  console.log('\n== une clé du roster disparue du catalogue ==');
+  // Supercell renomme un brawler, l'API cesse d'en publier un : la cle cochee
+  // hier ne correspond plus a rien. Le compteur affichait « 4 sur 104 » —
+  // quatre coches dont un inexistant, sur un total venant du catalogue a
+  // jour. Deux nombres de deux epoques sur la meme ligne.
+  const mort = await page.evaluate(() => {
+    roster = new Set([brawlers[0].k, brawlers[1].k, brawlers[2].k, 'brawlerdisparu']);
+    sauverRoster(); ecran = 'roster'; recherche = ''; render();
+    const compteur = document.querySelector('.compteur').textContent.trim();
+    // Roster entierement mort : le draft ne peut rien conseiller, il doit
+    // donc reproposer de cocher plutot que d'afficher un classement vide.
+    roster = new Set(['fantome1', 'fantome2']); sauverRoster();
+    carteId = MAPS[0].id; ecran = 'draft'; render();
+    const invite = document.body.innerText;
+    const garde = JSON.parse(localStorage.getItem('manager:roster') || '[]');
+    return { compteur, invite, garde, connu: rosterConnu() };
+  });
+  check('le compteur ne compte que ce qui existe encore',
+    /^3 /.test(mort.compteur), mort.compteur);
+  check('le total reste celui du catalogue à jour',
+    / 105$| 106$| 107$/.test(mort.compteur), mort.compteur);
+  check('roster entièrement disparu : l’app réinvite à cocher',
+    mort.connu === 0 && /[Cc]oche/.test(mort.invite), mort.invite.slice(0, 80));
+  // Et surtout : on ne touche PAS a manager:roster. Un brawler renomme puis
+  // retabli doit retrouver sa coche.
+  check('la clé morte reste dans manager:roster',
+    mort.garde.length === 2 && mort.garde.indexOf('fantome1') > -1, JSON.stringify(mort.garde));
+
   console.log('\n== persistance du roster ==');
   const cle = await page.evaluate(() => {
     roster = new Set(['mortis', 'piper']); sauverRoster();

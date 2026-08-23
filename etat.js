@@ -166,6 +166,28 @@ function indexerBrawlers() {
 }
 indexerBrawlers();
 
+/* Combien de brawlers cochés existent ENCORE au catalogue.
+   ------------------------------------------------------------------------
+   Le roster est enregistré dans le navigateur et survit à tout ; le
+   catalogue, lui, change. Supercell renomme un brawler, l'API cesse d'en
+   publier un, et la clé cochée hier ne correspond plus à rien. Le compteur
+   affichait alors « 4 sur 104 » : quatre cochés dont un qui n'existe pas,
+   sur un total qui, lui, venait du catalogue à jour. Deux nombres de deux
+   époques différentes sur la même ligne.
+
+   moteur.js écarte déjà ces clés du conseil — on ne recommande pas ce qu'on
+   ne sait plus décrire. Le compteur fait maintenant la même chose.
+
+   Ce qu'on ne fait PAS : retirer la clé du roster. Elle ne gêne personne, et
+   un brawler renommé puis rétabli retrouve sa coche. Effacer le roster de
+   quelqu'un sur une réponse d'API douteuse serait pire que le mal — c'est la
+   règle jamais levée sur « manager:roster ». */
+function rosterConnu() {
+  var n = 0;
+  roster.forEach(function (cle) { if (parClef[cle]) n++; });
+  return n;
+}
+
 /* Le catalogue gardé est relu ICI, avant le premier dessin — et non pas
    seulement quand l'appel réseau échoue.
    ------------------------------------------------------------------------

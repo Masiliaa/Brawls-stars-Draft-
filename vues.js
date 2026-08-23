@@ -456,8 +456,8 @@ function ecranRoster() {
           compris la centième. Elle ne s'affiche donc que tant que rien n'est
           coché ; ensuite le compte suffit, et il tient sur une ligne. */
        + '<p class="intro"><b class="compteur">'
-       + echapper(t("rosterCompte", { n: roster.size, total: brawlers.length }))
-       + "</b>" + (roster.size ? "" : " " + echapper(t("rosterConsigne"))) + "</p>"
+       + echapper(t("rosterCompte", { n: rosterConnu(), total: brawlers.length }))
+       + "</b>" + (rosterConnu() ? "" : " " + echapper(t("rosterConsigne"))) + "</p>"
        + '<div class="' + corps.classe + '" id="grid">' + corps.html + "</div>";
 }
 
@@ -1029,7 +1029,11 @@ function ecranDraft() {
      lui, sinon on redemande deux fois la même chose. */
   if (!carte) return html + noteHTML();
 
-  if (roster.size === 0) {
+  /* rosterConnu() et non roster.size : un roster qui ne contient plus que
+     des cles disparues du catalogue ne peut rien conseiller — le moteur les
+     ecarte. Mieux vaut alors reproposer de cocher ses brawlers qu'afficher
+     un classement vide sans dire pourquoi. */
+  if (rosterConnu() === 0) {
     return html + encadre(t("inviteRoster"), "roster", t("cocherMesBrawlers")) + noteHTML();
   }
 
