@@ -1047,8 +1047,7 @@ function ecranDraft() {
      Donc : la carte se choisit, le roster se coche, la langue se change —
      tout ça marche. Seuls les chiffres attendent d'être justes. */
   if (!COUNTERS_PRET) {
-    return html + '<div class="box attente"><p>' + echapper(t("chargeMatchups"))
-         + "</p></div>" + noteHTML();
+    return html + attenteHTML() + noteHTML();
   }
 
   /* Les deux modes ne sont plus la même page avec un bloc échangé.
@@ -1099,6 +1098,49 @@ function ecranDraft() {
         + "</div>";
 
   return html + noteHTML();
+}
+
+
+/* ============ L'attente de la table des duels ============
+   Mesuré : 0,3 à 1 seconde sur une bonne connexion, plusieurs secondes en 3G
+   lente. Une phrase fixe pendant ce temps est honnête, mais elle ne dit pas
+   que quelque chose avance — on ne distingue pas une app qui travaille d'une
+   app bloquée. C'est la règle « au-delà de 300 ms, un indicateur ».
+
+   Un squelette dit deux choses qu'une phrase ne dit pas : que ça vient, et
+   quelle FORME ça aura. Les blocs sont posés exactement là où le nom, le
+   tier et les remplaçants vont apparaître — donc rien ne saute à l'arrivée.
+
+   Le dessin est masqué aux lecteurs d'écran : des rectangles gris n'ont rien
+   à leur annoncer. C'est la phrase qui leur est destinée, et elle reste, dans
+   une zone que le lecteur surveille. */
+function attenteHTML() {
+  function os(classe, style) {
+    return '<span class="os ' + classe + '"'
+         + (style ? ' style="' + style + '"' : "") + "></span>";
+  }
+  var ligne = '<div class="os-ligne">' + os("rond", "width:38px;height:38px")
+            + '<span class="os-texte">' + os("", "width:64px;height:13px")
+            + os("", "width:150px;height:11px") + "</span></div>";
+
+  /* La ligne de situation compte, elle aussi : sans elle le squelette
+     annonçait le nom 47 px trop haut — mesuré — et le verdict sautait en
+     arrivant. Un squelette qui se trompe de place est pire qu'une phrase. */
+  var situation = '<div class="os-situation">'
+                + os("", "width:13px;height:3px") + os("", "width:13px;height:3px")
+                + os("", "width:13px;height:3px")
+                + os("", "width:190px;height:13px;margin-left:5px") + "</div>";
+
+  return '<div class="attente" role="status" aria-live="polite">'
+       + '<span class="lu">' + echapper(t("chargeMatchups")) + "</span>"
+       + '<div class="os-bloc" aria-hidden="true">'
+       + situation
+       + '<div class="os-verdict">' + os("rond", "width:64px;height:64px")
+       + os("", "width:150px;height:38px;border-radius:8px") + "</div>"
+       + '<div class="os-mesure">' + os("", "width:62px;height:20px;border-radius:999px")
+       + os("", "width:96px;height:20px") + "</div>"
+       + ligne + ligne
+       + "</div></div>";
 }
 
 

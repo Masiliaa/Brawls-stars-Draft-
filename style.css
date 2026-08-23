@@ -365,6 +365,37 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
    la cacher derriere un repli. */
 /* 10,5 px, c'etait sous le plancher de lisibilite. Une mention legale illisible
    n'est pas affichee — meme raison qui avait deja refuse de la replier. */
+/* ============ Le squelette d'attente ============
+   Des blocs a la forme de ce qui va arriver, qui respirent lentement. La
+   respiration est ce qui distingue « ca vient » de « c'est casse » ; elle
+   ne clignote pas et ne se deplace pas, donc elle ne tire pas l'oeil hors
+   de l'ecran pendant les 25 secondes.
+   Sous prefers-reduced-motion elle s'arrete : la forme suffit alors a dire
+   la meme chose, et c'est une preference qu'on respecte sans discuter. */
+@keyframes respire{0%,100%{opacity:.32}50%{opacity:.6}}
+.attente{margin:0 0 var(--e5)}
+/* Les memes marges que .situation et .hero : c'est ce qui fait que le nom
+   arrive exactement ou le bloc l'attendait. */
+.os-situation{display:flex;align-items:center;gap:3px;margin-top:var(--e3)}
+.os-verdict{margin-top:calc(var(--e4) + var(--e3))}
+.os{display:block;background:var(--trait);border-radius:6px;
+  animation:respire 1.6s ease-in-out infinite}
+.os.rond{border-radius:50%;flex:none}
+.os-verdict{display:flex;align-items:center;gap:var(--e3)}
+.os-mesure{display:flex;gap:var(--e2);margin-top:var(--e3)}
+.os-ligne{display:flex;align-items:center;gap:13px;margin-top:var(--e2);
+  padding:var(--e2) var(--e3);min-height:56px;
+  background:var(--surface);border-radius:var(--r1);box-shadow:var(--arete)}
+.os-ligne:first-of-type{margin-top:var(--e4)}
+.os-texte{display:flex;flex-direction:column;gap:6px;flex:1}
+@media (prefers-reduced-motion:reduce){.os{animation:none;opacity:.5}}
+
+/* Un texte reserve aux lecteurs d'ecran : present dans la page, invisible
+   a l'oeil. Il existait, replie dans .analyse .score ; il sert maintenant
+   aussi a l'attente, donc il devient un outil a part entiere. */
+.lu{position:absolute;width:1px;height:1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap}
+
 .note{margin-top:var(--e6);font-size:var(--t1);font-weight:400;color:var(--faible);line-height:1.75}
 /* Une mention legale qu'on ne peut pas toucher n'en est pas une : le lien
    passe a 32 px de haut sans changer de taille de texte. */
