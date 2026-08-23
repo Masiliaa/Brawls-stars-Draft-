@@ -1,0 +1,38 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Aujourd'hui" },
+    { "file": "OptionA.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "A · Le pouce trouve" },
+    { "file": "OptionB.dc.html", "x": 1180, "y": 0, "w": 390, "h": 844, "title": "B · Cible fixe" }
+  ],
+  "annotations": [
+    {
+      "id": "mesure",
+      "x": 0,
+      "y": -210,
+      "w": 390,
+      "text": "MESURÉ dans l'app, pas supposé.\n\nÉcran de draft, iPhone 390 px : 10 des 16 boutons sont sous les 44 px que la feuille de style de l'app se donne elle-même comme règle.\n\nLes plus petits sont ceux qu'on touche le plus pendant un draft : retirer un ennemi et « + » font 36 px.\n\nLes traits orange marquent l'abscisse des trois « + » : trois positions différentes, donc aucune habitude possible."
+    },
+    {
+      "id": "option-a",
+      "x": 590,
+      "y": -210,
+      "w": 390,
+      "text": "A · LE POUCE TROUVE\n\nLa zone sensible passe à 44 px, le dessin reste à 36 : le rembourrage est repris par une marge négative, donc rien ne bouge à l'œil.\n\nC'est la méthode que style.css emploie déjà pour le logo et pour la mention Supercell — on ne fait que l'étendre.\n\nPour : aucun risque, aucune surprise, le dessin est intact.\nContre : les trois « + » restent à trois abscisses différentes."
+    },
+    {
+      "id": "option-b",
+      "x": 1180,
+      "y": -210,
+      "w": 390,
+      "text": "B · CIBLE FIXE\n\nLe « + » quitte la file des portraits et se cale au bord droit : même endroit sur les trois rangées. Une seule abscisse à apprendre au lieu de trois.\n\n« Nouveau draft » descend sur sa propre ligne, sinon il se battait avec le « + » pour le bord droit.\n\nPour : le geste le plus fréquent devient un réflexe.\nContre : un vide s'installe entre les portraits et le « + », et la rangée perd un peu de sa densité."
+    },
+    {
+      "id": "cadre",
+      "x": 0,
+      "y": 900,
+      "w": 700,
+      "text": "Ce qui n'est PAS remis en question ici : le noir profond, la typographie système, l'absence d'effets. C'est un choix écrit et assumé dans le dépôt (« ce qui sépare une interface d'outil d'une interface de jeu mobile »), et rien dans la mesure ne le contredit.\n\nCe qu'on corrige est ergonomique, pas décoratif."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

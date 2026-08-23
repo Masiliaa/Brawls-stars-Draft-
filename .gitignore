@@ -16,3 +16,9 @@ data/a_traduire.json
 
 # Fichier cree par le Finder de macOS, sans interet pour le projet
 .DS_Store
+
+# La planche de maquettes assemblee : 2,2 Mo de code d'editeur engendre a
+# partir des fichiers de design/, qui eux sont versionnes. La reconstruire
+# est une commande ; la committer alourdirait le depot pour rien.
+design/*.html
+!design/*.dc.html

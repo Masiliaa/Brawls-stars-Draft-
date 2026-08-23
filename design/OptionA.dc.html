@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;background:#0a0a0b;color:#fafafa;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;font-size:15px}
+    a{color:#8a8a93}a:hover{color:#fafafa}
+    .pill{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      font-size:14px;font-weight:500;color:#fafafa;background:#18181b;
+      border:1px solid #242428;border-radius:999px;padding:8px 16px}
+    .cara{position:relative;display:inline-flex;align-items:center;justify-content:center;
+      overflow:hidden;border-radius:50%;font-weight:600;color:#0d0d0e;line-height:1}
+    .lbl{width:76px;flex:none;font-size:13px;color:#7c7c85}
+    .krx{position:absolute;top:-2px;right:-2px;width:17px;height:17px;border-radius:50%;
+      background:#0a0a0b;border:1px solid #242428;color:#8a8a93;font-size:9px;
+      line-height:15px;text-align:center}
+    /* La zone sensible passe a 44 px, le DESSIN reste a 36 : le rembourrage
+       est repris par une marge negative, donc rien ne bouge a l'oeil.
+       C'est exactement la methode deja employee par le logo et par la
+       mention Supercell dans style.css. */
+    .cible{display:inline-flex;align-items:center;justify-content:center;
+      width:44px;height:44px;margin:-4px;flex:none;position:relative}
+  </style>
+</helmet>
+
+<div style="width:390px;height:844px;background:#0a0a0b;padding:18px 16px 0;overflow:hidden;position:relative">
+
+  <div style="display:flex;align-items:center;gap:4px;margin-bottom:24px">
+    <div style="flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+                margin-right:auto;display:inline-flex;align-items:center;min-height:44px;
+                font-size:15px;font-weight:600;color:#8a8a93;letter-spacing:.01em">Le Manager</div>
+    <div style="display:flex;gap:6px;flex:none">
+      <span class="pill" style="min-height:44px;font-size:13px;padding:8px 8px;color:#8a8a93;background:transparent">Rapide ▾</span>
+      <span class="pill" style="min-height:44px;font-size:13px;padding:8px 8px">FR ▾</span>
+      <span class="pill" style="min-height:44px;font-size:13px;padding:8px 8px">Mes brawlers</span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:baseline;gap:8px;min-height:44px;padding:8px 0;
+              border-bottom:1px solid #242428;font-size:13px;color:#8a8a93">
+    <span>Brawl Ball</span>
+    <span style="color:#fafafa;font-weight:650;font-size:15px;letter-spacing:-.015em">Milieu de scène</span>
+    <span style="margin-left:auto;color:#7c7c85">changer</span>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin-top:16px;font-size:13px;color:#7c7c85">
+    <span style="display:flex;align-items:center;gap:3px;flex:none">
+      <span style="width:13px;height:3px;border-radius:2px;background:#8a8a93"></span>
+      <span style="width:13px;height:3px;border-radius:2px;background:#242428"></span>
+      <span style="width:13px;height:3px;border-radius:2px;background:#242428"></span>
+    </span>
+    <span>1 pick adverse après le tien · privilégie la sûreté</span>
+  </div>
+
+  <div style="margin:24px 0 20px">
+    <div style="display:flex;align-items:flex-end;gap:16px">
+      <span class="cara" style="width:72px;height:72px;background:#d94fbe;font-size:28px;flex:none">S</span>
+      <span style="font-size:44px;font-weight:800;letter-spacing:-.045em;line-height:.88">Surge</span>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-top:16px;font-size:13px;color:#8a8a93">
+      <span style="border:1px solid #242428;border-radius:999px;padding:2px 9px;font-size:12px">Tier S</span>
+      <span style="margin-left:auto;color:#7c7c85;font-size:19px;line-height:1">›</span>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:#8a8a93;line-height:1.5">tier S en Brawl Ball</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;border-top:1px solid #242428">
+    <div style="display:flex;align-items:center;gap:13px;padding:12px 2px;border-bottom:1px solid #242428">
+      <span class="cara" style="width:38px;height:38px;background:#e8813a;font-size:15px;flex:none">G</span>
+      <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:15.5px;font-weight:600;letter-spacing:-.01em">Griff</span>
+        <span style="font-size:12.5px;color:#7c7c85;line-height:1.3">bat Bull : perce les PV de tank au corps à corps…</span>
+      </span>
+      <span style="margin-left:auto;flex:none;font-size:13px;color:#8a8a93">54,7 %</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:13px;padding:12px 2px;border-bottom:1px solid #242428">
+      <span class="cara" style="width:38px;height:38px;background:#4fae5a;font-size:15px;flex:none">N</span>
+      <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:15.5px;font-weight:600;letter-spacing:-.01em">Nori</span>
+        <span style="font-size:12.5px;color:#7c7c85;line-height:1.3">tier S en Brawl Ball</span>
+      </span>
+      <span style="margin-left:auto;flex:none;font-size:13px;color:#8a8a93">Tier S</span>
+    </div>
+  </div>
+
+  <!-- La saisie : memes dessins, memes positions, zones sensibles a 44 px. -->
+  <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px;
+              padding-top:20px;border-top:1px solid #242428">
+
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="lbl">en face</span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:#f0c04a;font-size:14px">P</span><span class="krx">✕</span></span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:#8d6cd6;font-size:14px">B</span><span class="krx">✕</span></span>
+      <span class="cible"><span style="width:36px;height:36px;border-radius:12px;border:1px solid #242428;
+        color:#7c7c85;font-size:17px;display:flex;align-items:center;justify-content:center">+</span></span>
+      <span class="pill" style="margin-left:auto;min-height:44px;font-size:13px;background:transparent;color:#8a8a93">Nouveau draft</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="lbl">avec toi</span>
+      <span class="cible"><span class="cara" style="width:36px;height:36px;background:#5aa9e6;font-size:14px">G</span><span class="krx">✕</span></span>
+      <span class="cible"><span style="width:36px;height:36px;border-radius:12px;border:1px solid #242428;
+        color:#7c7c85;font-size:17px;display:flex;align-items:center;justify-content:center">+</span></span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="lbl">bannis</span>
+      <span class="cible"><span style="width:36px;height:36px;border-radius:12px;border:1px solid #242428;
+        color:#7c7c85;font-size:17px;display:flex;align-items:center;justify-content:center">+</span></span>
+      <span style="margin-left:auto;font-size:12px;color:#7c7c85">6 restants</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:16px;right:16px;bottom:0;padding:10px 0 14px;
+              border-top:1px dashed #242428;font-size:10.5px;color:#7c7c85;background:#0a0a0b">
+    Rien n'a bougé à l'œil : seules les zones sensibles ont grandi.
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
