@@ -289,6 +289,48 @@ class Reseau:
             f.write(data)
         return data if binaire else data.decode("utf-8", "replace")
 
+    def poste(self, url, corps):
+        """Une requête POST qui rend du JSON. Mêmes règles que get().
+
+        Certaines API ne répondent qu'à des POST — celle de metapick attend
+        la carte et le brawler dans le corps de la requête. Tout le reste est
+        identique à une lecture ordinaire : robots.txt d'abord, délai entre
+        deux requêtes au même hôte, et cache disque.
+
+        Le cache mérite une explication : une adresse ne suffit plus à
+        identifier une réponse, puisque deux POST vers la MÊME adresse
+        rendent des choses différentes selon leur corps. La clé de cache
+        prend donc le corps avec elle. Sans ça, le premier duel relevé
+        répondrait pour tous les autres — et le fichier serait faux d'une
+        façon indétectable à la relecture.
+        """
+        empreinte = hashlib.sha1(json.dumps(corps, sort_keys=True).encode()).hexdigest()[:12]
+        chemin = self._chemin_cache(url + "#post" + empreinte)
+        if self.cache and os.path.exists(chemin):
+            if time.time() - os.path.getmtime(chemin) < self.ttl:
+                return json.loads(open(chemin, "rb").read().decode("utf-8", "replace"))
+
+        if not self.autorise(url):
+            raise PermissionError("robots.txt interdit %s" % url)
+
+        hote = urllib.parse.urlparse(url).netloc
+        attente = self.delai - (time.time() - self.dernier.get(hote, 0))
+        if attente > 0:
+            time.sleep(attente)
+        req = urllib.request.Request(
+            url, data=json.dumps(corps).encode("utf-8"),
+            headers={"User-Agent": UA, "Content-Type": "application/json",
+                     "Accept": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = r.read()
+        finally:
+            self.dernier[hote] = time.time()
+
+        with open(chemin, "wb") as f:
+            f.write(data)
+        return json.loads(data.decode("utf-8", "replace"))
+
     # --- Pages construites dans le navigateur ------------------------------
     #
     # Un site moderne n'envoie qu'un squelette et un programme JavaScript ;
@@ -1391,6 +1433,82 @@ def scraper_synergie(net, brawlers):
 
 
 # ---------------------------------------------------------------------------
+# Taux d'utilisation par mode — pour ordonner la grille des ennemis
+# ---------------------------------------------------------------------------
+#
+# À quoi ça sert, et à quoi ça ne sert PAS
+# ----------------------------------------
+# Quand l'adversaire pique, il faut le désigner dans une grille de 105
+# portraits, au chrono. ordreProbable() range cette grille par « ce qui a des
+# chances de tomber » — mais faute de mieux, elle la rangeait par TIER, donc
+# par ce qui est fort. Or ce n'est pas la même question : ce qu'on cherche des
+# yeux, c'est ce que les gens JOUENT.
+#
+# Le taux d'utilisation répond exactement à ça, et il est solide : mesuré sur
+# des centaines de milliers de parties par mode (2,8 millions au total le
+# 23/08/2026), contre quelques centaines pour un duel isolé.
+#
+# Ce qu'on n'en fait PAS, et c'est mesuré : le taux de VICTOIRE de la même
+# source ne sert à rien pour classer la force. Dans un jeu en équipes, si un
+# brawler est disponible pour les deux camps, son taux tend mécaniquement vers
+# 50 %. Relevé le 23/08 : Surge 50,5 %, Griff 49,8 %, Stu 50,1 % — tous sur des
+# dizaines de milliers de parties. Le classement voté de brawltime reste donc
+# la source des tiers ; metapick n'apporte ici que la popularité.
+
+API_METAPICK = "https://api.metapick-ai.com"
+# Les noms de mode tels que metapick les attend, depuis nos propres clés.
+MODES_METAPICK = {"brawlBall": "Brawl Ball", "bounty": "Bounty",
+                  "knockout": "Knockout", "gemGrab": "Gem Grab",
+                  "heist": "Heist", "hotZone": "Hot Zone"}
+
+
+def scraper_utilisation(net, noms):
+    """{mode: {cle: taux d'utilisation en %}} — six appels, un par mode."""
+    print("\n[4] Taux d'utilisation par mode — metapick-ai.com")
+    par_cle = {clef(n): n for n in noms}
+    sortie, inconnus = {}, set()
+    for mode, libelle in MODES_METAPICK.items():
+        try:
+            liste = net.poste(API_METAPICK + "/mode_stats", {"mode": libelle})
+        except Exception as e:
+            souci("taux d'utilisation de %s illisibles (%s)"
+                  % (mode, e.__class__.__name__))
+            continue
+        table = {}
+        for b in liste or []:
+            cle = clef(b.get("brawler"))
+            if cle not in par_cle:
+                if cle:
+                    inconnus.add(b.get("brawler"))
+                continue
+            # Arrondi au centième : au-delà c'est du bruit, et chaque décimale
+            # inutile pèse dans un fichier que l'app télécharge au démarrage.
+            table[cle] = round(float(b.get("usage_rate") or 0), 2)
+        if len(table) < COUVERTURE_MIN:
+            souci("%s : %d taux d'utilisation seulement, mode ignoré"
+                  % (mode, len(table)))
+            continue
+        sortie[mode] = table
+        note("%s : %d brawlers, le plus joué à %.2f %%"
+             % (mode, len(table), max(table.values())))
+    if inconnus:
+        note("%d nom(s) que metapick emploie et que nous ne connaissons pas : %s"
+             % (len(inconnus), ", ".join(sorted(inconnus)[:6])))
+    if not sortie:
+        souci("aucun taux d'utilisation relevé — USAGE reste inchangé")
+        return None
+    return sortie
+
+
+def rendre_usage(par_mode):
+    lignes = []
+    for mode in MODES:
+        if mode in par_mode:
+            lignes.append("%s:%s" % (mode, js(par_mode[mode])))
+    return "var USAGE={\n" + ",\n".join(lignes) + "};"
+
+
+# ---------------------------------------------------------------------------
 # Tiers par mode — le dernier bloc encore tapé à la main
 # ---------------------------------------------------------------------------
 #
@@ -2423,6 +2541,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tout", action="store_true", help="tâches 1 à 5")
+    ap.add_argument("--usage", action="store_true",
+                    help="taux d'utilisation par mode (metapick)")
     ap.add_argument("--tiers", action="store_true",
                     help="tiers par mode (classement vote de brawltime)")
     ap.add_argument("--counters", action="store_true", help="tâche 2")
@@ -2455,7 +2575,8 @@ def main():
 
     if a.tout:
         a.tiers = a.counters = a.cartes = a.synergie = a.assets = True
-    if not any([a.tiers, a.counters, a.cartes, a.synergie, a.assets]):
+        a.usage = True
+    if not any([a.tiers, a.usage, a.counters, a.cartes, a.synergie, a.assets]):
         ap.print_help()
         return 1
 
@@ -2476,6 +2597,13 @@ def main():
             touche = True
             # Le bloc vient de changer : les noms qu'on en tire aussi.
             noms = noms_depuis_tiers(html)
+
+    if a.usage:
+        table = scraper_utilisation(net, noms)
+        if table:
+            html = ecrire_bloc(html, "USAGE", rendre_usage(table))
+            maj["usage"] = [aujourdhui, "metapick-ai.com"]
+            touche = True
 
     if a.cartes:
         anciennes = cartes_actuelles(html)
@@ -2552,7 +2680,7 @@ def main():
     # n'a pas bougé ?
     print("\n" + "=" * 60)
     print("RÉCAPITULATIF" + ("  (--blanc : rien n'a été écrit)" if a.blanc else ""))
-    demande = [("tiers", a.tiers), ("cartes", a.cartes),
+    demande = [("tiers", a.tiers), ("usage", a.usage), ("cartes", a.cartes),
                ("matchups", a.counters), ("synergie", a.synergie)]
     for nom, voulu in demande:
         if not voulu:

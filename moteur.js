@@ -230,9 +230,24 @@ function ordreProbable(liste) {
     carte.top.forEach(function (e, i) { rang[clef(e[0])] = i; });
   }
   var tiers = (carte && TIER_PAR_MODE[carte.mode]) || {};
+  /* Le taux d'utilisation du mode : « ce que les gens jouent réellement ».
+     ----------------------------------------------------------------------
+     Cette grille sert à désigner le pick adverse, au chrono. On y cherche
+     donc ce qui a des CHANCES DE TOMBER — pas ce qui est fort. Le tier
+     répondait à l'autre question, faute d'avoir mieux.
+
+     Mesuré : le plus joué de chaque mode va de 0,90 % (hors-jeu) à 1,78 %
+     (braquage) des équipes, sur des centaines de milliers de parties. C'est
+     une grandeur solide, contrairement au taux de victoire de la même
+     source, qui tend vers 50 % pour tout le monde et ne classe rien. */
+  var usage = (carte && typeof USAGE !== "undefined" && USAGE[carte.mode]) || {};
 
   function poids(b) {
     if (b.k in rang) return rang[b.k];              /* 0 à 7 : sur la carte */
+    /* Le plus joué passe devant. On décale de 10 pour rester derrière les
+       huit du classement de carte, qui sont mesurés SUR cette carte et donc
+       plus précis que la popularité du mode entier. */
+    if (b.k in usage) return 10 + (100 - usage[b.k]);
     return POIDS_TIER_ORDRE[tiers[b.k]] || 900;     /* sinon, son tier */
   }
 
