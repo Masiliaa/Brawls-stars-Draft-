@@ -385,7 +385,12 @@ function blocRarete(g) {
        + '<h2 class="titre-rarete">' + echapper(etiquette) + "</h2>"
        + '<span class="compte-rarete">'
        + echapper(t("rosterCompte", { n: coches, total: g.liste.length })) + "</span>"
-       + '<button class="b alt sm" data-act="groupe" data-v="' + g.id
+       /* Une pastille pleine, repetee sept fois en descendant, pour une
+          action DESTRUCTIVE : c'etait l'objet le plus present de l'ecran, et
+          le plus dangereux. Elle devient un lien discret — meme geste, meme
+          zone de 44 px, mais elle ne reclame plus l'attention avant les
+          portraits qu'on vient regarder. */
+       + '<button class="lien-groupe" data-act="groupe" data-v="' + g.id
        + '" title="' + echapper(titre) + '">'
        + echapper(t(complet ? "toutDecocher" : "toutCocher")) + "</button></div>"
        + '<div class="grid">' + cellules(montres, "roster") + "</div>"

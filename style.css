@@ -220,7 +220,11 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .cel{background:transparent;border:none;border-radius:0;padding:0;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:var(--e2);width:64px;
   box-shadow:none;transition:opacity .12s}
-.cel b{font-family:inherit;font-weight:500;text-transform:none;font-size:var(--t1);line-height:1.2;
+/* 13 px et non 11,5 : ce sont les 106 noms qu'on vient lire sur cet ecran,
+   et 11,5 passait sous le plancher de lisibilite releve par l'audit du
+   23/08 (104 textes concernes, tous ici). La cellule fait toujours 64 px :
+   c'est la hauteur de ligne qui absorbe, pas la largeur. */
+.cel b{font-family:inherit;font-weight:500;text-transform:none;font-size:var(--t2);line-height:1.2;
   color:var(--texte);text-shadow:none}
 .cel.roster{opacity:.5}
 .cel.roster b{color:var(--doux)}
@@ -247,6 +251,13 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
   display:flex;align-items:center;gap:var(--e3);
   margin:var(--e4) 0 var(--e3);padding:var(--e2) 0;background:var(--fond)}
 .rangee-rarete:first-child{margin-top:var(--e2)}
+/* Le lien qui coche ou decoche une rarete entiere. Discret par choix : il
+   apparait sept fois sur l'ecran, et il defait le travail de l'utilisateur.
+   Sa zone tactile garde ses 44 px, seule son apparence s'efface. */
+.lien-groupe{flex:none;background:none;border:none;font:inherit;
+  font-size:var(--t2);color:var(--vif);cursor:pointer;-webkit-appearance:none;
+  min-height:44px;padding:0 var(--e1);display:inline-flex;align-items:center}
+.lien-groupe:active{color:var(--texte)}
 .titre-rarete{font-size:var(--t2);font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;color:var(--doux)}
 .compte-rarete{font-size:var(--t2);color:var(--faible);margin-right:auto}
