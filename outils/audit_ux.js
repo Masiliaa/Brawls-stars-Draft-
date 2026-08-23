@@ -1,5 +1,14 @@
 /* L'app passee au crible des regles mecaniquement verifiables de
-   ui-ux-pro-max. On ne rapporte que ce qu'on MESURE. */
+   ui-ux-pro-max (.claude/skills/ui-ux-pro-max/data/ux-guidelines.csv).
+   On ne rapporte que ce qu'on MESURE.
+
+       node outils/audit_ux.js            les trois ecrans
+       node outils/audit_ux.js draft      un seul
+
+   Il ne visait que l'ecran de draft, et il a fallu bricoler une variante
+   pour regarder les deux autres — donc ils n'etaient jamais regardes. Les
+   trois passent maintenant d'office, et la sortie est un code d'erreur
+   exploitable : 0 si tout tient, 1 sinon. */
 const { chromium } = require('playwright');
 
 function lum(c) { // luminance relative WCAG
@@ -12,17 +21,24 @@ function contraste(a, b) {
 }
 const rgb = s => (s.match(/\d+/g) || [0,0,0]).slice(0,3).map(Number);
 
+const ECRANS = process.argv.slice(2).length ? process.argv.slice(2)
+                                            : ['draft', 'roster', 'cartes'];
+
 (async () => {
   const nav = await chromium.launch({ executablePath: process.env.CHROME });
+  let manques = 0;
+  for (const ECRAN of ECRANS) {
   const page = await nav.newPage({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' });
   await page.route('**/api.brawlapi.com/**', r => r.abort());
   await page.goto('http://127.0.0.1:8765/index.html', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof render === 'function');
-  await page.evaluate(() => {
+  /* ECRAN vit cote Node ; le code ci-dessous tourne dans le navigateur. Il
+     faut donc le lui PASSER — sinon il n'existe pas de l'autre cote. */
+  await page.evaluate((quel) => {
     roster = new Set(brawlers.map(b => b.k)); sauverRoster(); definirLangue('fr');
     carteId = MAPS[0].id; ennemis=['piper','bull']; allies=['gus']; bans=[];
-    ecran='draft'; render();
-  });
+    ecran = quel; recherche = ''; render();
+  }, ECRAN);
   await page.waitForTimeout(1200);
 
   const d = await page.evaluate(() => {
@@ -107,7 +123,14 @@ const rgb = s => (s.match(/\d+/g) || [0,0,0]).slice(0,3).map(Number);
   ok('A11y · langue déclarée', d.lang!=='(absent)', d.lang);
 
   const n = R.filter(r=>r.bon).length;
-  console.log(`\n===== ${n}/${R.length} règles tenues =====\n`);
+  manques += R.length - n;
+  console.log(`\n===== écran « ${ECRAN} » : ${n}/${R.length} règles tenues =====\n`);
   R.forEach(r => console.log(`${r.bon?'  ok  ':'  ✗   '} ${r.regle}\n         ${r.detail}`));
+  await page.close();
+  }
   await nav.close();
+  /* Un code de sortie, pour que la CI puisse s'en servir un jour sans avoir
+     a relire la sortie a l'oeil. */
+  console.log(manques ? `\n${manques} règle(s) non tenue(s).` : '\nRien à signaler.');
+  process.exit(manques ? 1 : 0);
 })();

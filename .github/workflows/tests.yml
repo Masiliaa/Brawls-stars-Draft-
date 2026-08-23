@@ -100,5 +100,12 @@ jobs:
       - name: Audit d'ergonomie
         run: node outils/audit.js
 
+      # Les 13 règles mécaniquement vérifiables de ui-ux-pro-max, sur les trois
+      # écrans. C'est ce contrôle qui a trouvé, le 23/08, qu'aucun titre h1-h6
+      # n'existait sur la page — invisible à l'œil, bloquant au lecteur d'écran.
+      # Sans la CI, il ne tournerait que quand quelqu'un y pense.
+      - name: Audit UX (règles ui-ux-pro-max)
+        run: node outils/audit_ux.js
+
       - name: Contrôles de refresh.py
         run: python3 tests/t_refresh.py
