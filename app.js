@@ -159,6 +159,9 @@ var ACTIONS = {
   /* Ouvre ou referme un menu de la barre du haut. */
   ouvrirLangue: function () { menuOuvert = (menuOuvert === "Langue") ? null : "Langue"; },
   ouvrirMode: function () { menuOuvert = (menuOuvert === "Mode") ? null : "Mode"; },
+  /* Les trois actions du roster, rangees derriere un bouton : elles servent
+     une fois, a la mise en place, et coutaient 219 px a chaque visite. */
+  ouvrirRoster: function () { menuOuvert = (menuOuvert === "Roster") ? null : "Roster"; },
 
   /* Choix fait dans un menu : on applique et le menu se referme tout seul. */
   /* Changer de langue demande le fichier d'explications de cette langue-là.
@@ -310,7 +313,7 @@ var ACTIONS = {
   }
 };
 
-var OUVRENT_UN_MENU = ["ouvrirLangue", "ouvrirMode"];
+var OUVRENT_UN_MENU = ["ouvrirLangue", "ouvrirMode", "ouvrirRoster"];
 
 conteneur.addEventListener("click", function (e) {
   var bouton = e.target.closest("[data-act]");

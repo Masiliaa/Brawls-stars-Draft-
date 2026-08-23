@@ -352,6 +352,9 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 .note a{color:var(--doux);text-decoration:underline;
   display:inline-block;padding:13px 0;min-height:44px}
 .intro{font-size:var(--t3);font-weight:400;color:var(--doux);margin:0 0 var(--e3);line-height:1.55}
+/* Sur l'ecran roster, la consigne suit la recherche au lieu de la preceder :
+   elle se lit une fois, la recherche sert a chaque visite. */
+#grid ~ .intro,.tete-roster + .intro{margin:var(--e2) 0 var(--e3);font-size:var(--t2)}
 /* Le nom du produit s'affichait « Le Manageı » sur un iPhone : les trois
    boutons de la barre prenaient 250 px sur les 358 disponibles, et le nom
    se faisait rogner. Un nom de produit coupé est le premier signe qu'une
@@ -414,6 +417,17 @@ body{min-height:100vh;background:var(--fond);color:var(--texte);
 /* display:flex et non inline-flex : hérité de .b, l'inline empêchait les
    marges automatiques de centrer la carte sur un grand écran. */
 
+/* La recherche prend la ligne, le bouton d'actions se cale au bout. C'est
+   l'inverse de l'ordre precedent, et c'est voulu : on cherche a chaque
+   visite, on coche tout une seule fois. */
+.tete-roster{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e2)}
+.tete-roster .inp{flex:1;margin-bottom:0;max-width:none}
+.tete-roster .choix{flex:none}
+/* Un bouton carre : trois points, pas un mot a traduire. Le libelle reel
+   vit dans title=, donc il reste annonce. */
+.actions-roster{width:44px;padding:0;justify-content:center;font-size:17px;
+  letter-spacing:0;line-height:1}
+.actions-roster::after{display:none}
 .barre-outils{margin-bottom:12px}
 .reset{margin-top:20px}
 

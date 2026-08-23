@@ -153,8 +153,14 @@ const check = (nom, cond, detail = '') => {
       ecran = 'draft'; cibleAjout = null; render();
       const draft = document.body.innerText;
 
-      ecran = 'roster'; render();
+      // Les trois actions du roster sont derriere un menu depuis le 23/08 :
+      // on l'ouvre pour lire leurs libelles, exactement comme on ouvre le
+      // <details> du pied de page plus bas. Ce qu'on verifie est inchange —
+      // que ces textes existent et soient traduits — mais ils ne sont plus
+      // a l'ecran tant qu'on n'a pas demande a les voir.
+      ecran = 'roster'; menuOuvert = 'Roster'; render();
       const roster2 = document.body.innerText;
+      menuOuvert = null;
 
       ecran = 'cartes'; render();
       const cartes = document.body.innerText;

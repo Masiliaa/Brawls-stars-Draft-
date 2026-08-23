@@ -37,6 +37,19 @@ const check = (nom, cond, detail = '') => {
   await page.route('**/api.brawlapi.com/**', r => r.abort());
 
 
+  /* Les trois actions du roster — tout cocher, tout decocher, ne montrer que
+     les manquants — sont derriere un bouton « ⋯ » depuis le 23/08 : elles
+     servent une fois, a la mise en place, et coutaient 148 px de haut a
+     chaque visite. Le controle refait donc le VRAI geste : ouvrir le menu,
+     puis choisir. Cliquer directement le bouton cache aurait teste un ecran
+     qui n'existe plus. */
+  async function actionRoster(nom) {
+    if (!(await page.locator('[data-act="' + nom + '"]').count())) {
+      await page.locator('[data-act="ouvrirRoster"]').click();
+    }
+    await page.locator('[data-act="' + nom + '"]').click();
+  }
+
   const erreurs = [];
   page.on('pageerror', e => erreurs.push('pageerror: ' + e.message));
   page.on('console', m => {
@@ -76,7 +89,7 @@ const check = (nom, cond, detail = '') => {
   await page.locator('[data-act="roster"]').click();
   check('la grille des persos s\'affiche', (await page.locator('.cel').count()) > 90);
 
-  await page.locator('[data-act="tout"]').click();
+  await actionRoster('tout');
   const toutCoche = await page.locator('.cel.on').count();
   check('« tout cocher » coche tout', toutCoche > 90, toutCoche);
   check('le compteur suit',
@@ -93,10 +106,10 @@ const check = (nom, cond, detail = '') => {
     (await page.locator('.cel').count()) === toutCoche);
 
   // Ici, et ici seulement, il y a deux états à distinguer d'un coup d'œil.
-  await page.locator('[data-act="rien"]').click();
+  await actionRoster('rien');
   const voile = await page.evaluate(() =>
     parseFloat(getComputedStyle(document.querySelector('#grid .cel')).opacity));
-  await page.locator('[data-act="tout"]').click();
+  await actionRoster('tout');
   const plein = await page.evaluate(() =>
     parseFloat(getComputedStyle(document.querySelector('#grid .cel')).opacity));
   check('un perso non coché reste visiblement en retrait',
@@ -477,7 +490,7 @@ const check = (nom, cond, detail = '') => {
 
   console.log('\n== roster vide : message d\'invite ==');
   await page.locator('[data-act="roster"]').click();
-  await page.locator('[data-act="rien"]').click();
+  await actionRoster('rien');
   check('« tout décocher » vide tout', (await page.locator('.cel.on').count()) === 0);
   await page.locator('.bar .actions [data-act="draft"]').click();
   check('l\'app explique quoi faire',
@@ -490,7 +503,7 @@ const check = (nom, cond, detail = '') => {
   await page.locator('#q').fill('safe');
   await page.locator('[data-act="carte"][data-v="safe-zone"]').first().click();
   await page.locator('[data-act="roster"]').first().click();
-  await page.locator('[data-act="tout"]').click();
+  await actionRoster('tout');
   await page.locator('.bar .actions [data-act="draft"]').click();
 
   check('démarre en mode Rapide',
@@ -700,20 +713,20 @@ const check = (nom, cond, detail = '') => {
   // recherche marche sur un nom qu'on a déjà en tête.
   console.log('\n== voir où l\'on en est, et ce qui manque ==');
   const total = await page.evaluate(() => brawlers.length);
-  await page.locator('[data-act="tout"]').click();
+  await actionRoster('tout');
   check('le compteur dit le nombre ET le total',
     (await page.locator('.compteur').innerText()).replace(/\s+/g, ' ')
       === total + ' sur ' + total,
     await page.locator('.compteur').innerText());
 
-  await page.locator('[data-act="manquants"]').click();
+  await actionRoster('manquants');
   check('tout coché, « ceux qui manquent » ne montre rien',
     (await page.locator('.cel').count()) === 0 &&
     (await page.locator('.rangee-rarete').count()) === 0);
 
-  await page.locator('[data-act="manquants"]').click();
+  await actionRoster('manquants');
   for (let i = 0; i < 3; i++) await page.locator('#grid .cel').nth(i).click();
-  await page.locator('[data-act="manquants"]').click();
+  await actionRoster('manquants');
   check('il montre exactement les décochés',
     (await page.locator('.cel').count()) === 3,
     await page.locator('.cel').count());
@@ -723,8 +736,8 @@ const check = (nom, cond, detail = '') => {
     /sur\s+1$/.test((await page.locator('.rangee-rarete').first().innerText())
       .split('\n')[1] || ''),
     (await page.locator('.rangee-rarete').first().innerText()).replace(/\n/g, ' · '));
-  await page.locator('[data-act="manquants"]').click();
-  await page.locator('[data-act="tout"]').click();
+  await actionRoster('manquants');
+  await actionRoster('tout');
 
   // ── Les six frictions relevées le 04/08/2026 ───────────────────────────
   console.log('\n== ce qui survit à une fermeture, et à une coupure ==');
@@ -1083,7 +1096,7 @@ const check = (nom, cond, detail = '') => {
   // passer, et ce qu'aucun test ne vérifiait.
   console.log('\n== le catalogue ne bouge pas sous le doigt ==');
   await page.locator('[data-act="roster"]').first().click();
-  await page.locator('[data-act="rien"]').click();
+  await actionRoster('rien');
   for (let i = 0; i < 6; i++) await page.locator('#grid .cel').nth(i).click();
   const casesAvant = await page.evaluate(() =>
     [...document.querySelectorAll('#grid .cel')].slice(0, 8)

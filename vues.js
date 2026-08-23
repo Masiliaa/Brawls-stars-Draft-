@@ -111,6 +111,38 @@ function vignette(carte, largeur) {
 /* Un bouton qui ouvre une liste de choix, plutôt qu'un bouton qui bascule
    à l'aveugle : on voit les options avant de décider, et on peut aller
    directement à celle qu'on veut. */
+/* Le même menu, mais pour des COMMANDES et non pour un choix.
+   ------------------------------------------------------------------------
+   menuDeroulant() sert à choisir une valeur parmi plusieurs : ses entrées
+   sont donc des « menuitemradio » avec une coche sur celle en cours. Les
+   trois actions du roster ne sont pas ça — cocher tout, décocher tout,
+   n'afficher que les manquants : deux ordres et une bascule. Leur donner des
+   boutons radio dirait à un lecteur d'écran qu'elles s'excluent, ce qui est
+   faux. D'où cette variante, qui partage l'apparence et rien d'autre. */
+function menuActions(nom, libelleBouton, titre, entrees) {
+  var ouvert = menuOuvert === nom;
+  var html = '<div class="choix">'
+           + '<button class="b alt sm declenche actions-roster" data-act="ouvrir' + nom + '"'
+           + ' aria-haspopup="true" aria-expanded="' + ouvert + '"'
+           + ' title="' + echapper(titre) + '">'
+           + echapper(libelleBouton) + "</button>";
+  if (ouvert) {
+    html += '<div class="menu" role="menu">';
+    entrees.forEach(function (e) {
+      var bascule = e.coche !== undefined;
+      html += "<button" + (bascule
+                ? ' role="menuitemcheckbox" aria-checked="' + !!e.coche + '"'
+                : ' role="menuitem"')
+            + (e.coche ? ' class="actif"' : "")
+            + ' data-act="' + e.action + '">'
+            + '<span class="coche">' + (e.coche ? "✓" : "") + "</span>"
+            + echapper(e.libelle) + "</button>";
+    });
+    html += "</div>";
+  }
+  return html + "</div>";
+}
+
 function menuDeroulant(nom, libelleBouton, titre, action, options) {
   var ouvert = menuOuvert === nom;
 
@@ -385,20 +417,34 @@ function ecranRoster() {
      C'est pourtant la seule chose qu'on vient vérifier en revenant ici. Il
      passe devant, en grand, avec son total : « 68 sur 107 » se lit d'un
      coup d'œil, « 68 » seul ne dit pas s'il en manque beaucoup. */
+  /* Ce qui occupait le haut de l'écran, mesuré le 23/08 : le compteur en
+     phrase, trois boutons qui passaient à deux lignes, puis la recherche.
+     391 px avant le premier brawler — 46 % d'un iPhone — sur un écran qui
+     fait déjà 3,3 écrans de haut.
+
+     Or ces trois boutons servent une fois, à la mise en place. La recherche,
+     elle, sert à chaque visite. On inverse donc leur importance : la
+     recherche prend la ligne, les trois actions se rangent derrière un
+     bouton, et le compte devient une ligne au lieu d'un paragraphe. */
   var corps = corpsRoster();
   return barreHaut()
-       + '<p class="intro"><b class="compteur">'
-       + echapper(t("rosterCompte", { n: roster.size, total: brawlers.length }))
-       + "</b> " + echapper(t("rosterConsigne")) + "</p>"
-       + '<div class="wrap barre-outils">'
-       + '<button class="b sm" data-act="tout">' + echapper(t("toutCocher")) + "</button>"
-       + '<button class="b alt sm" data-act="rien">' + echapper(t("toutDecocher")) + "</button>"
-       + '<button class="b alt sm' + (filtreManquants ? " actif" : "")
-       + '" data-act="manquants">'
-       + echapper(t(filtreManquants ? "rosterFiltreTous" : "rosterFiltreManquants"))
-       + "</button></div>"
+       + '<div class="tete-roster">'
        + '<input class="inp" id="q" placeholder="' + echapper(t("chercherBrawler"))
        + '" value="' + echapper(recherche) + '">'
+       + menuActions("Roster", "⋯", t("rosterActions"), [
+           { action: "tout", libelle: t("toutCocher") },
+           { action: "rien", libelle: t("toutDecocher") },
+           { action: "manquants", coche: filtreManquants,
+             libelle: t(filtreManquants ? "rosterFiltreTous" : "rosterFiltreManquants") }
+         ])
+       + "</div>"
+       /* La consigne — « coche les brawlers niveau 9 minimum » — s'adresse à
+          quelqu'un qui arrive. Elle prenait deux lignes à CHAQUE visite, y
+          compris la centième. Elle ne s'affiche donc que tant que rien n'est
+          coché ; ensuite le compte suffit, et il tient sur une ligne. */
+       + '<p class="intro"><b class="compteur">'
+       + echapper(t("rosterCompte", { n: roster.size, total: brawlers.length }))
+       + "</b>" + (roster.size ? "" : " " + echapper(t("rosterConsigne"))) + "</p>"
        + '<div class="' + corps.classe + '" id="grid">' + corps.html + "</div>";
 }
 
