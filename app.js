@@ -45,6 +45,12 @@ function soldeCatalogue() {
   catalogueEnAttente = null;
 }
 
+/* La position de defilement de chaque ecran, et celui qui est actuellement
+   affiche. En memoire seulement : ca vaut pour la visite en cours, pas
+   au-dela — rouvrir l'app un autre jour doit repartir du haut. */
+var defilement = {};
+var ecranAffiche = null;
+
 function render() {
   /* Le solde se fait ICI, et pas dans le gestionnaire de clic.
      ----------------------------------------------------------------------
@@ -91,6 +97,20 @@ function render() {
     rosterNote = true;
   }
 
+  /* Chaque écran retrouve l'endroit où on l'avait laissé.
+     ----------------------------------------------------------------------
+     Mesuré le 23/08 : on descend à 1230 px dans les 106 brawlers, on va voir
+     le draft, on revient — on est à 0. Ce n'est pas un oubli du navigateur,
+     c'est mécanique : le draft fait 950 px de haut, la position est donc
+     ramenée dans ces limites, et le roster qui rouvre à 2 600 px ne peut plus
+     la retrouver. Avec 3,2 écrans de portraits, c'est tout à refaire.
+
+     On note donc la position de l'écran qu'on QUITTE, et on rend celle de
+     l'écran qu'on ouvre. Rien n'est enregistré sur le téléphone : c'est vrai
+     le temps de la visite, ce qui est exactement la portée du besoin. */
+  var changeDEcran = (ecran !== ecranAffiche);
+  if (changeDEcran && ecranAffiche) defilement[ecranAffiche] = window.scrollY;
+
   conteneur.innerHTML = vueHTML();
 
   /* La largeur utile dépend du mode, et la feuille de style ne peut pas le
@@ -103,11 +123,31 @@ function render() {
      a besoin de toute la place pour son classement. */
   conteneur.dataset.mode = (ecran === "draft") ? modeEffectif() : "";
 
+  /* La restitution vient APRÈS le dessin : avant, la page n'a pas encore sa
+     hauteur et le navigateur refuserait d'aller si loin. Les cellules ont une
+     taille fixe, donc la hauteur est connue sans attendre les images — ce qui
+     n'aurait pas été vrai avec des portraits de tailles variables. */
+  if (changeDEcran) {
+    ecranAffiche = ecran;
+    /* Lire une dimension force le navigateur à recalculer la mise en page
+       tout de suite. Sans cette lecture il garde encore l'ANCIENNE hauteur
+       — celle de l'écran qu'on vient de quitter — et rabote la position
+       demandée pour qu'elle y tienne. Mesuré : sans elle, on revenait à 0
+       au lieu de 1131 px, exactement le défaut qu'on corrige ici. */
+    void conteneur.offsetHeight;
+    window.scrollTo(0, defilement[ecran] || 0);
+  }
+
   /* Ouvrir un écran de recherche et devoir cliquer dans le champ avant de
      taper, c'est un geste de trop quand on a un clavier sous les doigts. */
   if (!AU_CLAVIER) return;
   var champ = document.getElementById("q");
-  if (champ) champ.focus();
+  /* preventScroll : donner le focus à un champ fait défiler la page jusqu'à
+     lui. Le champ est en tête de l'écran des brawlers — cette ligne ramenait
+     donc TOUJOURS en haut, et c'est elle qui annulait la position qu'on vient
+     de rendre juste au-dessus. Mesuré : position restaurée à 1131 px, puis
+     0 px après le focus. Le curseur se pose sans que la page bouge. */
+  if (champ) champ.focus({ preventScroll: true });
 }
 
 
