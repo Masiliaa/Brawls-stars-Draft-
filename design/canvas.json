@@ -1,64 +1,62 @@
 {
   "pages": [
-    { "id": "page-1", "name": "Directions" },
-    { "id": "page-2", "name": "Ergonomie" }
+    { "id": "page-1", "name": "Pistes" },
+    { "id": "page-2", "name": "Directions" },
+    { "id": "page-3", "name": "Ergonomie" }
   ],
   "artboards": [
-    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Aujourd'hui", "page": "page-1" },
-    { "file": "DirectionA.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "A · Éditorial", "page": "page-1" },
-    { "file": "DirectionB.dc.html", "x": 1180, "y": 0, "w": 390, "h": 844, "title": "B · Vitrine", "page": "page-1" },
-    { "file": "DirectionC.dc.html", "x": 1770, "y": 0, "w": 390, "h": 844, "title": "C · Instrument", "page": "page-1" },
-    { "file": "OptionA.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Cibles à 44 px", "page": "page-2" },
-    { "file": "OptionB.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "« + » au bord droit", "page": "page-2" }
+    { "file": "RosterAujourdhui.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Mes brawlers · aujourd'hui", "page": "page-1" },
+    { "file": "RosterResserre.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "Mes brawlers · resserré", "page": "page-1" },
+    { "file": "Attente.dc.html", "x": 1180, "y": 0, "w": 820, "h": 560, "title": "L'attente", "page": "page-1" },
+
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Draft · avant refonte", "page": "page-2" },
+    { "file": "DirectionA.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "A · Éditorial", "page": "page-2" },
+    { "file": "DirectionB.dc.html", "x": 1180, "y": 0, "w": 390, "h": 844, "title": "B · Vitrine (retenue)", "page": "page-2" },
+    { "file": "DirectionC.dc.html", "x": 1770, "y": 0, "w": 390, "h": 844, "title": "C · Instrument", "page": "page-2" },
+
+    { "file": "OptionA.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Cibles à 44 px", "page": "page-3" },
+    { "file": "OptionB.dc.html", "x": 590, "y": 0, "w": 390, "h": 844, "title": "« + » au bord droit", "page": "page-3" }
   ],
   "annotations": [
     {
-      "id": "aujourdhui",
+      "id": "constat",
       "x": 0,
-      "y": -250,
+      "y": -290,
       "w": 390,
       "page": "page-1",
-      "text": "AUJOURD'HUI\n\nCe qui date : les boutons-pastilles à contour gris, les filets de 1 px partout, un gris parfaitement neutre sans température, les portraits en petites pastilles plates, et aucune hiérarchie de matière — tout est au même plan.\n\nSa vraie force, à garder : le nom en très gros. C'est la réponse, et elle se lit en une seconde."
+      "text": "CE QUI EST MESURÉ, PAS SUPPOSÉ\n\nÉcran « Mes brawlers », iPhone 390 px, API branchée :\n\n• 391 px avant le premier brawler — 46 % de l'écran occupé par un compteur, trois boutons et une recherche.\n\n• « Tout décocher » apparaît 7 fois en descendant, une par rareté. Une action destructive, répétée sept fois.\n\n• Le groupe « Communs » coûte 230 px pour UN brawler : l'en-tête pèse plus lourd que son contenu.\n\n• Les 106 noms sont à 11,5 px."
     },
     {
-      "id": "dir-a",
+      "id": "propose",
       "x": 590,
-      "y": -250,
+      "y": -290,
       "w": 390,
       "page": "page-1",
-      "text": "A · ÉDITORIAL — la typographie fait le travail\n\nNoir chaud, texte crème, un serif à taille optique pour le nom. Les filets disparaissent au profit du blanc. Une seule source de lumière, derrière la réponse. La saisie descend dans une surface arrondie, au pouce.\n\nPour : intemporel, calme, très lisible ; c'est le langage d'un outil sérieux.\nContre : peu spectaculaire — si tu voulais du « waouh », ce n'est pas celle-là."
+      "text": "CE QUE ÇA DONNERAIT\n\n• La recherche remonte en tête — c'est le geste courant. Les trois actions rares (tout cocher, tout décocher, ceux qui manquent) passent dans un menu « ⋯ » : elles servent une fois, à la mise en place.\n\n• Le compte devient une ligne, plus une phrase.\n\n• Les en-têtes de rareté tiennent sur une ligne et COLLENT en haut pendant qu'on défile : on sait toujours dans quel groupe on est.\n\n• Les noms passent à 13 px.\n\nRésultat : 172 px avant le premier brawler au lieu de 391. Deux groupes de plus visibles d'un coup."
     },
     {
-      "id": "dir-b",
+      "id": "attente-note",
       "x": 1180,
-      "y": -250,
-      "w": 390,
+      "y": -290,
+      "w": 820,
       "page": "page-1",
-      "text": "B · VITRINE — l'image d'abord\n\nLe portrait prend le tiers haut de l'écran, le nom se pose dessus. Surfaces en dégradé avec un liseré de lumière sur l'arête haute — c'est ce liseré qui donne la matière. La saisie flotte en bas.\n\nPour : le plus « 2026 » des trois, et on reconnaît un brawler à son visage avant son nom.\nContre : le plus coûteux — il faut de vraies images en grand, et le nom perd de la place."
+      "text": "L'ATTENTE — la règle « Loading Indicators » de la compétence dit : au-delà de 300 ms, un indicateur, jamais un écran figé.\n\nMesuré : la table des duels met 0,3 à 1 seconde à arriver sur une bonne connexion, plusieurs secondes en 3G. Pendant ce temps l'app affiche une phrase fixe — honnête, mais rien ne bouge, donc on ne sait pas si elle travaille.\n\nUn squelette dit deux choses qu'une phrase ne dit pas : que ça avance, et quelle FORME aura la réponse. Quand les chiffres arrivent, rien ne saute — le nom se pose là où le bloc l'attendait."
     },
     {
-      "id": "dir-c",
-      "x": 1770,
-      "y": -250,
-      "w": 390,
-      "page": "page-1",
-      "text": "C · INSTRUMENT — dense et chiffré\n\nGrille de fond, monospace pour tous les nombres, angles vifs, accent électrique. Le score et sa décomposition sont visibles tout de suite, et le classement tient sous la réponse sans défiler.\n\nPour : le plus d'information par écran, et ça assume que c'est un outil d'analyse.\nContre : plus froid, et demande de savoir lire des chiffres pendant un draft."
-    },
-    {
-      "id": "commun",
+      "id": "hors-dessin",
       "x": 0,
-      "y": 960,
-      "w": 900,
+      "y": 940,
+      "w": 980,
       "page": "page-1",
-      "text": "Les trois gardent : le fond sombre (on joue dans le noir), les cibles à 44 px, la saisie dans la zone du pouce, et le nom conseillé comme élément le plus fort de l'écran.\n\nLes portraits sont des pastilles à initiale — c'est le vrai repli de l'app, pas un raccourci de maquette. Les vraies images sont déjà dans le dépôt.\n\nLes polices viennent de Google Fonts (Instrument Serif, Bricolage Grotesque, Space Grotesk). À l'export PNG/PDF elles retombent sur la police système — à l'écran elles s'affichent bien."
+      "text": "DEUX AUTRES PISTES, QUI NE SE DESSINENT PAS\n\n• Le défilement du roster est perdu. Mesuré : on descend à 1230 px, on va voir le draft, on revient — on est à 0. Avec 106 brawlers sur 3,3 écrans, c'est tout à refaire. La règle « Preserve Screen State » de la compétence. Correction invisible, gain réel.\n\n• Le contraste. 22 textes sont entre 4,5:1 et 7:1. Le seuil légal (4,5) est tenu ; le style « dark-mode-oled » de la compétence vise 7:1 pour un écran sombre regardé dans le noir. Éclaircir --doux et --faible d'un cran suffirait.\n\nET UNE PISTE QUE J'ÉCARTE : le retour haptique au toucher. La compétence le recommande pour les confirmations, mais Safari sur iPhone ne l'expose pas au web. Ce serait du code mort."
     },
     {
-      "id": "ergo",
+      "id": "note-pages",
       "x": 0,
-      "y": -250,
+      "y": -180,
       "w": 700,
       "page": "page-2",
-      "text": "Ces deux-là répondent à une autre question, mesurée : 10 des 16 boutons de l'écran de draft sont sous 44 px, et les trois « + » tombent à trois abscisses différentes (190, 146 et 102 px du bord) — donc aucune habitude possible.\n\nLes corrections sont déjà intégrées dans les trois directions de la première page. Elles restent ici comme trace du relevé."
+      "text": "Les trois directions proposées le 12/08. B a été retenue et appliquée à l'app ; l'artboard « avant refonte » garde la trace de ce à quoi elle ressemblait."
     }
   ],
   "launch": { "view": "canvas", "page": "page-1" }

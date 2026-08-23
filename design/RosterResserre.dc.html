@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;background:#08090e;color:#eef0f6;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;font-size:15px}
+    a{color:#7c8cf8}a:hover{color:#eef0f6}
+    .pill{display:inline-flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:500;color:#eef0f6;
+      background:linear-gradient(180deg,#151827,#101320);
+      border:1px solid #232a40;border-radius:999px;padding:8px 14px;min-height:44px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+    .cara{display:inline-flex;align-items:center;justify-content:center;flex:none;
+      border-radius:12px;font-weight:600;color:#0b0d15;line-height:1;
+      width:56px;height:56px;font-size:21px}
+    .cel{display:flex;flex-direction:column;align-items:center;gap:8px;width:64px}
+    /* 13 px au lieu de 11,5 : ce sont 106 noms, c'est ce qu'on vient lire. */
+    .cel b{font-weight:500;font-size:13px;line-height:1.2;color:#eef0f6}
+    .grid{display:grid;grid-template-columns:repeat(5,64px);
+      justify-content:space-between;row-gap:18px;column-gap:8px}
+    /* L'en-tete de groupe tient sur une ligne et COLLE en haut pendant qu'on
+       defile : on sait toujours dans quelle rarete on se trouve. */
+    .rar{position:sticky;top:0;z-index:5;display:flex;align-items:baseline;gap:9px;
+      padding:9px 0 7px;margin:14px 0 10px;background:#08090e}
+    .rar span.n{font-size:12px;font-weight:700;letter-spacing:.08em;
+      text-transform:uppercase;color:#8b93b0}
+    .rar span.c{font-size:12px;color:#79829e}
+    .rar span.a{margin-left:auto;font-size:12px;color:#7c8cf8;
+      min-height:44px;display:flex;align-items:center;padding:0 4px}
+    .cote{position:absolute;font-size:10px;font-weight:700;color:#4ec9a0;letter-spacing:.02em}
+    .fleche{position:absolute;background:#4ec9a0;opacity:.85}
+  </style>
+</helmet>
+
+<div style="width:390px;height:844px;background:#08090e;padding:18px 16px 0;overflow:hidden;position:relative">
+
+  <div style="display:flex;align-items:center;gap:8px;min-height:44px;margin-bottom:16px">
+    <span style="font-size:15px;font-weight:600;color:#8b93b0;margin-right:auto">Le Manager</span>
+    <span class="pill">Rapide ▾</span>
+    <span class="pill">FR ▾</span>
+    <span class="pill">Retour</span>
+  </div>
+
+  <!-- La recherche remonte : c'est le geste courant. Le compte se range au
+       bout de la ligne, il n'a plus besoin d'une phrase a lui. -->
+  <div style="display:flex;align-items:center;gap:8px">
+    <div style="flex:1;min-height:44px;border-radius:16px;border:1px solid #232a40;
+                background:linear-gradient(180deg,#151827,#101320);padding:8px 14px;
+                display:flex;align-items:center;color:#79829e;font-size:16px;
+                box-shadow:inset 0 1px 0 rgba(255,255,255,.07)">Chercher</div>
+    <!-- Les trois actions rares tiennent dans un menu : elles servent une fois,
+         a la mise en place, et coutaient deux lignes a chaque visite. -->
+    <span class="pill" style="width:44px;padding:0">⋯</span>
+  </div>
+  <div style="display:flex;align-items:baseline;gap:7px;margin-top:10px">
+    <span style="font-size:15px;font-weight:800">106</span>
+    <span style="font-size:12px;color:#79829e">brawlers cochés sur 106</span>
+  </div>
+
+  <div class="rar">
+    <span class="n">Communs</span><span class="c">1 sur 1</span>
+    <span class="a">Décocher</span>
+  </div>
+  <div class="grid">
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#c9a0e8,#8b5cc4)">S</span><b>Shelly</b></div>
+  </div>
+
+  <div class="rar">
+    <span class="n">Rares</span><span class="c">8 sur 8</span>
+    <span class="a">Décocher</span>
+  </div>
+  <div class="grid">
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#7cc4a0,#3d8f6e)">B</span><b>Barley</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#e8a04a,#c4682a)">B</span><b>Brock</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#e8c04a,#c4982a)">B</span><b>Bull</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#e87c7c,#c44a4a)">C</span><b>Colt</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#7c9ce8,#4a68c4)">E</span><b>El Primo</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#e8907c,#c4553a)">N</span><b>Nita</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#d4c47c,#a89a4a)">P</span><b>Poco</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#c47c9c,#94486e)">R</span><b>Rosa</b></div>
+  </div>
+
+  <div class="rar">
+    <span class="n">Super rares</span><span class="c">10 sur 10</span>
+    <span class="a">Décocher</span>
+  </div>
+  <div class="grid">
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#8ca8d4,#4a6c9c)">8</span><b>8-Bit</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#e8d47c,#c4a83a)">C</span><b>Carl</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#a98ce6,#7551c4)">D</span><b>Darryl</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#e8a8c4,#c46e94)">D</span><b>Dynamike</b></div>
+    <div class="cel"><span class="cara" style="background:linear-gradient(150deg,#9cd4e8,#4a9cc4)">G</span><b>Gus</b></div>
+  </div>
+
+  <span class="fleche" style="left:0;top:172px;width:390px;height:1px"></span>
+  <span class="cote" style="left:16px;top:177px">↑ 172 px au lieu de 391 — deux groupes de plus à l'écran</span>
+  <span class="cote" style="right:16px;top:246px">l'en-tête colle en haut ↑</span>
+</div>
+</x-dc>
+</body>
+</html>
