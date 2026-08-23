@@ -120,13 +120,26 @@ self.addEventListener("fetch", function (e) {
        — la coquille, pré-chargée à l'installation ;
        — counters-<langue>.js, gardé au vol : les pré-charger tous les trois
          annulerait le gain du découpage par langue ;
-       — assets/, gardé au vol AUSSI, et c'est nouveau. Le commentaire
-         précédent s'en méfiait — 3,5 Mo entrant dans le cache sans qu'on le
-         décide — et cette méfiance était juste tant que la bascule se faisait
-         toute seule. Elle est maintenant explicite, et « au vol » veut dire
-         « ce que l'utilisateur a réellement regardé » : quelqu'un qui ouvre
-         le draft garde six portraits, pas cent cinq. Ce qui borne le cache,
-         c'est le défilement, pas une liste. */
+       — assets/, gardé au vol AUSSI.
+
+     Ce paragraphe a affirmé, du 07 au 23/08/2026, que « quelqu'un qui ouvre
+     le draft garde six portraits, pas cent cinq » et que « ce qui borne le
+     cache, c'est le défilement ». Les deux étaient faux, et personne ne
+     l'avait vérifié. Compté le 23/08, en servant l'app pour de vrai :
+
+         écran de draft   ..............   7 images,  46 Ko
+         écran des brawlers, sans défiler   105 images, 438 Ko
+         le même, après avoir tout fait défiler   105 images, 438 Ko
+
+     Le défilement ne borne rien : loading="lazy" est une consigne, et sur une
+     connexion rapide le navigateur voit large et va tout chercher d'un coup.
+     Ce qui borne réellement le cache, ce sont les ÉCRANS ouverts — rester sur
+     le draft coûte 46 Ko, ouvrir sa liste de brawlers en coûte 438.
+
+     C'est une borne acceptable, et elle reste dite honnêtement : 438 Ko pour
+     ne plus jamais dépendre du réseau sur l'écran le plus lourd, c'est le
+     marché qu'on a choisi en rapatriant les images. Ce qui ne l'était pas,
+     c'est de l'annoncer dix fois plus petit qu'il n'est. */
   if (req.method !== "GET") return;
   /* Le fichier d'explications de la langue lue : gardé au vol, sans être
      pré-chargé. Sans ça, hors ligne, le conseil perdrait ses explications —
