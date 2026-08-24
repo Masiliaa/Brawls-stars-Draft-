@@ -192,6 +192,28 @@ const check = (nom, cond, detail = '') => {
   check('pas de motif négatif sous un pick recommandé',
     !/faible|mauvais|perd contre|double un rôle/.test(syn.raisonNeg), syn.raisonNeg);
 
+  // Le jour où la source des duos a changé, refresh.py s'est mis à écrire
+  // [écart, parties] là où le moteur lisait un nombre nu. Aucune erreur, aucun
+  // test rouge, et la synergie s'est simplement tue. Ce contrôle-ci est le
+  // seul endroit du dépôt qui aurait dit non.
+  const formes = await page.evaluate(p => {
+    eval(p); COUNTERS = {};
+    allies = ['poco'];
+    SYNERGIE = { 'mortis|poco': 2.0 };
+    const nu = conseils().find(x => x.k === 'mortis').score;
+    SYNERGIE = { 'mortis|poco': [2.0, 1200] };
+    const paire = conseils().find(x => x.k === 'mortis').score;
+    SYNERGIE = {};
+    const vide = conseils().find(x => x.k === 'mortis').score;
+    return { nu, paire, vide, lu: ecartPaire({ 'a|b': [7, 30] }, 'a', 'b'),
+             absent: ecartPaire({}, 'a', 'b') };
+  }, petit);
+  check('les deux formes de duo donnent le même score',
+    formes.nu === formes.paire && formes.nu !== formes.vide, formes);
+  check('l\'échantillon est lu à côté de l\'écart',
+    formes.lu.ecart === 7 && formes.lu.parties === 30, formes.lu);
+  check('une paire absente ne vaut pas zéro', formes.absent === null, formes.absent);
+
   console.log('\n== couverture alliée (repli sans duo mesuré) ==');
   // Personne ne publie de taux de victoire en duo. La table de matchups, elle,
   // dit qui bat qui : si l'allié bat ce qui te bat, la paire tient. C'est une

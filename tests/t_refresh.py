@@ -938,5 +938,52 @@ check("rendre_tiers refait le bloc a l'identique",
       R.rendre_tiers(TA) == R.lire_bloc(
           open(R.FICHIER_DONNEES, encoding="utf-8").read(), "TIERS"))
 
+print("\n== duels mesures : agregation, correction, rendu ==")
+
+# --- une seule direction stockee, quel que soit le sens de l'observation ---
+S = {}
+R._agreger(S, "bull", "piper", 60, 100)     # Bull gagne 60 fois sur 100
+R._agreger(S, "piper", "bull", 40, 100)     # la meme chose, vue d'en face
+check("une paire, une seule cle", list(S) == ["bull|piper"], list(S))
+check("les deux sens s'additionnent sans se contredire",
+      S["bull|piper"] == [120, 200], S["bull|piper"])
+check("la cle est triee alphabetiquement",
+      "bull|piper" in S and "piper|bull" not in S)
+
+S2 = {}
+R._agreger(S2, "shelly", "shelly", 5, 10)
+R._agreger(S2, "shelly", "bull", 5, 0)
+check("ni le duel contre soi-meme ni l'echantillon vide n'entrent", S2 == {}, S2)
+
+# --- la correction tire les petits echantillons vers 50 % ---
+E = R._ecarts({"a|b": [45, 50], "c|d": [900, 1000], "e|f": [51, 100]})
+check("un petit echantillon extreme est ramene",
+      0 < E["a|b"][0] < 20, E.get("a|b"))
+check("un gros echantillon garde son ecart",
+      E["c|d"][0] > 35, E.get("c|d"))
+check("le petit pese moins que le gros malgre le meme taux brut",
+      E["a|b"][0] < E["c|d"][0], (E.get("a|b"), E.get("c|d")))
+check("sous le seuil, la paire ne s'ecrit pas", "e|f" not in E, list(E))
+check("l'echantillon est conserve a cote de l'ecart",
+      E["c|d"][1] == 1000, E.get("c|d"))
+
+# k SORT des donnees, il n'est pas choisi : si quelqu'un le change, ce test
+# le dit, et la ligne de refresh.py qui l'explique doit changer avec.
+check("K_DUEL vaut bien 0,25 / signal^2", abs(R.K_DUEL - 0.25 / 0.057 ** 2) < 2,
+      R.K_DUEL)
+
+# --- le rendu se relit ---
+T = {"bull|piper": [6.4, 1200], "8bit|mortis": [-3.1, 480]}
+rendu = R.rendre_paires("DUELS", T)
+relu = json.loads(re.sub(r"^var DUELS=|;$", "", rendu.replace("\n", "")))
+check("rendre_paires se relit a l'identique", relu == T, relu)
+check("aucune ligne ne depasse la largeur de lecture",
+      all(len(l) <= 90 for l in rendu.split("\n")), rendu.split("\n"))
+check("les cles sont triees", list(relu) == sorted(T), list(relu))
+check("une table vide reste lisible",
+      json.loads(R.rendre_paires("DUELS", {}).replace("var DUELS=", "")
+                 .rstrip(";")) == {})
+
+
 print("\n== %d ok, %d echecs ==" % (ok, fail))
 sys.exit(1 if fail else 0)

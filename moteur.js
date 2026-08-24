@@ -70,6 +70,18 @@ var SEUIL_FIABLE = 5;
 var PLANCHER_FIABLE = 0.2;
 
 var PT_MATCHUP = 12;   /* gain ou perte face à un ennemi de la table COUNTERS */
+
+/* PT_DUEL convertit un écart de taux de victoire MESURÉ (en points de
+   pourcentage) vers l'échelle de score, et DUEL_MAX empêche une paire extrême
+   d'écraser tout le reste.
+
+   Le réglage n'est pas une intuition : il est posé pour que l'écart MÉDIAN
+   des duels tranchés vaille exactement PT_MATCHUP, c'est-à-dire autant qu'un
+   « bat » de la table communautaire. Une mesure ordinaire pèse donc ce que
+   pèse un avis ordinaire ; seules les mesures franches pèsent davantage.
+   Le chiffre ci-dessous est recalculé à chaque changement de source — voir
+   outils/echelle_duels.js, qui le redonne à partir de DUELS. */
+var PT_DUEL = 2.5, DUEL_MAX = 24;
 var PT_CYCLE = 9;      /* idem, mais via le cycle de familles, moins fiable */
 var PT_ROLE = 6;       /* rôle complété (+) ou doublé (−) dans l'équipe */
 
@@ -198,6 +210,20 @@ function familleDe(cle) {
 /* Clé d'un duo dans SYNERGIE : toujours les deux clés triées. */
 function cleSynergie(a, b) {
   return [a, b].sort().join("|");
+}
+
+/* Une paire mesurée peut arriver sous deux formes, selon la source qui a
+   rempli la table : un nombre nu (brawlstats.net, historique) ou
+   [écart, nombre de parties] (metapick-ai.com, qui rend l'échantillon).
+   Lire les deux évite qu'un changement de source rende la table muette sans
+   que rien ne casse — c'est exactement ce qui s'est passé ici : SYNERGIE
+   écrite en paires, moteur lisant un nombre, aucune erreur, aucune synergie.
+   Renvoie null quand la paire est absente ou illisible. */
+function ecartPaire(table, a, b) {
+  var v = table && table[cleSynergie(a, b)];
+  if (typeof v === "number") return { ecart: v, parties: 0 };
+  if (v && typeof v[0] === "number") return { ecart: v[0], parties: v[1] || 0 };
+  return null;
 }
 
 /* La raison « n°5 sur cette carte, 55,29 % » n'explique rien : elle répète
@@ -342,6 +368,20 @@ function pointsDeCarte(cle, carte) {
    lue dans les deux sens : une paire peut n'être renseignée que d'un côté.
    Renvoie null si la paire est absente — l'appelant retombe alors sur le
    cycle de familles pour cet ennemi précis, et pour lui seul. */
+/* L'écart mesuré du point de vue du CANDIDAT, ou null.
+
+   DUELS ne garde qu'une direction par paire, du point de vue de la clé qui
+   vient en premier alphabétiquement : garder les deux doublerait le fichier
+   pour une information identique au signe près. C'est donc ici, et nulle part
+   ailleurs, qu'on remet l'écart dans le bon sens. */
+function duelMesure(candidat, ennemi) {
+  if (typeof DUELS === "undefined") return null;
+  var lu = ecartPaire(DUELS, candidat, ennemi);
+  if (!lu) return null;
+  var sens = candidat < ennemi ? 1 : -1;
+  return { ecart: lu.ecart * sens, parties: lu.parties };
+}
+
 function duel(candidat, ennemi) {
   var nom = nomBrawler(ennemi);
 
@@ -360,6 +400,20 @@ function duel(candidat, ennemi) {
     return {
       points: points, priorite: priorite,
       texte: t(cle, { nom: nom }) + (phrase ? " : " + phrase : "")
+    };
+  }
+
+  /* La table mesurée passe AVANT la table communautaire : DUELS vient de
+     parties réellement jouées sur cette carte, COUNTERS d'un avis de joueurs.
+     Quand les deux parlent, on croit la mesure. Quand DUELS se tait — paire
+     jamais rencontrée, ou écart trop petit pour être tranché — on retombe sur
+     COUNTERS, puis sur le cycle de familles, exactement comme avant. */
+  var mesure = duelMesure(candidat, ennemi);
+  if (mesure) {
+    var pts = Math.max(-DUEL_MAX, Math.min(DUEL_MAX, mesure.ecart * PT_DUEL));
+    return {
+      points: pts, priorite: pts > 0 ? 0 : 7,
+      texte: t(pts > 0 ? "raisonBat" : "raisonPerd", { nom: nom })
     };
   }
 
@@ -523,8 +577,9 @@ function pointsAvecAllies(cle) {
 
   var total = 0, plusMarquant = null;
   allies.forEach(function (a) {
-    var ecart = SYNERGIE[cleSynergie(cle, a)];
-    if (typeof ecart !== "number") return;
+    var lu = ecartPaire(SYNERGIE, cle, a);
+    if (!lu) return;
+    var ecart = lu.ecart;
     total += ecart;
     if (!plusMarquant || Math.abs(ecart) > Math.abs(plusMarquant.ecart)) {
       plusMarquant = { ecart: ecart, allie: a };

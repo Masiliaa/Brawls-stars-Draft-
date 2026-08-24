@@ -67,8 +67,7 @@ var MAPS=[
 {id:"ring-of-fire",img:15000300,nom:"Ring of Fire",mode:"hotZone",top:[["Bolt",60.33,5.42],["Bo",57.25,31.74],["Chuck",58.76,3.29],["Meg",56.58,30.19],["Gray",57.83,3.98],["Mina",57.2,5.35],["Jessie",56.82,8.04],["Draco",60.17,1.33]]}];
 /* @END:MAPS */
 
-/* Classement S/A/B/C/D par mode. Chaîne de noms séparés par des virgules,
-   volontairement compacte : c'est de la donnée brute, pas du code. */
+
 /* Taux d'utilisation par mode, en pourcentage des equipes.
    Sert a ranger la grille des ennemis par « ce qui a des chances de
    tomber » — pas a juger la force, voir refresh.py. */
@@ -81,6 +80,16 @@ gemGrab:{"8bit":0.42,"alli":0.17,"amber":0.06,"angelo":0.01,"ash":0.45,"barley":
 heist:{"8bit":0.84,"alli":0.09,"amber":0.1,"angelo":0.36,"ash":0.02,"barley":0.03,"bea":0.03,"belle":0.11,"berry":0.14,"bibi":0.22,"bo":0.09,"bolt":0.14,"bonnie":0.03,"brock":1.28,"bull":0.33,"buster":0.0,"buzz":0.21,"byron":0.18,"carl":0.64,"charlie":0.06,"chester":0.03,"chuck":0.56,"clancy":0.03,"colette":0.32,"colt":1.78,"cordelius":0.35,"crow":0.49,"damian":0.01,"darryl":0.09,"doug":0.01,"draco":0.01,"dynamike":0.07,"edgar":0.81,"elprimo":0.02,"emz":0.11,"eve":0.07,"fang":0.06,"finx":0.05,"frank":0.02,"gale":0.01,"gene":0.0,"gigi":0.08,"glowy":0.02,"gray":0.01,"griff":0.83,"grom":0.01,"gus":0.01,"hank":0.01,"jacky":0.0,"jaeyong":0.0,"janet":0.0,"jessie":0.17,"juju":0.01,"kaze":1.6,"kenji":0.01,"kit":0.07,"larrylawrie":0.01,"leon":0.01,"lily":0.11,"lola":0.09,"lou":0.02,"lumi":0.25,"maisie":0.01,"mandy":0.12,"max":0.33,"meeple":0.04,"meg":0.15,"melodie":0.66,"mico":0.71,"mina":0.03,"moe":0.01,"mortis":0.03,"mrp":0.0,"najia":0.03,"nani":0.16,"nita":0.2,"nori":0.51,"ollie":0.0,"otis":0.37,"pam":0.0,"pearl":0.06,"penny":0.51,"pierce":0.86,"piper":0.52,"poco":0.0,"rico":0.76,"rosa":0.01,"rt":0.06,"ruffs":0.05,"sam":0.01,"sandy":0.0,"shade":0.29,"shelly":0.02,"sirius":0.03,"spike":0.08,"sprout":0.01,"squeak":0.02,"starrnova":0.3,"stu":0.02,"surge":0.47,"tara":0.01,"tick":0.01,"trunk":0.07,"willow":0.06,"ziggy":0.0},
 hotZone:{"8bit":0.28,"alli":0.03,"amber":0.03,"angelo":0.0,"ash":0.2,"barley":0.1,"bea":0.04,"belle":0.02,"berry":0.07,"bibi":0.18,"bo":0.32,"bolt":0.11,"bonnie":0.0,"brock":0.23,"bull":0.08,"buster":0.01,"buzz":0.1,"byron":0.06,"carl":0.11,"charlie":0.03,"chester":0.13,"chuck":0.04,"clancy":0.02,"colette":0.04,"colt":0.07,"cordelius":0.08,"crow":0.22,"damian":0.16,"darryl":0.01,"doug":0.06,"draco":0.04,"dynamike":0.07,"edgar":0.4,"elprimo":0.02,"emz":0.59,"eve":0.0,"fang":0.12,"finx":0.09,"frank":0.06,"gale":0.05,"gene":0.0,"gigi":0.03,"glowy":0.03,"gray":0.27,"griff":0.81,"grom":0.01,"gus":0.01,"hank":0.05,"jacky":0.02,"jaeyong":0.0,"janet":0.0,"jessie":0.04,"juju":0.1,"kaze":0.11,"kenji":0.26,"kit":0.04,"larrylawrie":0.02,"leon":0.02,"lily":0.03,"lola":0.01,"lou":0.34,"lumi":0.4,"maisie":0.01,"mandy":0.01,"max":0.47,"meeple":0.55,"meg":0.5,"melodie":0.01,"mico":0.05,"mina":0.3,"moe":0.03,"mortis":0.38,"mrp":0.0,"najia":0.01,"nani":0.0,"nita":0.06,"nori":0.22,"ollie":0.0,"otis":0.11,"pam":0.02,"pearl":0.08,"penny":0.22,"pierce":0.42,"piper":0.03,"poco":0.09,"rico":0.22,"rosa":0.02,"rt":0.05,"ruffs":0.24,"sam":0.01,"sandy":0.03,"shade":0.17,"shelly":0.03,"sirius":0.11,"spike":0.1,"sprout":0.02,"squeak":0.03,"starrnova":0.36,"stu":0.95,"surge":0.62,"tara":0.03,"tick":0.07,"trunk":0.24,"willow":0.18,"ziggy":0.01}};
 /* @END:USAGE */
+
+/* Duels mesures : "a|b" -> [ecart en points du point de vue de A, echantillon].
+   +7 sur "bibi|surge" veut dire : quand Bibi affronte Surge, Bibi gagne
+   57 % du temps. Corrige des petits echantillons — voir refresh.py. */
+/* @DATA:DUELS */
+var DUELS={};
+/* @END:DUELS */
+
+/* Classement S/A/B/C/D par mode. Chaîne de noms séparés par des virgules,
+   volontairement compacte : c'est de la donnée brute, pas du code. */
 /* @DATA:TIERS */
 var TIERS={
 brawlBall:{S:"Surge,Nori",A:"Bibi,Damian,Starr Nova,Griff,Chester,Mortis,Bull,Edgar",B:"Mina,Kenji,Bolt,Crow,Stu,Rico,Emz,Sirius,Max,Cordelius,Fang,Colette,Meg,Shade,Otis,Buzz,Colt,Lumi,Spike,Frank,Melodie,Pierce,Clancy,Leon",C:"Kaze,Meeple,Tara,8-Bit,Gale,Dynamike,Brock,Shelly,Darryl,Nita,Lou,Carl,Bo,El Primo,Buster,Maisie,Jacky,Doug,Najia,Draco,Sandy,Alli,Finx,Lily,Kit,Moe,Poco,Ash,Trunk,Pearl,Willow,Amber,Gigi",D:"Ruffs,Charlie,Bea,Squeak,Hank,Tick,Berry,Ollie,R-T,Byron,Gray,Larry & Lawrie,Gus,Jessie,Sam,Glowy,Rosa,Jae-yong,Barley,Penny,Ziggy,Gene,Mico,Mandy,Juju,Nani,Sprout,Janet,Lola,Bonnie,Grom,Pam,Belle,Mr. P,Eve,Piper,Chuck,Angelo"},

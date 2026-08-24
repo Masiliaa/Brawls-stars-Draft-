@@ -1509,6 +1509,136 @@ def rendre_usage(par_mode):
 
 
 # ---------------------------------------------------------------------------
+# Duels et duos mesurés — metapick-ai.com
+# ---------------------------------------------------------------------------
+#
+# Pourquoi cette source, et pourquoi ces deux grandeurs-là
+# --------------------------------------------------------
+# Mesuré le 12/08/2026 : dans un jeu en équipes, le taux de victoire ABSOLU
+# d'un brawler tend vers 50 % pour tout le monde — il est disponible pour les
+# deux camps. Aucune information à en tirer.
+#
+# Un ÉCART entre deux brawlers, lui, ne s'annule pas par symétrie. Mesuré sur
+# 595 paires : dispersion observée 7,1 points, dont 4,3 dus au seul hasard de
+# l'échantillon — il reste donc 5,7 points de signal réel. C'est considérable,
+# et c'est exactement la question qu'on se pose pendant un draft.
+#
+# La correction, et d'où sort son réglage
+# ---------------------------------------
+# 29 % des paires reposent sur moins de 100 parties : leurs extrêmes sont du
+# bruit. On tire donc chaque taux vers 50 % d'autant plus fort que
+# l'échantillon est petit — méthode ordinaire. Ce qui l'est moins, c'est que
+# le réglage n'a pas été choisi : k est le point où le signal mesuré (5,7 pts)
+# et le bruit s'équilibrent, soit 0,25 / 0,057² ≈ 78 parties. Il SORT des
+# données. S'il fallait le rechoisir un jour, c'est ce calcul qu'il faudrait
+# refaire, pas une intuition.
+K_DUEL = 78
+
+# En dessous, l'écart ne vaut pas les octets qu'il coûte à télécharger.
+ECART_MIN = 2.0
+# Combien de brawlers interroger par carte, du plus joué au moins joué.
+# 40 couvre ce qui se pique réellement ; interroger les 105 multiplierait les
+# appels par 2,6 pour des paires que personne ne joue.
+DUELS_PAR_CARTE = 40
+
+
+def _agreger(seau, cle_a, cle_b, victoires_a, total):
+    """Additionne une observation dans la paire (a,b), a<b alphabétiquement.
+
+    Une seule direction stockée : « a|b » porte l'écart DU POINT DE VUE DE A.
+    Garder les deux doublerait le fichier pour une information identique au
+    signe près."""
+    if cle_a == cle_b or not total:
+        return
+    if cle_a < cle_b:
+        cle, v = cle_a + "|" + cle_b, victoires_a
+    else:
+        cle, v = cle_b + "|" + cle_a, total - victoires_a
+    s = seau.setdefault(cle, [0, 0])
+    s[0] += v
+    s[1] += total
+
+
+def _ecarts(seau):
+    """{clé: [écart en points, échantillon]} après correction et filtrage."""
+    out = {}
+    for cle, (v, n) in seau.items():
+        corrige = (v + K_DUEL * 0.5) / (n + K_DUEL)
+        ecart = round((corrige - 0.5) * 100, 1)
+        if abs(ecart) >= ECART_MIN:
+            out[cle] = [ecart, n]
+    return out
+
+
+def scraper_duels(net, noms, cartes, par_carte=DUELS_PAR_CARTE):
+    """({duels}, {duos}) — les deux tables, mesurées, prêtes à écrire."""
+    print("\n[5] Duels et duos mesurés — metapick-ai.com")
+    par_cle = {clef(n): n for n in noms}
+    duels, duos = {}, {}
+    appels, echecs = 0, 0
+
+    for i, carte in enumerate(cartes, 1):
+        nom_carte = carte["nom"]
+        try:
+            stats = net.poste(API_METAPICK + "/stats", {"map": nom_carte})
+            appels += 1
+        except Exception as e:
+            souci("stats de « %s » illisibles (%s)" % (nom_carte, e.__class__.__name__))
+            echecs += 1
+            continue
+
+        # Les plus joués d'abord : ce sont eux qu'on rencontre en draft, et
+        # ce sont eux qui portent les gros échantillons.
+        joues = sorted([b for b in stats or [] if clef(b.get("brawler")) in par_cle],
+                       key=lambda b: -(b.get("usage_rate") or 0))[:par_carte]
+
+        for b in joues:
+            source = clef(b["brawler"])
+            for chemin, seau in (("/counters", duels), ("/allies", duos)):
+                try:
+                    rep = net.poste(API_METAPICK + chemin,
+                                    {"map_name": nom_carte, "brawler": b["brawler"]})
+                    appels += 1
+                except Exception:
+                    echecs += 1
+                    continue
+                for autre, v in (rep or {}).items():
+                    cible = clef(autre)
+                    if cible not in par_cle:
+                        continue
+                    _agreger(seau, source, cible,
+                             int(v.get("wins") or 0), int(v.get("total") or 0))
+        note("%2d/%d  %-22s  %d appel(s)" % (i, len(cartes), nom_carte[:22], appels))
+
+    if echecs:
+        souci("%d appel(s) en échec sur %d" % (echecs, appels + echecs))
+    if not duels:
+        souci("aucun duel mesuré — DUELS reste inchangé")
+        return None, None
+
+    d, s = _ecarts(duels), _ecarts(duos)
+    note("%d paires observées -> %d duels tranchés (écart >= %.0f pts)"
+         % (len(duels), len(d), ECART_MIN))
+    note("%d duos observés    -> %d duos tranchés" % (len(duos), len(s)))
+    return d, s
+
+
+def rendre_paires(nom, table):
+    """Une paire par ligne serait illisible ; tout sur une ligne aussi."""
+    cles = sorted(table)
+    morceaux = ['"%s":%s' % (c, js(table[c])) for c in cles]
+    lignes, courante = [], ""
+    for m in morceaux:
+        if len(courante) + len(m) > 88:
+            lignes.append(courante)
+            courante = ""
+        courante += m + ","
+    if courante:
+        lignes.append(courante.rstrip(","))
+    return "var %s={\n%s};" % (nom, "\n".join(lignes))
+
+
+# ---------------------------------------------------------------------------
 # Tiers par mode — le dernier bloc encore tapé à la main
 # ---------------------------------------------------------------------------
 #
@@ -2541,6 +2671,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tout", action="store_true", help="tâches 1 à 5")
+    ap.add_argument("--duels", action="store_true",
+                    help="duels et duos mesures (metapick) — long, ~2200 appels")
+    ap.add_argument("--duels-par-carte", type=int, default=DUELS_PAR_CARTE,
+                    help="brawlers interroges par carte (defaut %d)" % DUELS_PAR_CARTE)
     ap.add_argument("--usage", action="store_true",
                     help="taux d'utilisation par mode (metapick)")
     ap.add_argument("--tiers", action="store_true",
@@ -2576,7 +2710,8 @@ def main():
     if a.tout:
         a.tiers = a.counters = a.cartes = a.synergie = a.assets = True
         a.usage = True
-    if not any([a.tiers, a.usage, a.counters, a.cartes, a.synergie, a.assets]):
+    if not any([a.tiers, a.usage, a.duels, a.counters, a.cartes,
+                a.synergie, a.assets]):
         ap.print_help()
         return 1
 
@@ -2603,6 +2738,18 @@ def main():
         if table:
             html = ecrire_bloc(html, "USAGE", rendre_usage(table))
             maj["usage"] = [aujourdhui, "metapick-ai.com"]
+            touche = True
+
+    if a.duels:
+        d, duos = scraper_duels(net, noms, cartes_actuelles(html),
+                                a.duels_par_carte)
+        if d:
+            html = ecrire_bloc(html, "DUELS", rendre_paires("DUELS", d))
+            maj["duels"] = [aujourdhui, "metapick-ai.com"]
+            touche = True
+        if duos:
+            html = ecrire_bloc(html, "SYNERGIE", rendre_paires("SYNERGIE", duos))
+            maj["synergie"] = [aujourdhui, "metapick-ai.com"]
             touche = True
 
     if a.cartes:
@@ -2680,7 +2827,8 @@ def main():
     # n'a pas bougé ?
     print("\n" + "=" * 60)
     print("RÉCAPITULATIF" + ("  (--blanc : rien n'a été écrit)" if a.blanc else ""))
-    demande = [("tiers", a.tiers), ("usage", a.usage), ("cartes", a.cartes),
+    demande = [("tiers", a.tiers), ("usage", a.usage), ("duels", a.duels),
+               ("cartes", a.cartes),
                ("matchups", a.counters), ("synergie", a.synergie)]
     for nom, voulu in demande:
         if not voulu:
